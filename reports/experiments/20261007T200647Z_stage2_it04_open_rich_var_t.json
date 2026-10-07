@@ -1,0 +1,220 @@
+{
+  "experiment": "stage2_it04_open_rich_var_t",
+  "timestamp_utc": "20261007T200647Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "752af4b",
+  "params": {
+    "iteration": "it04_open_rich_var_t",
+    "config": [
+      "open",
+      "['x_pts', 'x_eff', 'early', 'log_games', 'abs_spread', 'neutral_i', 'line_rel', 'x_poss', 'vol_sum', 'mkt_bias_sum', 'open_bias_sum', 'move_hist_sum', 'rest_min', 'weekend', 'march', 'log_slate', 'lg_drift']",
+      "['line_rel', 'x_poss', 'vol_sum', 'abs_spread', 'early', 'log_games', 'neutral_i', 'log_slate']",
+      "ridge",
+      "student_t",
+      "50.0"
+    ]
+  },
+  "params_hash": "6fe765cc545a",
+  "results": {
+    "iteration": "it04_open_rich_var_t",
+    "market": "open",
+    "n_main": 16816,
+    "seasons_scored": [
+      "2011-12",
+      "2012-13",
+      "2013-14",
+      "2014-15",
+      "2015-16",
+      "2016-17",
+      "2017-18"
+    ],
+    "ll_model": 0.6886819028124076,
+    "ll_market_only": 0.6934427538192903,
+    "ll_gain_x1e4": 47.60851006882727,
+    "buckets": [
+      {
+        "bucket": "50%-55%",
+        "n": 12022,
+        "pred": 0.5200403529440069,
+        "win": 0.5413408750623856,
+        "ci": [
+          0.5324217397020203,
+          0.5502335981164987
+        ]
+      },
+      {
+        "bucket": "55%-60%",
+        "n": 1635,
+        "pred": 0.5637438280044319,
+        "win": 0.5920489296636086,
+        "ci": [
+          0.5680380175996542,
+          0.6156282989009765
+        ]
+      },
+      {
+        "bucket": "60%-65%",
+        "n": 63,
+        "pred": 0.6106832711102103,
+        "win": 0.6984126984126984,
+        "ci": [
+          0.5763939457458815,
+          0.7976246295126401
+        ]
+      },
+      {
+        "bucket": "65%-70%",
+        "n": 1,
+        "pred": 0.6951294386984284,
+        "win": 0.0,
+        "ci": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      {
+        "bucket": "70%-100%",
+        "n": 0,
+        "pred": NaN,
+        "win": NaN,
+        "ci": [
+          NaN,
+          NaN
+        ]
+      }
+    ],
+    "max_p_best": 0.6951294386984284,
+    "forced_main_pair": {
+      "cards": 868,
+      "rate_2of2": 0.35023041474654376,
+      "ci": [
+        0.3192174191657827,
+        0.38256327127156275
+      ],
+      "avg_joint_model": 0.3030983388448608
+    },
+    "same_day_z_corr": 0.0040566650669004506,
+    "buffered": {
+      "hit_rate": {
+        "discovery": {
+          "slates": 487,
+          "cards": 487,
+          "pct_slates_with_card": 1.0,
+          "rate_2of2": 0.6673511293634496,
+          "ci95": [
+            0.6243380944494707,
+            0.7077445978080721
+          ],
+          "avg_joint_model": 0.613490047823155,
+          "avg_joint_cons": 0.6012017656427756,
+          "avg_joint_mkt": 0.5382750358987242,
+          "avg_buffer": 11.056981519507186,
+          "avg_double_odds": 1.695519828253768,
+          "roi_double": 0.13044934248648696,
+          "avg_model_ev": 0.04037427162339907,
+          "leg_win_rate": 0.811088295687885,
+          "avg_leg_p": 0.7857250181619053
+        },
+        "validation": {
+          "slates": 383,
+          "cards": 383,
+          "pct_slates_with_card": 1.0,
+          "rate_2of2": 0.6240208877284595,
+          "ci95": [
+            0.5745042762848832,
+            0.6710742757632936
+          ],
+          "avg_joint_model": 0.6121553222952238,
+          "avg_joint_cons": 0.6010606735398266,
+          "avg_joint_mkt": 0.5161824260229639,
+          "avg_buffer": 10.280026109660575,
+          "avg_double_odds": 1.7687962138126765,
+          "roi_double": 0.10464323559043796,
+          "avg_model_ev": 0.08297966869285313,
+          "leg_win_rate": 0.7898172323759791,
+          "avg_leg_p": 0.7847902207130883
+        }
+      },
+      "value_4.5pct": {
+        "discovery": {
+          "slates": 487,
+          "cards": 389,
+          "pct_slates_with_card": 0.7987679671457906,
+          "rate_2of2": 0.6503856041131105,
+          "ci95": [
+            0.6017370885413456,
+            0.6960928765132719
+          ],
+          "avg_joint_model": 0.6144241779568923,
+          "avg_joint_cons": 0.6011815976616216,
+          "avg_joint_mkt": 0.5305177466243511,
+          "avg_buffer": 10.75642673521851,
+          "avg_double_odds": 1.7191955495957782,
+          "roi_double": 0.11918842517762508,
+          "avg_model_ev": 0.05644187701020419,
+          "leg_win_rate": 0.7982005141388174,
+          "avg_leg_p": 0.7861187299476535
+        },
+        "validation": {
+          "slates": 383,
+          "cards": 363,
+          "pct_slates_with_card": 0.9477806788511749,
+          "rate_2of2": 0.6308539944903582,
+          "ci95": [
+            0.5800813490688598,
+            0.6788860090497398
+          ],
+          "avg_joint_model": 0.6124399100033396,
+          "avg_joint_cons": 0.6010719885843661,
+          "avg_joint_mkt": 0.5135120350370943,
+          "avg_buffer": 10.178374655647383,
+          "avg_double_odds": 1.7773309072520453,
+          "roi_double": 0.12098654548798797,
+          "avg_model_ev": 0.0886739581784954,
+          "leg_win_rate": 0.7920110192837465,
+          "avg_leg_p": 0.7849277685161334
+        }
+      },
+      "value_8pct": {
+        "discovery": {
+          "slates": 487,
+          "cards": 111,
+          "pct_slates_with_card": 0.22792607802874743,
+          "rate_2of2": 0.7207207207207207,
+          "ci95": [
+            0.6309500114887622,
+            0.7957246429918442
+          ],
+          "avg_joint_model": 0.6175160608267871,
+          "avg_joint_cons": 0.6011551432339046,
+          "avg_joint_mkt": 0.5100005190339448,
+          "avg_buffer": 10.056306306306306,
+          "avg_double_odds": 1.6609157414414608,
+          "roi_double": 0.19494730072149347,
+          "avg_model_ev": 0.025718027315678835,
+          "leg_win_rate": 0.8423423423423423,
+          "avg_leg_p": 0.7879936424578778
+        },
+        "validation": {
+          "slates": 383,
+          "cards": 205,
+          "pct_slates_with_card": 0.5352480417754569,
+          "rate_2of2": 0.6439024390243903,
+          "ci95": [
+            0.5762570005473828,
+            0.7062537635915627
+          ],
+          "avg_joint_model": 0.6139920145249202,
+          "avg_joint_cons": 0.6010186149051864,
+          "avg_joint_mkt": 0.4986245950566935,
+          "avg_buffer": 9.646341463414634,
+          "avg_double_odds": 1.6990329759974678,
+          "roi_double": 0.09256462725174075,
+          "avg_model_ev": 0.04327925684613466,
+          "leg_win_rate": 0.7951219512195122,
+          "avg_leg_p": 0.7857283865911998
+        }
+      }
+    }
+  }
+}
