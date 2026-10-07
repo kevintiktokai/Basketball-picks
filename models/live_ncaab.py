@@ -106,6 +106,35 @@ def engine_spec(engine: str = "v3"):
     return lock, m, cp, decays
 
 
+def _prev_season(season: str) -> str:
+    y = int(season[:4]) - 1
+    return f"{y}-{str(y + 1)[2:]}"
+
+
+def cached_features(allg: pd.DataFrame, box: pd.DataFrame, season: str) -> pd.DataFrame:
+    """Features for every game. Completed seasons (< `season`) are computed once and cached;
+    the current season is recomputed from (previous season + current season) games, which
+    yields identical values: the rating window (400 days) never reaches two seasons back and
+    every team/style history restarts each season."""
+    path = PROC / f"live_features_before_{season}.parquet"
+    past = allg[allg.season < season]
+    sig = f"{len(past)}:{int(pd.to_numeric(past.total, errors='coerce').fillna(0).sum())}"
+    hist = None
+    if path.exists():
+        hist = pd.read_parquet(path)
+        if hist.empty or str(hist["_sig"].iloc[0]) != sig:      # history changed -> rebuild
+            hist = None
+    if hist is None:
+        hist = build_ncaab_features(write=False, games=past, box=box[box.date < past.date.max() + pd.Timedelta(days=1)])
+        hist = hist[hist.season < season].copy()
+        hist["_sig"] = sig
+        hist.to_parquet(path, index=False)
+    cur_games = allg[allg.season.isin([_prev_season(season), season])]
+    cur = build_ncaab_features(write=False, games=cur_games, box=box)
+    cur = cur[cur.season == season]
+    return pd.concat([hist.drop(columns=["_sig"], errors="ignore"), cur], ignore_index=True)
+
+
 def run_card(date: str, slate: pd.DataFrame | None = None, engine: str = "v3") -> dict:
     """slate (optional): columns home, away, line_open[, home_spread_open, neutral]."""
     lock, m, cp, decays = engine_spec(engine)
@@ -146,7 +175,7 @@ def run_card(date: str, slate: pd.DataFrame | None = None, engine: str = "v3") -
     slate = slate[~slate.home.str.startswith("unknown") & ~slate.away.str.startswith("unknown")]
     allg = pd.concat([u, slate[[c for c in u.columns if c in slate.columns]]], ignore_index=True)
 
-    f = build_ncaab_features(write=False, games=allg, box=box[box.date < D])
+    f = cached_features(allg, box[box.date < D], season)
     d = market_frame(f, lock["market"])
     seasons = sorted(s for s in d.season.unique() if s <= season)
     P, cals, calm = walk_forward_market(d, m["mean_feats"], m["var_feats"], m["kind"], m["shape"],

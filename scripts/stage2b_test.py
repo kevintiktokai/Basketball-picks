@@ -140,7 +140,8 @@ def evaluate_engine(name, d, seasons, test_seasons, lock_model, policy, decays, 
     em = Mm.set_index("game_key").loc[e.game_key]
     h(f"Main-line log loss model {log_loss(e.p_over / (e.p_over + e.p_under), e.over):.5f} vs market-only "
       f"{log_loss(em.p_over / (em.p_over + em.p_under), e.over):.5f} over {len(e)} games.\n")
-    e = e.merge(F_extra[["books_json"]], left_on="game_key", right_index=True, how="left")
+    e = e.drop(columns=["books_json"], errors="ignore").merge(
+        F_extra[["books_json"]], left_on="game_key", right_index=True, how="left")
     rows = []
     for lo_, hi_ in ((0.5, 0.55), (0.55, 0.6), (0.6, 1.01)):
         mm = e[(e.p_best >= lo_) & (e.p_best < hi_)]
@@ -197,6 +198,11 @@ def main(dry_run_seasons=None):
 
     h("# Stage 2b — independent test on NCAAB 2021-22..2025-26 (run once)\n" if dry_run_seasons is None
       else f"# DRY RUN on {test_seasons}\n")
+    if dry_run_seasons is None:
+        h("_Run note: the first execution crashed in the SECONDARY real-price section (a duplicate "
+          "`books_json` column from a merge) after printing the v2 card table. The merge was fixed "
+          "and the script re-run unchanged otherwise; the computation is deterministic, so the v2 "
+          "card results below are identical to the first execution. v3 had not been reached._\n")
     h(f"Data: {json.dumps({k: v for k, v in rep.items() if k != 'live_by_season'}, default=str)}\n")
     if provenance:
         h(f"Raw scrape provenance: {provenance['raw_files']} JSON files, manifest sha256 "
