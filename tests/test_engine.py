@@ -92,3 +92,22 @@ def test_conservative_bound_below_point_estimate():
 def test_wilson():
     lo, hi = wilson(60, 100)
     assert lo < 0.6 < hi
+
+
+def test_line_shopping_and_real_prices():
+    import json
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    from stage2b_test import american_to_decimal, best_open_for_side, median_open_price
+    books = json.dumps({
+        "dk": {"open": 140.5, "open_over": -110, "open_under": -110},
+        "fd": {"open": 139.5, "open_over": -105, "open_under": -115},
+        "mgm": {"open": 141.5, "open_over": -120, "open_under": +100},
+    })
+    line, dec, book = best_open_for_side(books, 1)       # Over: lowest total
+    assert (line, book) == (139.5, "fd") and abs(dec - (1 + 100 / 105)) < 1e-9
+    line, dec, book = best_open_for_side(books, -1)      # Under: highest total
+    assert (line, book) == (141.5, "mgm") and abs(dec - 2.0) < 1e-9
+    assert abs(median_open_price(books, 1, 140.5) - (1 + 100 / 110)) < 1e-9
+    assert abs(float(american_to_decimal(150)) - 2.5) < 1e-9

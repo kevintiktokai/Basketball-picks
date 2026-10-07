@@ -73,6 +73,8 @@ def main():
     ap.add_argument("--date", required=True)
     ap.add_argument("--slate")
     ap.add_argument("--update", action="store_true")
+    ap.add_argument("--engine", choices=["v3", "v2"], default="v3",
+                    help="v3 (default, recency-adapted, J=0.65) or v2 (stage-2 locked, J=0.625)")
     a = ap.parse_args()
     if a.update:
         update_history(a.date)
@@ -86,7 +88,7 @@ def main():
         from data import sbr_live
         if not (sbr_live.RAW / "totals" / f"{a.date}.json").exists():
             sys.exit("No cached slate for this date: run with --update (or pass --slate).")
-    R = run_card(a.date, slate)
+    R = run_card(a.date, slate, engine=a.engine)
     if "error" in R:
         print(BAR + f"\nOVER/UNDER CARD ENGINE — NCAAB — {a.date}\n" + BAR)
         print(f"\nNO BET\n\nReason: {R['error']}\n")
@@ -96,7 +98,7 @@ def main():
     unresolved = R["slate"][(R["slate"].match_home != "exact") | (R["slate"].match_away != "exact")]
 
     print(BAR)
-    print(f"TWO-PICK CARD ENGINE — NCAA men's basketball — {a.date}")
+    print(f"TWO-PICK CARD ENGINE ({a.engine}) — NCAA men's basketball — {a.date}")
     print(BAR)
     print(f"\nGames screened:\n{R['n_screened']}\n\nEligible (both teams >= 3 games this season):\n{R['n_eligible']}\n")
     print(f"Market:\nopening full-game totals (median across books)\n")

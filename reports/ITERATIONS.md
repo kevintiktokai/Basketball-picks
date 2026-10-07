@@ -344,3 +344,17 @@ Buffered (alternate-line) cards:
 
 Rule: best recent-period (2018-21) log loss → v3d; J = smallest value whose 2018-21 Wilson
 lower bound ≥ 60% → 0.65. Locked in config/stage3_v3_locked.yaml before stage 2b.
+
+---
+## NBA check (development seasons 2009-21, closing lines, score-only model + variance)
+Main-line log-loss gain +8.8×10⁻⁴ (max two-sided P 58.6%). Buffered cards:
+
+| J | max buffer | cards | 2/2 | 95% CI | avg buffer | fair double odds | ROI at 4.5% margin |
+|---|---|---|---|---|---|---|---|
+| 0.600 | 15 | 1683 | 60.7% | 58.4–63.0% | 12.7 | 1.54 | −6.3% |
+| 0.625 | 15 | 1677 | 63.0% | 60.6–65.2% | 13.5 | 1.48 | −6.8% |
+| 0.650 | 15 | 1511 | 65.7% | 63.3–68.1% | 14.3 | 1.43 | −6.3% |
+
+Lesson: a 60%+ 2/2 rate can be *bought* in any market by moving lines ~13 points — but
+without an information edge (NBA closing line) every such card loses roughly the margin.
+The NCAAB opening line is where the edge that pays for the buffer exists.

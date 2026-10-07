@@ -94,10 +94,21 @@ def pending_from_sbr(date: str) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def run_card(date: str, slate: pd.DataFrame | None = None) -> dict:
-    """slate (optional): columns home, away, line_open[, home_spread_open, neutral]."""
+def engine_spec(engine: str = "v3"):
+    """v2 = config/stage2_locked.yaml; v3 = v2 + recency weights + J from stage3_v3_locked.yaml."""
     lock = yaml.safe_load((ROOT / "config" / "stage2_locked.yaml").read_text())
-    m, cp = lock["model"], lock["card_policy"]
+    m, cp = lock["model"], dict(lock["card_policy"])
+    decays = (None, None)
+    if engine == "v3":
+        v3 = yaml.safe_load((ROOT / "config" / "stage3_v3_locked.yaml").read_text())["changes_vs_v2"]
+        cp["joint_target"] = v3["joint_target"]
+        decays = (v3["train_decay"], v3["calib_decay"])
+    return lock, m, cp, decays
+
+
+def run_card(date: str, slate: pd.DataFrame | None = None, engine: str = "v3") -> dict:
+    """slate (optional): columns home, away, line_open[, home_spread_open, neutral]."""
+    lock, m, cp, decays = engine_spec(engine)
     D = pd.Timestamp(date)
     season = season_of(D)
 
@@ -139,7 +150,8 @@ def run_card(date: str, slate: pd.DataFrame | None = None) -> dict:
     d = market_frame(f, lock["market"])
     seasons = sorted(s for s in d.season.unique() if s <= season)
     P, cals, calm = walk_forward_market(d, m["mean_feats"], m["var_feats"], m["kind"], m["shape"],
-                                        m["alpha"], seasons=seasons, min_games=m["min_games"])
+                                        m["alpha"], seasons=seasons, min_games=m["min_games"],
+                                        train_decay=decays[0], calib_decay=decays[1])
     today = P[P.date == D].copy()
     if today.empty or season not in cals:
         return {"date": date, "error": "slate games not eligible (too few games played this season)"}
@@ -147,5 +159,6 @@ def run_card(date: str, slate: pd.DataFrame | None = None) -> dict:
     C = buffered_cards(T, joint_target=cp["joint_target"], max_buffer=cp["max_buffer_points"],
                        top_legs=cp["top_legs"], rho_lo=cp["rho_lo"])
     M = main_line_probs(today, cals)
+    lock = dict(lock, card_policy=cp, engine=engine)
     return {"date": date, "lock": lock, "slate": slate, "frame": T["frame"], "T": T, "card": C,
             "main": M, "n_screened": int(len(today)), "n_eligible": int(today.eligible.sum())}
