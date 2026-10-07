@@ -138,11 +138,14 @@ def parse_sbr_season(path, season: str) -> pd.DataFrame:
 
 
 # ----------------------------------------------------------------- box scores
-def load_box() -> pd.DataFrame:
-    cfg = stage2_config()["ncaab"]
+def load_box(files=None) -> pd.DataFrame:
+    """ESPN (hoopR) team box scores -> one row per team-game with possessions.
+    `files`: explicit list of parquet paths (any league); default = pinned NCAAB files."""
+    if files is None:
+        files = [RAW / f for f in stage2_config()["ncaab"]["box_files"]]
     frames = []
-    for f in cfg["box_files"]:
-        b = pd.read_parquet(RAW / f)
+    for f in files:
+        b = pd.read_parquet(f)
         frames.append(b)
     b = pd.concat(frames, ignore_index=True)
     keep = {

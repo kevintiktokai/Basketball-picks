@@ -18,18 +18,9 @@ PROC = ROOT / "data" / "processed"
 
 
 def load_all_box() -> pd.DataFrame:
-    """ESPN team box scores for every season present in data/raw/ncaab (2008..2026)."""
-    import data.ncaab_ingest as ni
+    """ESPN team box scores for every NCAAB season present in data/raw/ncaab (2008..2026)."""
     files = sorted(glob.glob(str(RAW / "team_box_*.parquet")))
-    cfg = ni.stage2_config()
-    orig = cfg["ncaab"]["box_files"]
-    cfg["ncaab"]["box_files"] = {p.split("/")[-1]: None for p in files}
-    ni.stage2_config = lambda: cfg                  # load_box iterates this list
-    try:
-        b = load_box()
-    finally:
-        cfg["ncaab"]["box_files"] = orig
-    return b
+    return load_box(files=files)
 
 
 def load_schedules() -> pd.DataFrame:
