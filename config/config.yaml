@@ -1,0 +1,59 @@
+# ============================================================================
+# OVER ENGINE — research configuration
+#
+# PRE-REGISTRATION: the period splits below were written BEFORE any model was
+# fitted or any backtest was run (commit 1 of this repository). They must not
+# be changed after seeing results. The final holdout is evaluated exactly once,
+# by scripts/run_holdout.py, against the locked model spec in
+# config/locked_model.yaml.
+# ============================================================================
+
+dataset_version: "nba-v1"
+
+sources:
+  odds:
+    repo: kyleskom/NBA-Machine-Learning-Sports-Betting
+    commit: 8e36b0b72ecc5082aa8976dff742cdf910b3aa36
+    path: Data/OddsData.sqlite
+    sha256: 4a803d41cd4597c1d898c0b131a58763dee8b64140be8f40c29b73c852e162d9
+  box_regular:
+    repo: NocturneBear/NBA-Data-2010-2024
+    commit: a5f108b5b1f08074d78b9e8e901926a9ce4c06c5
+    path: regular_season_totals_2010_2024.csv
+    sha256: b63367be8c58155f978c841bb966f5b19e334cec833a37ddae2915a29cd352d9
+  box_playoffs:
+    repo: NocturneBear/NBA-Data-2010-2024
+    commit: a5f108b5b1f08074d78b9e8e901926a9ce4c06c5
+    path: play_off_totals_2010_2024.csv
+    sha256: d4e1c5717d1419d9f7dc060c762554a7a6bb4a4a52a0aaece165a897aa84ef07
+
+# Season labels are NBA seasons ("2015-16" = season starting autumn 2015).
+periods:
+  discovery:   ["2007-08", "2008-09", "2009-10", "2010-11", "2011-12", "2012-13",
+                "2013-14", "2014-15", "2015-16", "2016-17"]
+  validation:  ["2017-18", "2018-19", "2019-20", "2020-21"]
+  holdout:     ["2021-22", "2022-23", "2023-24"]
+  live_sim:    ["2024-25", "2025-26"]   # box scores unavailable -> score-only models only
+
+# The bet is simulated at the line stored in the dataset, which is (for the
+# seasons whose provenance is known) the bookmaker's last pre-game line.
+# No Over price is stored, so a standard -110 price is assumed.
+market:
+  assumed_over_decimal_odds: 1.909
+  bet_timestamp: "closing"   # features must be strictly prior to game day
+
+walk_forward:
+  # model refit before each test season using all prior seasons only
+  refit: "season"
+  min_train_seasons: 2
+
+features:
+  ewm_halflife_games: 10
+  prior_shrink_games: 8       # pseudo-games of prior (last season / league) mixed in
+  min_games_for_eligibility: 5
+
+selection:
+  joint_target: 0.60          # conservative joint probability needed for a card
+  conservative_quantile: 0.05 # one-sided lower bound used as "conservative"
+  # individual eligibility floor and single-pick standard are DETERMINED
+  # on discovery+validation, then frozen in config/locked_model.yaml.
