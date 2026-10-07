@@ -1,0 +1,20 @@
+locked_at_revision: 43e1e7e
+rule: best calibrated log loss among models with positive gain CI; prefer score-only
+  within 1 SE
+model:
+  feature_set: S_scores_full
+  learner: ridge
+  dist: normal
+  calib: platt
+selection:
+  joint_target: 0.6
+  individual_floor: 0.6
+  single_cons_min: 0.5238
+  min_edge_points: 0.0
+  conservative_quantile: 0.05
+edge_significant_in_development: true
+dependence_dev:
+  z_corr: 0.0019941504621617907
+  z_corr_ci:
+  - -0.006318117571319857
+  - 0.011924670043954833
