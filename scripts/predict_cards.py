@@ -73,6 +73,8 @@ def main():
     ap.add_argument("--date", required=True)
     ap.add_argument("--slate")
     ap.add_argument("--update", action="store_true")
+    ap.add_argument("--record", action="store_true",
+                    help="append the released card to reports/live_ledger.csv for forward testing")
     ap.add_argument("--engine", choices=["v3", "v2"], default="v3",
                     help="v3 (default, recency-adapted, J=0.65) or v2 (stage-2 locked, J=0.625)")
     a = ap.parse_args()
@@ -136,6 +138,17 @@ def main():
         print("  development 2011-18: 572/870 cards 2/2 (65.7%)")
         print("  holdout 2018-21:     221/363 cards 2/2 (60.9%, 95% CI 55.8-65.8%)")
         print(f"\nFINAL:\nTAKE BOTH — ONLY IF your book offers these alternate lines at or above the break-even odds\n{BAR}")
+        if a.record:
+            rec = {"date": a.date, "engine": a.engine, "recorded_at": pd.Timestamp.utcnow().isoformat()}
+            for leg in ("a", "b"):
+                g = F[F.game_key == c[f"game_{leg}"]].iloc[0]
+                rec.update({f"{leg}_away": g.get("away_name", g.away), f"{leg}_home": g.get("home_name", g.home),
+                            f"{leg}_side": side_txt(c[f"side_{leg}"]), f"{leg}_line": c[f"thr_{leg}"],
+                            f"{leg}_market_open": g.line, f"{leg}_p": c[f"p_{leg}"], f"{leg}_p_cons": c[f"pc_{leg}"]})
+            rec["joint_model"] = c.joint_model
+            ledger = Path(__file__).resolve().parents[1] / "reports" / "live_ledger.csv"
+            pd.DataFrame([rec]).to_csv(ledger, mode="a", header=not ledger.exists(), index=False)
+            print(f"recorded to {ledger}")
     else:
         print(BAR + "\nNO TWO-PICK CARD\n" + BAR)
         print("\nNo pair of legs reaches the conservative joint target within the 15-point alternate-line cap.\n")
