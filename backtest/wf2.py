@@ -17,9 +17,18 @@ from models.dist_models import DistModel, LatentCalibrator
 Z95 = 1.6449   # one-sided 95%
 
 
+def _season_weights(season_col: pd.Series, current: str, seasons: list, decay: float | None):
+    if decay is None:
+        return None
+    idx = {s: i for i, s in enumerate(seasons)}
+    age = idx[current] - season_col.map(idx).values
+    return decay ** np.maximum(age - 1, 0)
+
+
 def walk_forward_market(df: pd.DataFrame, mean_feats, var_feats, kind="ridge", shape="normal",
                         alpha=50.0, seasons=None, min_train=2, min_games=3,
-                        calib_seed_seasons=2):
+                        calib_seed_seasons=2, train_decay: float | None = None,
+                        calib_decay: float | None = None):
     seasons = seasons or sorted(df.season.unique())
     data = df[df.season.isin(seasons)].copy()
     elig = data.rt_min_games.fillna(0) >= min_games
@@ -30,7 +39,8 @@ def walk_forward_market(df: pd.DataFrame, mean_feats, var_feats, kind="ridge", s
             continue
         tr = data[data.season.isin(seasons[:i]) & data.eligible]
         te = data[data.season == s].copy()
-        m = DistModel(mean_feats, var_feats, kind=kind, shape=shape, alpha=alpha).fit(tr)
+        m = DistModel(mean_feats, var_feats, kind=kind, shape=shape, alpha=alpha).fit(
+            tr, weights=_season_weights(tr.season, s, seasons, train_decay))
         te["mu"] = m.predict_mean(te)
         te["sd"] = m.predict_sd(te)
         mk = DistModel([], [], shape=shape).fit(tr)               # market-only reference
@@ -44,7 +54,7 @@ def walk_forward_market(df: pd.DataFrame, mean_feats, var_feats, kind="ridge", s
         if j < calib_seed_seasons:
             continue
         hist = P[P.season.isin(pseasons[:j]) & P.eligible]
-        cals[s] = LatentCalibrator().fit(hist)
+        cals[s] = LatentCalibrator().fit(hist, weights=_season_weights(hist.season, s, pseasons, calib_decay))
         cals_mkt[s] = LatentCalibrator().fit(hist.assign(mu=hist.mu_mkt, sd=hist.sd_mkt))
     P["calibrated"] = P.season.isin(list(cals))
     return P, cals, cals_mkt

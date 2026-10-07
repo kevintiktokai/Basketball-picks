@@ -38,7 +38,8 @@ class DistModel:
     z_train: np.ndarray = field(default=None, repr=False)
 
     # ---------------------------------------------------------------- fit
-    def fit(self, d: pd.DataFrame, seed: int = 0) -> "DistModel":
+    def fit(self, d: pd.DataFrame, seed: int = 0, weights: np.ndarray | None = None) -> "DistModel":
+        self._w = None if weights is None else np.asarray(weights, float)
         y = d.resid.values.astype(float)
         allf = list(dict.fromkeys(self.mean_feats + self.var_feats))
         self.med_ = d[allf].median() if allf else pd.Series(dtype=float)
@@ -63,7 +64,7 @@ class DistModel:
         X = self._X(d, self.mean_feats)
         if self.kind == "ridge":
             self.mean_sc = StandardScaler().fit(X)
-            self.mean_m = Ridge(alpha=self.alpha).fit(self.mean_sc.transform(X), y)
+            self.mean_m = Ridge(alpha=self.alpha).fit(self.mean_sc.transform(X), y, sample_weight=self._w)
         elif self.kind == "lgbm":
             import lightgbm as lgb
             self.mean_m = lgb.LGBMRegressor(
@@ -99,7 +100,8 @@ class DistModel:
         X = self._X(d, self.var_feats)
         self.var_sc = StandardScaler().fit(X)
         target = np.log(res ** 2 + 1.0)
-        self.var_m = Ridge(alpha=self.alpha).fit(self.var_sc.transform(X), target)
+        self.var_m = Ridge(alpha=self.alpha).fit(self.var_sc.transform(X), target,
+                                                 sample_weight=getattr(self, "_w", None))
         raw = np.exp(self.var_m.predict(self.var_sc.transform(X)))
         # rescale so that mean squared standardized residual = 1
         self.var_scale = float(np.sqrt(np.mean(res ** 2 / raw)))
@@ -219,24 +221,26 @@ class LatentCalibrator:
                     "win": win.astype(int)}))
         return pd.concat(rows, ignore_index=True)
 
-    def fit(self, hist: pd.DataFrame) -> "LatentCalibrator":
+    def fit(self, hist: pd.DataFrame, weights: np.ndarray | None = None) -> "LatentCalibrator":
         pb = self.pseudo_bets(hist)
         X = self.design(pb.s_model, pb.s_buf)
         y = pb.win.values.astype(float)
+        sw = np.ones(len(pb)) if weights is None else np.tile(np.asarray(weights, float),
+                                                             len(pb) // len(hist))
         beta = np.zeros(X.shape[1])
         for _ in range(50):                                  # Newton-Raphson logistic fit
             eta = X @ beta
             p = 1 / (1 + np.exp(-eta))
-            W = p * (1 - p)
+            W = sw * p * (1 - p)
             H = (X * W[:, None]).T @ X + 1e-6 * np.eye(X.shape[1])
-            step = np.linalg.solve(H, X.T @ (y - p))
+            step = np.linalg.solve(H, X.T @ (sw * (y - p)))
             beta += step
             if np.max(np.abs(step)) < 1e-8:
                 break
         p = 1 / (1 + np.exp(-(X @ beta)))
-        H = (X * (p * (1 - p))[:, None]).T @ X
+        H = (X * (sw * p * (1 - p))[:, None]).T @ X
         Hinv = np.linalg.inv(H)
-        score = X * (y - p)[:, None]
+        score = X * (sw * (y - p))[:, None]
         g = pd.DataFrame(score).groupby(pb.date.values).sum().values   # cluster by date
         meat = g.T @ g
         self.beta = beta

@@ -1,0 +1,15 @@
+# LOCKED engine v3 — committed BEFORE any stage-2b (2021-22..2025-26) evaluation.
+# Developed on NCAAB 2007-08..2020-21 (incl. the already-evaluated stage-2 holdout,
+# which is development data for v3). Its only untouched test is stage 2b, where it is
+# the pre-registered SECONDARY engine (v2 = config/stage2_locked.yaml is PRIMARY).
+league: NCAAB
+market: open
+inherits: config/stage2_locked.yaml      # same features, learner, calibrator, buffers
+changes_vs_v2:
+  train_decay: 0.6        # season-recency weights for mean+variance model (age-1 seasons -> 0.6^...)
+  calib_decay: 0.6        # same for the edge-aware calibrator
+  joint_target: 0.65      # J rule: smallest J whose most-recent-3-season (2018-21) Wilson LB >= 60%
+selection_evidence:       # reports/v3_dev_variants.csv
+  late_period_ll_gain_x1e4: {v2: 31.4, v3a: 27.9, v3b: 34.1, v3c: 32.8, v3d: 37.3}
+  v3d_2018_21: {J_0.625: [0.628, 0.577, 0.676], J_0.650: [0.660, 0.610, 0.707]}
+live_cli_default: v3     # decided before the stage-2b test; v2 remains available via flag

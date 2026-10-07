@@ -329,3 +329,18 @@ Buffered (alternate-line) cards:
   65.7%); both-Over 68.5%, both-Under 64.2%, mixed 62.5%; median buffer 10.5 pts.
 * Configurations evaluated in stage 2 so far: 13 model iterations + 4 rating variants +
   24 card-policy cells. The holdout claim below is about ONE locked configuration.
+
+---
+## Stage 2 holdout (run once): 60.9% 2/2 on 363 cards (CI 55.8–65.8%). Edge decayed (log-loss gain 59→31).
+
+## Engine v3 (developed after the stage-2 holdout, on 2007-21; untouched test = stage 2b)
+| variant | train decay | calib decay | ll gain 2011-18 | ll gain 2018-21 | 2/2 2018-21 @J=.625 | @J=.65 |
+|---|---|---|---|---|---|---|
+| v2 (locked) | – | – | 59.0 | 31.4 | 61.2% | 64.5% |
+| v3a | – | 0.7 | 59.2 | 27.9 | 60.1% | 64.2% |
+| v3b | 0.8 | 0.7 | 57.1 | 34.1 | 62.5% | 65.3% |
+| v3c | 0.8 | 0.5 | 56.7 | 32.8 | 63.4% | 65.6% |
+| **v3d** | **0.6** | **0.6** | 53.3 | **37.3** | 62.8% | **66.0%** |
+
+Rule: best recent-period (2018-21) log loss → v3d; J = smallest value whose 2018-21 Wilson
+lower bound ≥ 60% → 0.65. Locked in config/stage3_v3_locked.yaml before stage 2b.
