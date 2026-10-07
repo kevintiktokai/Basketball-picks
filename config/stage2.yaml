@@ -1,0 +1,78 @@
+# ============================================================================
+# STAGE 2 PROTOCOL — written and committed BEFORE any NCAAB model was fitted
+# and before any stage-2 NBA model was evaluated.
+#
+# Stage 2 widens the search: Over AND Under, NCAA men's basketball, opening /
+# closing / second-half markets, variance models, and alternative card
+# constructions (incl. buffered "alternate" lines). Many configurations will
+# be tried; every one is logged to reports/experiments/ and selection uses
+# DEVELOPMENT seasons only. The NCAAB holdout is evaluated exactly once.
+# ============================================================================
+
+ncaab:
+  periods:
+    discovery:  ["2007-08", "2008-09", "2009-10", "2010-11", "2011-12", "2012-13", "2013-14", "2014-15"]
+    validation: ["2015-16", "2016-17", "2017-18"]
+    holdout:    ["2018-19", "2019-20", "2020-21"]   # pristine: never modelled before lock
+  markets:
+    open:  "bet the opening full-game total (features: prior games only)"
+    close: "bet the closing full-game total (features: prior games + open->close move)"
+    second_half: "bet the second-half total at half-time (features: prior games + this game's lines + 1st-half score)"
+  assumed_decimal_odds: 1.909   # archive stores no total prices
+  sbr_base_url: "https://sportsbookreviewsonline.com/wp-content/uploads/sportsbookreviewsonline_com_737/"
+  sbr_files:
+    ncaa-basketball-2007-08.xlsx: 50b766d7916975b190c0788b7a9fe6c147eb92d5ff13b99cb14db20d9e5229b7
+    ncaa-basketball-2008-09.xlsx: 9dbfbdf20c72919312db66d8d15f36a42eb69b9afb1e829ff08e2180ced43fc5
+    ncaa-basketball-2009-10.xlsx: 3c279e682ab6f6905aa18f0dd10ef217c5eebf2c2f1ea333996f70bc90606013
+    ncaa-basketball-2010-11.xlsx: 015c0b29b9f665cdac96d57433cc03b7cea1fb7f6bd3607ff75efdb009fa381f
+    ncaa-basketball-2011-12.xlsx: 3e7102a02ab61b56dcf7c1dd7bcac3b36a9c48ac0a4445944b9fbde1753218e7
+    ncaa-basketball-2012-13.xlsx: a4e31a5169434fb810c4a31de95a2060903795f7dc672f928d1eab8df77edfc7
+    ncaa-basketball-2013-14.xlsx: f3e1983586f6768ad22d569819a9178c1a5019a2c549bf7bf8e041d57b150346
+    ncaa-basketball-2014-15.xlsx: 91ea887447db62c0d3d2b72f0bc6736f297916630213526ca9fe28e074983aca
+    ncaa-basketball-2015-16.xlsx: 8e9c3752b9fbdb7c57f31279818fec6673049fc177b434c0c329e680136cdec2
+    ncaa-basketball-2016-17.xlsx: 9ffe3737f8cbcbd43f3a8526027f2aca8186c9566591334a3b02e67182131b0c
+    ncaa-basketball-2017-18.xlsx: 42032b37c29f25cdff2c60e8b031a8d340013ffca810020d16f3ec1561f0324d
+    ncaa-basketball-2018-19.xlsx: 7d1ba21b9d65860b87266c61ecbe9fbf59fb79ad022ab673b7def0b732f51703
+    ncaa-basketball-2019-20.xlsx: 9b82b24bba0b12873e57c7e9ac9215495473e578f83c8357292e282aad549178
+    ncaa-basketball-2020-21.xlsx: 88a57ee24303d40dc68b43662776b5afcac61e3ad68da4fb8961cfd12ea9ca5d
+  box_source:
+    repo: sportsdataverse/hoopR-mbb-data
+    commit: 6feca9bf51d2db88310bc4ca0f9cff5102a414a5
+    path_template: "mbb/team_box/parquet/team_box_{year}.parquet"   # year = season end year
+  box_files:
+    team_box_2008.parquet: 059b894e9f0fb9767d3956698f8e27ecdf7f0114ecbcfb09630830494f98edc0
+    team_box_2009.parquet: 98597a618fabe05bd2b97b16e7f0ffea4b6481b2391e4be08eaec38f2c040b4e
+    team_box_2010.parquet: f75b60ec3dbd03ba6f1621e3b3e924b11a8ed728e8480647d2643c5b39c68617
+    team_box_2011.parquet: fc7cac30f752198e1d484fa9be6f208ca85c7941d65b953f4af2df25edb91887
+    team_box_2012.parquet: 275bb3bc09d61abb35c070353bbbb42eebbee78dfb0fe5301dc4eac4d4b6c4fb
+    team_box_2013.parquet: 6be498ddfd878ec8a912b07700e2de439c0957aacc145a952b8280d5521880cd
+    team_box_2014.parquet: 9f940e3ab9cad997b894981a98a892fd2e41e7d69cbe692722a242bba93925c5
+    team_box_2015.parquet: b22e453298ccc9228fed8fbc98683eeacfbf186d729606a8cd226a204e6f6106
+    team_box_2016.parquet: cefb46896d15de92dc1da583b7f237af20f650302ac18749258b5f6baa42f88b
+    team_box_2017.parquet: 1be70473e487c49b7d9918cad37432a97e99359e447bf9155f86001c68c3802b
+    team_box_2018.parquet: fbb9abc6843fc91e136fb2cdc6fb5d7351426ec04def97ebe996483de09fb206
+    team_box_2019.parquet: 8abef3e1e07b27198aceba9eb2da852af0bafc7806dfaf0fb4ef47d12efecf23
+    team_box_2020.parquet: f3acd50919c6d6cac45db59f55d7a993e717a3be854a688b2c15cb0416b44178
+    team_box_2021.parquet: 310b5885bf9f0700c7d1a7f2c976cf515fef9c1d3747ca4cef4712cc3d3db280
+
+nba:
+  development: ["2007-08", "2008-09", "2009-10", "2010-11", "2011-12", "2012-13", "2013-14",
+                "2014-15", "2015-16", "2016-17", "2017-18", "2018-19", "2019-20", "2020-21"]
+  # 2021-22..2025-26 were evaluated ONCE in aggregate by the stage-1 locked model.
+  # Stage-2 NBA models are selected on development seasons only and then tested on
+  # these seasons; results are labelled "post-development test (previously viewed)".
+  post_dev_test: ["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"]
+
+cards:
+  joint_target: 0.60
+  conservative_quantile: 0.05
+  # Card constructions explored in stage 2 (all evaluated on development seasons):
+  #   main_line      : two picks at the market line, Over or Under, distinct games
+  #   buffered_line  : two picks at alternate lines moved in the bettor's favour
+  #                    (hit rate bought with price; EV reported under explicit pricing)
+  #   same_game      : correlated legs from one game (reported separately; NOT counted
+  #                    as two independent selections)
+
+multiple_testing:
+  rule: "report the number of configurations tried; the final holdout claim is about ONE locked configuration per market"
+
