@@ -34,11 +34,10 @@ RO = ["x_pts", "x_eff", "x_poss", "line_rel", "move_hist_sum", "open_bias_sum"]
 
 
 def nba_market(write_features: bool = True) -> pd.DataFrame:
+    from features.store import get_features
     g, box, rep = unify_nba(write=True)
     print("NBA data:", rep, flush=True)
-    f = build_ncaab_features(write=False, games=g, box=box)
-    if write_features:
-        f.to_parquet(ROOT / "data" / "processed" / "nba_features.parquet", index=False)
+    f = get_features("nba", g, box)
     d = market_frame(f, "open")
     for c in RO:
         d[f"{c}_ro"] = d[c] * d.is_real_open

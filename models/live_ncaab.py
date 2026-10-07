@@ -112,27 +112,10 @@ def _prev_season(season: str) -> str:
 
 
 def cached_features(allg: pd.DataFrame, box: pd.DataFrame, season: str) -> pd.DataFrame:
-    """Features for every game. Completed seasons (< `season`) are computed once and cached;
-    the current season is recomputed from (previous season + current season) games, which
-    yields identical values: the rating window (400 days) never reaches two seasons back and
-    every team/style history restarts each season."""
-    path = PROC / f"live_features_before_{season}.parquet"
-    past = allg[allg.season < season]
-    sig = f"{len(past)}:{int(pd.to_numeric(past.total, errors='coerce').fillna(0).sum())}"
-    hist = None
-    if path.exists():
-        hist = pd.read_parquet(path)
-        if hist.empty or str(hist["_sig"].iloc[0]) != sig:      # history changed -> rebuild
-            hist = None
-    if hist is None:
-        hist = build_ncaab_features(write=False, games=past, box=box[box.date < past.date.max() + pd.Timedelta(days=1)])
-        hist = hist[hist.season < season].copy()
-        hist["_sig"] = sig
-        hist.to_parquet(path, index=False)
-    cur_games = allg[allg.season.isin([_prev_season(season), season])]
-    cur = build_ncaab_features(write=False, games=cur_games, box=box)
-    cur = cur[cur.season == season]
-    return pd.concat([hist.drop(columns=["_sig"], errors="ignore"), cur], ignore_index=True)
+    """Features via the shared store (features/store.py): completed seasons are reused,
+    only the current season (with today's slate) is recomputed."""
+    from features.store import get_features
+    return get_features("ncaab", allg, box, verbose=False)
 
 
 def run_card(date: str, slate: pd.DataFrame | None = None, engine: str = "v3") -> dict:

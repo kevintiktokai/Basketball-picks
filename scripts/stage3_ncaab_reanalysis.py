@@ -26,14 +26,15 @@ EVAL = ["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"]
 
 
 def main():
-    f = pd.read_parquet(ROOT / "data" / "processed" / "ncaab_features_unified_all.parquet")
+    from data.ncaab_unify import unify
+    from features.store import cached_walk_forward, fingerprint, get_features
+    u, box, _ = unify(write=False, include_live=True)
+    f = get_features("ncaab", u, box)
     d = market_frame(f, "open")
     v2 = yaml.safe_load((ROOT / "config" / "stage2_locked.yaml").read_text())["model"]
     v3 = yaml.safe_load((ROOT / "config" / "stage3_v3_locked.yaml").read_text())["changes_vs_v2"]
-    P, cals, calm = walk_forward_market(d, v2["mean_feats"], v2["var_feats"], v2["kind"], v2["shape"],
-                                        v2["alpha"], seasons=sorted(d.season.unique()),
-                                        min_games=v2["min_games"], train_decay=v3["train_decay"],
-                                        calib_decay=v3["calib_decay"])
+    spec = dict(v2, train_decay=v3["train_decay"], calib_decay=v3["calib_decay"])
+    P, cals, calm = cached_walk_forward(d, spec, sorted(d.season.unique()), fingerprint(u, box))
     books = d.set_index("game_key").books_json if "books_json" in d else None
     R, cards = evaluate(P, cals, calm, books, EVAL)
     lines = ["# Stage 3 — NCAAB 2021-26 re-analysis: odds-targeted cards at real prices\n",
