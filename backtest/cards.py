@@ -56,8 +56,10 @@ def ev_single(p, odds):
 
 def decide_slate(day: pd.DataFrame, sp: SelectionParams) -> SlateDecision:
     day = day[day.calibrated & day.eligible_data]
+    if "odds" not in day:
+        day = day.assign(odds=sp.odds)
     cand = day[(day.p_cal >= sp.individual_floor)
-               & (ev_single(day.p_cal, sp.odds) > 0)
+               & (ev_single(day.p_cal, day.odds) > 0)
                & (day.proj_total - day.line > sp.min_edge_points)]
     dec = SlateDecision(date=day.date.iloc[0] if len(day) else None, outcome="NO BET",
                         n_games=len(day), n_candidates=len(cand), n_pairs=0, n_qualifying_pairs=0)
@@ -76,7 +78,7 @@ def decide_slate(day: pd.DataFrame, sp: SelectionParams) -> SlateDecision:
     for (_, a), (_, b) in combinations(cand.iterrows(), 2):
         jcal = float(joint_probability(a.p_cal, b.p_cal, sp.rho_hat))
         jcons = float(joint_probability(a.p_cons, b.p_cons, sp.rho_lo))
-        ev_dbl = jcal * sp.odds ** 2 - 1.0
+        ev_dbl = jcal * a.odds * b.odds - 1.0
         pairs.append((a, b, jcal, jcons, ev_dbl))
     dec.n_pairs = len(pairs)
     qual = [p for p in pairs if p[3] >= sp.joint_target]
@@ -88,7 +90,7 @@ def decide_slate(day: pd.DataFrame, sp: SelectionParams) -> SlateDecision:
         dec.joint_cal, dec.joint_cons = jcal, jcons
         dec.joint_indep = float(a.p_cal * b.p_cal)
         return dec
-    singles = cand[(cand.p_cons >= sp.single_cons_min) & (ev_single(cand.p_cons, sp.odds) > 0)]
+    singles = cand[(cand.p_cons >= sp.single_cons_min) & (ev_single(cand.p_cons, cand.odds) > 0)]
     if len(singles):
         dec.outcome = "ONE QUALIFYING PICK"
         dec.picks = [singles.loc[singles.p_cal.idxmax()]]

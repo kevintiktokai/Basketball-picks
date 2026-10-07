@@ -1,0 +1,208 @@
+{
+  "experiment": "holdout",
+  "timestamp_utc": "20261007T185738Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "d8e60c3",
+  "params": {
+    "lock": {
+      "locked_at_revision": "43e1e7e",
+      "rule": "best calibrated log loss among models with positive gain CI; prefer score-only within 1 SE",
+      "model": {
+        "feature_set": "S_scores_full",
+        "learner": "ridge",
+        "dist": "normal",
+        "calib": "platt"
+      },
+      "selection": {
+        "joint_target": 0.6,
+        "individual_floor": 0.6,
+        "single_cons_min": 0.5238,
+        "min_edge_points": 0.0,
+        "conservative_quantile": 0.05
+      },
+      "edge_significant_in_development": true,
+      "dependence_dev": {
+        "z_corr": 0.0019941504621617907,
+        "z_corr_ci": [
+          -0.006318117571319857,
+          0.011924670043954833
+        ]
+      }
+    }
+  },
+  "params_hash": "b8670dd63644",
+  "results": {
+    "stages": {
+      "DISCOVERY": {
+        "slates": 1200,
+        "pct_two_pick": 0.0,
+        "pct_one_pick": 0.0,
+        "pct_no_bet": 1.0,
+        "two_pick_cards": 0
+      },
+      "VALIDATION": {
+        "slates": 809,
+        "pct_two_pick": 0.0,
+        "pct_one_pick": 0.0,
+        "pct_no_bet": 1.0,
+        "two_pick_cards": 0
+      },
+      "FINAL HOLDOUT": {
+        "slates": 596,
+        "pct_two_pick": 0.0,
+        "pct_one_pick": 0.0,
+        "pct_no_bet": 1.0,
+        "two_pick_cards": 0
+      },
+      "LIVE-SIMULATED": {
+        "slates": 291,
+        "pct_two_pick": 0.0,
+        "pct_one_pick": 0.0,
+        "pct_no_bet": 1.0,
+        "two_pick_cards": 0
+      }
+    },
+    "dependence_holdout": {
+      "n_pairs": 13119,
+      "n_dates": 523,
+      "over_corr": 0.007148559009128688,
+      "over_corr_ci": [
+        -0.010675922108391701,
+        0.02911837252171442
+      ],
+      "z_corr": 0.0022334807106478886,
+      "z_corr_ci": [
+        -0.014224503473335495,
+        0.01851913648498037
+      ],
+      "joint_minus_product": 0.0017863534083081278,
+      "jmp_ci": [
+        -0.0026669408972700938,
+        0.007276788579557948
+      ],
+      "joint_over_rate": 0.2621388825367787
+    },
+    "forced_diag": [
+      {
+        "min_p": 0.0,
+        "stage": "FINAL HOLDOUT",
+        "cards": 524,
+        "rate_2of2": 0.2767175572519084,
+        "ci95": [
+          0.24014201937081597,
+          0.31654316800357823
+        ],
+        "avg_joint_cal": 0.26683510509131836,
+        "roi_double": 0.026652185114503887
+      },
+      {
+        "min_p": 0.0,
+        "stage": "LIVE-SIMULATED",
+        "cards": 240,
+        "rate_2of2": 0.20833333333333334,
+        "ci95": [
+          0.1617472310188658,
+          0.26410955469776337
+        ],
+        "avg_joint_cal": 0.2606053642280871,
+        "roi_double": -0.20895812499999997
+      },
+      {
+        "min_p": 0.5,
+        "stage": "FINAL HOLDOUT",
+        "cards": 379,
+        "rate_2of2": 0.2796833773087071,
+        "ci95": [
+          0.23687823310001158,
+          0.3269100281547737
+        ],
+        "avg_joint_cal": 0.2762636440520493,
+        "roi_double": 0.03939257519788926
+      },
+      {
+        "min_p": 0.5,
+        "stage": "LIVE-SIMULATED",
+        "cards": 165,
+        "rate_2of2": 0.19393939393939394,
+        "ci95": [
+          0.14085852644916655,
+          0.2609476634945439
+        ],
+        "avg_joint_cal": 0.2671621876035984,
+        "roi_double": -0.2585212606060605
+      },
+      {
+        "min_p": 0.52,
+        "stage": "FINAL HOLDOUT",
+        "cards": 155,
+        "rate_2of2": 0.3032258064516129,
+        "ci95": [
+          0.2363435226543088,
+          0.379626097394847
+        ],
+        "avg_joint_cal": 0.29161572418753745,
+        "roi_double": 0.1419884322580646
+      },
+      {
+        "min_p": 0.52,
+        "stage": "LIVE-SIMULATED",
+        "cards": 36,
+        "rate_2of2": 0.1111111111111111,
+        "ci95": [
+          0.04406568908741834,
+          0.2531512901503632
+        ],
+        "avg_joint_cal": 0.2804771213477013,
+        "roi_double": -0.4890243333333333
+      },
+      {
+        "min_p": 0.54,
+        "stage": "FINAL HOLDOUT",
+        "cards": 46,
+        "rate_2of2": 0.3695652173913043,
+        "ci95": [
+          0.24523559514309495,
+          0.5140016685081521
+        ],
+        "avg_joint_cal": 0.30924371775172615,
+        "roi_double": 0.34679950000000004
+      },
+      {
+        "min_p": 0.54,
+        "stage": "LIVE-SIMULATED",
+        "cards": 2,
+        "rate_2of2": 0.0,
+        "ci95": [
+          0.0,
+          0.6576280471103807
+        ],
+        "avg_joint_cal": 0.30597401014124165,
+        "roi_double": -1.0
+      },
+      {
+        "min_p": 0.56,
+        "stage": "FINAL HOLDOUT",
+        "cards": 8,
+        "rate_2of2": 0.625,
+        "ci95": [
+          0.30573785458380187,
+          0.863158240538479
+        ],
+        "avg_joint_cal": 0.3278242929178323,
+        "roi_double": 1.277675625
+      },
+      {
+        "min_p": 0.56,
+        "stage": "LIVE-SIMULATED",
+        "cards": 0,
+        "rate_2of2": NaN,
+        "ci95": [
+          NaN,
+          NaN
+        ],
+        "avg_joint_cal": NaN,
+        "roi_double": NaN
+      }
+    ]
+  }
+}
