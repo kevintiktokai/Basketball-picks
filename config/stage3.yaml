@@ -1,0 +1,48 @@
+# ============================================================================
+# STAGE 3 — ODDS-TARGETED TWO-PICK CARDS (combined odds >= 2.5)
+# Pre-registered BEFORE any NBA opening-odds data was downloaded and before any
+# odds-targeted card was evaluated.
+#
+# Arithmetic that frames the goal: a double at combined odds O breaks even when
+# both legs win 1/O of the time (O = 2.5 -> 40%). A 60% hit rate at 2.5 would be a
+# +50% return per card; the realistic target is a hit rate CLEARLY ABOVE 1/O, i.e.
+# positive expected value with statistical confidence, at real prices.
+# ============================================================================
+
+card_rule:
+  legs: 2                        # different games, same slate (date)
+  min_combined_odds: 2.5         # offered decimal odds, product of the two legs
+  objective: "maximise CONSERVATIVE EV = p_cons_A * p_cons_B * odds_A * odds_B - 1"
+  release_only_if: "conservative EV > 0"   # no forced cards
+  leg_types:
+    main_line: "best book's opening number for the chosen side, at that book's REAL price"
+    alternate_line: "buffers -6..+15 pts from the main line; price = (1 - margin) / p_market(line)"
+  alt_margin_scenarios: [0.045, 0.08]
+  variants:
+    main_line_only: "real prices only (no modelled prices) — the primary money result"
+    mixed: "main and alternate legs"
+    user_band: "each leg 1.45-1.80, combined 2.50-3.00 (legs like 1.62 x 1.57)"
+  report: [cards, 2/2 rate, mean combined odds, ROI per 1-unit card with date-bootstrap CI,
+           max drawdown, longest losing run, by odds band]
+
+nba:
+  odds_source: "sportsbookreview.com, nba-basketball, totals + point spread, open & latest per book"
+  seasons_scraped: ["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"]
+  date_range_each_season: ["10-15", "06-25"]
+  development: ["2021-22", "2022-23"]       # opener-model and card-policy development
+  test: ["2023-24", "2024-25", "2025-26"]   # pristine at the opener; evaluated ONCE
+  history_for_ratings: "kyleskom scores 2007-08..2020-21 (+ SBR live scores 2021-26)"
+  disclosure: >
+    The 2021-26 NBA GAMES were already seen by the stage-1 Over-only model at CLOSING
+    lines (aggregate results only). Opening lines, real prices and odds-targeted cards
+    on these seasons have never been evaluated.
+
+ncaab:
+  reanalysis: ["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"]
+  disclosure: >
+    These seasons were the stage-2b test (buffered cards + main-line singles). Any
+    odds-targeted result on them is a RE-ANALYSIS of used data, not a new test.
+  forward_test: "2026-27 season via scripts/predict_cards.py --record and grade_ledger.py"
+
+europe:
+  status: "planning only in stage 3 — engine kept league-agnostic"
