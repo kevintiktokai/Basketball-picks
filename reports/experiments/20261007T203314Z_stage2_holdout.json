@@ -1,0 +1,140 @@
+{
+  "experiment": "stage2_holdout",
+  "timestamp_utc": "20261007T203314Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "16db918",
+  "params": {
+    "lock": {
+      "league": "NCAAB",
+      "market": "open",
+      "model": {
+        "iteration": "it10_open_style",
+        "mean_feats": [
+          "x_pts",
+          "x_eff",
+          "early",
+          "log_games",
+          "abs_spread",
+          "neutral_i",
+          "line_rel",
+          "x_poss",
+          "vol_sum",
+          "mkt_bias_sum",
+          "open_bias_sum",
+          "move_hist_sum",
+          "rest_min",
+          "weekend",
+          "march",
+          "log_slate",
+          "lg_drift",
+          "m_efg",
+          "m_tpar",
+          "m_ftr",
+          "m_orb",
+          "m_tovr",
+          "m_pace"
+        ],
+        "var_feats": [
+          "line_rel",
+          "x_poss",
+          "vol_sum",
+          "abs_spread",
+          "early",
+          "log_games",
+          "neutral_i",
+          "log_slate",
+          "m_tpar",
+          "m_pace",
+          "m_ftr"
+        ],
+        "kind": "ridge",
+        "shape": "normal",
+        "alpha": 50.0,
+        "ratings": {
+          "half_life_days": 45,
+          "prev_season_weight": 0.15,
+          "ridge": 3.0
+        },
+        "min_games": 3
+      },
+      "calibration": {
+        "method": "latent_edge_aware_logistic",
+        "conservative": "one-sided 95% (date-clustered sandwich covariance)"
+      },
+      "card_policy": {
+        "construction": "buffered_line",
+        "joint_target": 0.625,
+        "max_buffer_points": 15,
+        "top_legs": 14,
+        "rho_lo": 0.0,
+        "one_pick_rule": "if no feasible pair: release the best leg with conservative P >= 0.79, else NO BET"
+      },
+      "pricing_scenarios": {
+        "margins": [
+          0.0455,
+          0.08
+        ],
+        "price_reference": [
+          "open",
+          "close"
+        ]
+      },
+      "development_result": {
+        "pooled_2of2": 0.657,
+        "pooled_ci95": [
+          0.625,
+          0.688
+        ],
+        "validation_2of2": 0.658,
+        "validation_ci95": [
+          0.609,
+          0.704
+        ]
+      },
+      "locked_at_revision": "752af4b"
+    }
+  },
+  "params_hash": "a4af39c49477",
+  "results": {
+    "holdout": {
+      "slates": 363,
+      "cards": 363,
+      "pct_slates_with_card": 1.0,
+      "rate_2of2": 0.6088154269972452,
+      "ci95": [
+        0.5577226808131048,
+        0.657629122253941
+      ],
+      "avg_joint_model": 0.6351912544445968,
+      "avg_joint_cons": 0.626275423594399,
+      "avg_joint_mkt": 0.5266258251127596,
+      "avg_buffer": 10.351928374655648,
+      "avg_double_odds": 1.7358796853027152,
+      "roi_double": 0.059510194632718894,
+      "avg_model_ev": 0.10285614823507672,
+      "roi_double_close_priced": -0.06891479113307016,
+      "leg_win_rate": 0.7865013774104683,
+      "avg_leg_p": 0.7980903557325043
+    },
+    "development": {
+      "slates": 870,
+      "cards": 870,
+      "pct_slates_with_card": 1.0,
+      "rate_2of2": 0.6574712643678161,
+      "ci95": [
+        0.6253064531240589,
+        0.6882515189386125
+      ],
+      "avg_joint_model": 0.6384042808139171,
+      "avg_joint_cons": 0.626325688317674,
+      "avg_joint_mkt": 0.5363381179206789,
+      "avg_buffer": 10.710632183908046,
+      "avg_double_odds": 1.70448224524942,
+      "roi_double": 0.12320575175555659,
+      "avg_model_ev": 0.08841540367078182,
+      "roi_double_close_priced": 0.031375392519634976,
+      "leg_win_rate": 0.8114942528735632,
+      "avg_leg_p": 0.800093413899666
+    }
+  }
+}

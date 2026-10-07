@@ -1,0 +1,55 @@
+# ============================================================================
+# STAGE 2b — SECOND INDEPENDENT TEST (pre-registered BEFORE any data download
+# of the test odds and before any evaluation).
+#
+# The stage-2 engine was locked in config/stage2_locked.yaml (commit 16db918) and
+# evaluated once on NCAAB 2018-19..2020-21 (60.9% 2/2, 363 cards). Stage 2b runs
+# the SAME locked engine — no feature, parameter or policy changes — on five NEW
+# seasons whose odds come from a different source (sportsbookreview.com, multiple
+# US books, opening and closing totals with real prices).
+# ============================================================================
+
+test_seasons: ["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"]
+odds_source:
+  site: "https://www.sportsbookreview.com"
+  endpoints: ["betting-odds/ncaa-basketball/totals/full-game", "betting-odds/ncaa-basketball (point spread)"]
+  date_range_each_season: ["11-01", "04-10"]
+  politeness: "<= 1 request per second"
+definitions:
+  open_line: "median of the opening totals of all books that posted one (primary)"
+  close_line: "median of the latest (closing) totals"
+  spread: "median opening home spread (sign: + = home favoured)"
+  line_shopping_variant: "best available opening total for the chosen side (secondary, labelled)"
+  neutral_site: "hoopR / ESPN schedule flag"
+engine: "config/stage2_locked.yaml, unchanged; walk-forward refit each season on all prior seasons"
+team_keys: "ESPN team ids (matched by date + final score), so archive and new seasons share identities"
+report_primary: "two-pick buffered card 2/2 rate per season and pooled, 95% CI; EV scenarios as in stage 2"
+report_secondary: "main-line two-sided picks at REAL opening prices (best book and median book)"
+box_source:
+  repo: sportsdataverse/hoopR-mbb-data
+  commit: 6feca9bf51d2db88310bc4ca0f9cff5102a414a5
+  files:
+    team_box_2022.parquet: ef9d10c074d96174fc3bea2040d2552fb89b3caa05c96589497bf5359667c081
+    team_box_2023.parquet: 2d309dfc157bd26e1c21345aa587b1b85a5ad4defdabb343b06ab5a755b672c5
+    team_box_2024.parquet: fe717d6180768b25718d3e2ae42bab9e0b90820375ec0e51b26e7f1041faf985
+    team_box_2025.parquet: d98568f8db4cbcde7c10581380e31bc60e85c2ef6bf60206f6803879b07db992
+    team_box_2026.parquet: db58650c1a9b2a1b6c8735507b8e922580ea514bb9f2ccbc1d91ae6588a27f42
+    mbb_schedule_2008.parquet: df6f16cb223c35bdca08b82e2909e2d90169c14e865486da95ddb75944f53fb8
+    mbb_schedule_2009.parquet: 1df3d4f873c6e8aa7e0220744e993faa5a9cbfc040fa1f1a9867489fbc4cb4ff
+    mbb_schedule_2010.parquet: b94bbb75f722ee5746349092687bf88506bdf86f26b54b2e723ac656db9054a3
+    mbb_schedule_2011.parquet: 862bdc51dca2fe6a888d4011ba07c7b6786ea41f7d45147d9879f31c4299c0bf
+    mbb_schedule_2012.parquet: 2ff9fd72d7e46f2944b4480cd81c69ccfb04cf28ea9e5d5ec0a0d06c98fafaf1
+    mbb_schedule_2013.parquet: c72a83a372e2af2b7234a691f00b326e39890d0f5fff1e565bb16dbb2496c1f5
+    mbb_schedule_2014.parquet: 5c160ead73a474cbbff862d257c03722f23b7f46c80dbae61f2633cd334a6a7b
+    mbb_schedule_2015.parquet: 3bf4a1e3092060795eab59ff148dbd2c408c8443b67d70cfab63eab9ee84e7c9
+    mbb_schedule_2016.parquet: a49d69b2a9319b7fe76828d506cba6dd4a1858c3e48d6f875d7e1f60acaecae9
+    mbb_schedule_2017.parquet: ac3506accee930a266d8e7fc88245e0bb74a2e990f7888eed8820b8181801cb5
+    mbb_schedule_2018.parquet: 4cbe0890ee49772f2f377906056ecf6a7fc525e305cb080726728502a306354d
+    mbb_schedule_2019.parquet: b43be17667a181b17cdb379db24cd34972e3f9756286588da11fc2e7e1c0f6c1
+    mbb_schedule_2020.parquet: 61ce9b7c672d05dbb350549d50b63917c60cc17299f675ee6d04628b849469d9
+    mbb_schedule_2021.parquet: 807360e5e00ae922123ec959d87da7361e52a42cb488e5e639a74eb3ba87878d
+    mbb_schedule_2022.parquet: dbb6ca0c799e19b68764626922cc31e9d0b85b39f7d18e2bca7256c9f51a9392
+    mbb_schedule_2023.parquet: 7a5f4cdb759260e4c955507e1db9c0def240ac45a9ec42d34d96f3e98c48e2c9
+    mbb_schedule_2024.parquet: 2add753178e2a4ccbcd525ed9caf86fca42dbbcbae059192e344184365a564e8
+    mbb_schedule_2025.parquet: a93af86e371abf74a66ae9040d4c96a000a637a934c369da0b6a03c246ec037d
+    mbb_schedule_2026.parquet: 480896940f9502e537513386efa1ece6ed9cac0bcd8bd30f3493aa6254912aec
