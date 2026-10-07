@@ -25,15 +25,30 @@ import yaml
 
 from config_loader import ROOT
 
-RAW = ROOT / "data" / "raw" / "sbr_live" / "ncaab"
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
       "Chrome/124 Safari/537.36")
-PATHS = {
-    "totals": "betting-odds/ncaa-basketball/totals/full-game.json?league=ncaa-basketball"
-              "&oddsType=totals&oddsScope=full-game&date={d}",
-    "spread": "betting-odds/ncaa-basketball/pointspread/full-game.json?league=ncaa-basketball"
-              "&oddsType=spread&oddsScope=full-game&date={d}",
+LEAGUES = {
+    "ncaab": {"slug": "ncaa-basketball", "start": "11-01", "end": "04-10", "out": "ncaab_live_raw.parquet"},
+    "nba": {"slug": "nba-basketball", "start": "10-15", "end": "06-25", "out": "nba_live_raw.parquet"},
 }
+
+
+def raw_dir(league: str = "ncaab"):
+    return ROOT / "data" / "raw" / "sbr_live" / league
+
+
+def paths(league: str = "ncaab") -> dict:
+    sl = LEAGUES[league]["slug"]
+    return {
+        "totals": f"betting-odds/{sl}/totals/full-game.json?league={sl}"
+                  "&oddsType=totals&oddsScope=full-game&date={d}",
+        "spread": f"betting-odds/{sl}/pointspread/full-game.json?league={sl}"
+                  "&oddsType=spread&oddsScope=full-game&date={d}",
+    }
+
+
+RAW = raw_dir("ncaab")            # backwards-compatible defaults (NCAAB)
+PATHS = paths("ncaab")
 
 
 def _get(url: str) -> bytes:
@@ -47,7 +62,9 @@ def build_id() -> str:
     return re.search(r'"buildId":"([^"]+)"', html).group(1)
 
 
-def season_dates(season: str, start="11-01", end="04-10"):
+def season_dates(season: str, start="11-01", end="04-10", league: str | None = None):
+    if league is not None:
+        start, end = LEAGUES[league]["start"], LEAGUES[league]["end"]
     y0 = int(season[:4])
     d = date.fromisoformat(f"{y0}-{start}")
     stop = date.fromisoformat(f"{y0 + 1}-{end}")
@@ -56,12 +73,13 @@ def season_dates(season: str, start="11-01", end="04-10"):
         d += timedelta(days=1)
 
 
-def fetch(seasons) -> None:
+def fetch(seasons, league: str = "ncaab") -> None:
     bid = build_id()
+    raw, pth = raw_dir(league), paths(league)
     for season in seasons:
-        for d in season_dates(season):
-            for market, tmpl in PATHS.items():
-                out = RAW / market / f"{d.isoformat()}.json"
+        for d in season_dates(season, league=league):
+            for market, tmpl in pth.items():
+                out = raw / market / f"{d.isoformat()}.json"
                 if out.exists():
                     continue
                 out.parent.mkdir(parents=True, exist_ok=True)
@@ -80,9 +98,9 @@ def fetch(seasons) -> None:
                         time.sleep(2 ** attempt)
                 time.sleep(1.0)
         print(f"fetched {season}", flush=True)
-    manifest = {str(p.relative_to(RAW)): hashlib.sha256(p.read_bytes()).hexdigest()
-                for p in sorted(RAW.rglob("*.json"))}
-    (RAW / "MANIFEST.json").write_text(json.dumps(manifest, indent=0))
+    manifest = {str(p.relative_to(raw)): hashlib.sha256(p.read_bytes()).hexdigest()
+                for p in sorted(raw.rglob("*.json")) if p.name != "MANIFEST.json"}
+    (raw / "MANIFEST.json").write_text(json.dumps(manifest, indent=0))
 
 
 # ------------------------------------------------------------------ parse
@@ -99,9 +117,10 @@ def _season_of(d: pd.Timestamp) -> str:
     return f"{y}-{str(y + 1)[2:]}"
 
 
-def parse() -> pd.DataFrame:
+def parse(league: str = "ncaab") -> pd.DataFrame:
+    raw = raw_dir(league)
     recs = {}
-    for p in sorted((RAW / "totals").glob("*.json")):
+    for p in sorted((raw / "totals").glob("*.json")):
         for r in _rows(p):
             gv = r["gameView"]
             gid = gv["gameId"]
@@ -124,7 +143,7 @@ def parse() -> pd.DataFrame:
                 "venue": gv.get("venueName"), "city": gv.get("city"), "state": gv.get("state"),
                 "over_pick_pct": cons.get("overPickPercent"), "books_totals": books,
             }
-    for p in sorted((RAW / "spread").glob("*.json")):
+    for p in sorted((raw / "spread").glob("*.json")):
         for r in _rows(p):
             gid = r["gameView"]["gameId"]
             if gid not in recs:
@@ -159,17 +178,21 @@ def parse() -> pd.DataFrame:
     df["date"] = pd.to_datetime(df.start.dt.tz_convert("America/New_York").dt.date)
     df["season"] = df.date.map(_season_of)
     df = df.drop_duplicates("sbr_game_id")
-    out = ROOT / "data" / "processed" / "ncaab_live_raw.parquet"
+    out = ROOT / "data" / "processed" / LEAGUES[league]["out"]
     df.to_parquet(out, index=False)
     return df
 
 
 if __name__ == "__main__":
-    cfg = yaml.safe_load((ROOT / "config" / "stage2b.yaml").read_text())
-    if sys.argv[1] == "fetch":
-        fetch(cfg["test_seasons"])
+    league = sys.argv[2] if len(sys.argv) > 2 else "ncaab"
+    if league == "nba":
+        seasons = yaml.safe_load((ROOT / "config" / "stage3.yaml").read_text())["nba"]["seasons_scraped"]
     else:
-        d = parse()
+        seasons = yaml.safe_load((ROOT / "config" / "stage2b.yaml").read_text())["test_seasons"]
+    if sys.argv[1] == "fetch":
+        fetch(seasons, league)
+    else:
+        d = parse(league)
         print(d.groupby("season").agg(games=("sbr_game_id", "size"),
                                       final=("status", lambda s: s.fillna("").str.startswith("Final").sum()),
                                       with_open=("line_open", lambda s: s.notna().sum())))

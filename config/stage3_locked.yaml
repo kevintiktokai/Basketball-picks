@@ -1,0 +1,22 @@
+# LOCKED stage-3 odds-card policy — committed BEFORE the NCAAB 2021-26 re-analysis and
+# BEFORE the NBA 2023-26 test are evaluated. Developed on NCAAB 2011-21 only
+# (reports/stage3_ncaab_dev_variants.csv, reports/stage3_ncaab_dev_joint.csv).
+engine: v3                       # stage2_locked model + train/calib recency decay 0.6
+products:
+  target_card:                   # "two legs ~1.6, combined >= 2.5, highest chance of winning"
+    objective: joint             # maximise conservative P(both legs win)
+    min_combined_odds: 2.5
+    leg_odds_band: [1.40, 1.90]
+    release_gate: "conservative EV > 0"
+    alt_price_margin: 0.045      # primary; 0.08 reported as sensitivity
+    alt_price_reference: open    # primary; 'close' reported as stress test
+    alt_ladder: median           # primary; 'best_book' (line shopping) reported as variant
+  main_line_double:              # no modelled prices at all
+    objective: ev
+    legs: "best book's opening number at its REAL price"
+    min_combined_odds: 2.5
+    release_gate: "conservative EV > 0"
+dev_results_ncaab_2018_21:
+  target_card: {cards: 363, hit: 0.463, avg_odds: 2.548, roi: 0.167, roi_ci95: [0.039, 0.298]}
+  target_card_close_priced: {roi: -0.027}
+locked_at_revision: 0c1130d
