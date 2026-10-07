@@ -1,5 +1,7 @@
 # OVER ENGINE — Research summary (stage 1)
 
+> **Update — stage 2:** allowing Over *or* Under, moving to NCAA basketball opening lines and buffered (alternate) lines produced two-pick cards that hit **63.9% 2/2 over 664 never-seen cards (2021-26, 95% CI 60.1–67.4%)**. See [`STAGE2_SUMMARY.md`](STAGE2_SUMMARY.md). The stage-1 conclusion below (NBA, Overs, main line) still stands.
+
 **Bottom line: the available evidence does not support a 60% two-pick success
 rate. It does not come close.** In 2,896 historical slates across discovery,
 validation, final holdout and live-simulated testing, the engine released

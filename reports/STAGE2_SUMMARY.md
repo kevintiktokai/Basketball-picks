@@ -1,66 +1,110 @@
-# Stage 2 — Over AND Under, NCAA basketball, buffered two-pick cards
+# Stage 2 — two-pick cards that hit 60%+: Over AND Under, NCAA basketball, buffered lines
 
-**Status: DRAFT — the stage-2b independent-test section is filled in after its one-time run.**
+## Bottom line
 
-## The question
+**Yes, with one condition.** A two-pick card can hit 2/2 more than 60% of the time on
+seasons the engine never saw: **63.9% over 664 cards (95% CI 60.1–67.4%)** on NCAA
+basketball 2021-22 to 2025-26. That is the pre-registered primary engine, locked before
+those seasons' odds were downloaded. The condition is that the 60% is reached by
+**buying points**: each leg is an *alternate* total about 10.5 points better than the
+opening number, so each leg wins ~80% and the double pays only ~1.6–1.7. Profit then
+depends on the price you get for those alternate lines (see "Money" below).
 
-Can a two-pick card (both legs must win) hit **≥ 60%** out of sample, now that the
-engine may pick **Over or Under**, any basketball market, and any line?
+At the bookmaker's **main** line no version of the engine gets near 60%: the best
+top-two-per-night card wins 2/2 about 35% of the time.
 
-## Why stage 1 could not
+## Out-of-sample record (each test run exactly once, engine locked beforehand)
 
-Two independent legs need ≈ 77.5% each for a 60% joint result. At the bookmaker's
-main line the best model never exceeds ~60–65% per leg (NBA close: 61%; NCAAB open:
-~70% at the very top). Same-night games are independent (|corr| < 0.01 in both
-leagues), so correlation cannot rescue the product.
+| test | engine | cards | 2/2 | 2/2 rate | 95% CI | leg win (predicted) |
+|---|---|---|---|---|---|---|
+| Holdout, NCAAB 2018-21 (SBR archive odds) | v2 | 363 | 221 | **60.9%** | 55.8–65.8% | 78.7% (79.8%) |
+| Independent test, NCAAB 2021-26 (6 US books) | **v2, primary** | 664 | 424 | **63.9%** | **60.1–67.4%** | 79.6% (79.6%) |
+| Independent test, NCAAB 2021-26 | v3, secondary | 664 | 428 | 64.5% | 60.7–68.0% | 80.4% (81.4%) |
+| v2, both tests combined | v2 | 1,027 | 645 | 62.8% | 59.8–65.7% | |
 
-## What changed in stage 2
+Per season (v2, 2021-26): 57.7% · 72.7% · 62.5% · 61.2% · 65.4%. One season in five fell below
+60%, so expect losing stretches. The longest run of non-2/2 cards in the 2018-21 holdout was 6.
 
-| lever | what it does | effect |
-|---|---|---|
-| **NCAA data** (SBR archive 2007-21 + ESPN box scores) | 57k games, 14 seasons, opening AND closing totals, half-time lines | softer market, 50–100 games per night |
-| **Opening line** as the bet | bet before the market sharpens | log-loss gain vs market 27–59×10⁻⁴ (NBA close: ~9) |
-| **Tempo-free ratings + style matchups** | date-by-date ridge ratings (points, efficiency, tempo) + 3P/FT/ORB/TOV matchups | biggest model gains |
-| **Over or Under** | both sides screened | ~2× the candidate pool |
-| **Variance model + edge-aware calibration** | per-game SD; P(win) for ANY line, conservative bound by clustered sandwich | honest probabilities at alternate lines |
-| **Buffered (alternate-line) cards** | each leg's line moved in the bettor's favour until the conservative joint ≥ target | makes 60% reachable — hit rate is bought with price |
+**Line shopping** (same legs, each leg's alternate line taken from the book with the best
+opener): v2 **65.5%** (CI 61.8–69.0%), v3 **66.9%** (CI 63.2–70.3%).
 
-## Iterations (development seasons only; full log in `ITERATIONS.md`)
+Other checks on the 2021-26 test:
 
-| step | market | change | dev 2/2 (validation) |
+* **The two legs win independently** (outcome correlation +0.04), so the 2/2 rate is
+  close to the product of the leg rates.
+* **The market moved toward the pick** between open and close on 75% of legs (+1.6 points
+  on average). This is closing-line value: sharper money later agreed with the engine.
+* **The engine bets both sides:** both-Under cards won 72.6%, both-Over 65.2%, mixed 56.4%.
+
+## Money: what a hit rate does not tell you
+
+The 60% card is not free. A leg at ~80% is priced around 1.25 (−400). A 1-unit double
+pays ~1.65, so the break-even 2/2 rate is about 60%. No historical alternate-line prices
+exist, so ROI is reported under explicit pricing scenarios. Each scenario takes the
+market's own (no-model) probability at that alternate line and subtracts a margin per leg.
+
+| pricing scenario | 2018-21 v2 | 2021-26 v2 | 2021-26 v3 |
 |---|---|---|---|
-| it01 | NCAAB open | base ratings | 57.2% |
-| it02–04 | open | + market-memory features, variance model | 62.4–62.7% (later found to include a small leak) |
-| fix | open | tempo centring leak removed | 59.5% |
-| it10 (locked as v2) | open | + box-score style matchups | 64.0% |
-| it07 | close | same model at the close | 60.6% but EV < 0 (no edge) |
-| it08 | 2nd half | half-time market | 58.7%, no edge |
-| v3 | open | recency-weighted model + calibration, J = 0.65 | 66.0% on 2018-21 |
+| alternates priced off the **opening** line, 4.5% margin | +6.0% | **+7.4%** | +3.6% |
+| alternates priced off the **closing** line, 4.5% margin | −6.9% | −0.9% | −3.1% |
+| opening line, 8% margin | −1.6% | n/a | n/a |
 
-## Out-of-sample results
+The edge lives at the **opening number**. The engine reads stale openers, and by the close
+the market has mostly caught up. To profit you need alternate lines (or bought points)
+near the opener, at a fair margin. Shopping across books helps. The CLI prints the
+break-even double odds for every card; do not bet below them.
 
-| test | engine | cards | 2/2 | 95% CI |
+### A second, simpler product: single bets at the main line, real prices
+
+On the 2021-26 test, using the books' actual opening prices:
+
+| engine's two-sided P at the opener | bets | win | ROI at median-book price | ROI at best-book line+price |
 |---|---|---|---|---|
-| Stage-2 holdout NCAAB 2018-21 (run once) | v2 | 363 | **60.9%** | 55.8–65.8% |
-| Stage-2b independent test NCAAB 2021-26 | v2 (primary) | _pending_ | _pending_ | _pending_ |
-| Stage-2b independent test NCAAB 2021-26 | v3 (secondary) | _pending_ | _pending_ | _pending_ |
+| 55–60% (v2) | 3,526 | 56.9% | **+8.5%** | **+10.5%** |
+| 60%+ (v2) | 80 | 55.0% | +4.9% | +9.9% |
+| 55–60% (v3) | 3,268 | 56.6% | +8.1% | +10.0% |
+| 60%+ (v3) | 223 | 58.7% | +12.1% | +12.9% |
 
-## Money: the part a hit rate does not tell you
+The 55–60% bucket clears the −110 break-even (52.4%) with z ≈ 5.4 over 3,526 bets.
+This is the cleanest evidence that the engine has a real edge at NCAAB openers. Caveat:
+limits on opening lines are low.
 
-A buffered leg at ~80% pays roughly 1.25 (−400). The card's double pays ~1.6–1.7.
-Break-even 2/2 rate ≈ 1 / double odds ≈ 58–62%. Whether a card makes money depends on:
+## How we got here (development only; every configuration is logged in `ITERATIONS.md`)
 
-1. **Price timing.** The model's edge exists at the OPENING number. Alternate lines priced
-   off the opener at a 4.5% margin: positive ROI in every test so far. Priced off the
-   CLOSING number: about break-even to −7%.
-2. **The book's alternate-line margin.** At 8% per leg the edge is mostly consumed.
-3. **Line shopping.** Taking each leg at the best book's opener adds free buffer.
+| step | what changed | result |
+|---|---|---|
+| Stage 1 | NBA, Over only, closing line | 0 cards; top-2 card 2/2 ≈ 24–28% |
+| it01 | NCAAB opening line, Over **or** Under, ratings | log-loss gain 27×10⁻⁴; buffered cards 57–60% |
+| it02–03 | market-memory features, variance model | gain 47×10⁻⁴; cards 62–63% |
+| leak fix | tempo centring used future dates; fixed | validation fell to 59.5%, now honest |
+| it10 (**v2**) | box-score style matchups (3P, FT, ORB, TOV) | gain 59×10⁻⁴; validation 64.0% |
+| it07 / it08 | closing line / half-time line | hit rate buyable, but no edge, so EV < 0 |
+| policy | max 15-pt buffer; J = 0.625 (smallest target with a dev lower bound ≥ 60%) | dev 65.7% |
+| v3 | recency-weighted model and calibration, J = 0.65 | 2018-21 (dev for v3): 66.0% |
+| NBA | the same buffering on closing lines | 61–66% 2/2, but ROI ≈ −6%: no edge |
 
-The CLI therefore prints, for each leg, the model's fair odds and the minimum double
-odds at which the card is +EV. Only bet when the book's offer clears it.
+## Safeguards
 
-## NBA
+* Splits were pre-registered and committed before modelling (`config/stage2.yaml`,
+  `config/stage2b.yaml`). Engines were locked and committed before each test
+  (`config/stage2_locked.yaml`, `config/stage3_v3_locked.yaml`).
+* Leakage tests corrupt future results and lines and require earlier features to be
+  bit-identical, for all three markets (`tests/test_ncaab_leakage.py`).
+* Calibration is edge-aware, with a conservative bound from a date-clustered sandwich
+  covariance. Cards require the **conservative** joint probability to clear the target.
+* Bugs found along the way were fixed and disclosed: a leak in the tempo feature, a
+  pair-search masking bug, close-price coverage, and a reporting merge bug in the 2b
+  script. The 2b script crashed after printing the v2 table; it was re-run and the
+  deterministic v2 numbers reproduced exactly.
+* Disclosed note: three sample dates from the 2021-26 odds source were fetched only to
+  inspect the JSON format before the stage-2b pre-registration. No outcomes were analysed.
 
-Buffered NBA cards on closing lines also reach 60–66% 2/2 (1,683 development slates),
-but lose ~6% per card at a 4.5% margin: there is no information edge at the NBA close to
-pay for the buffer. Not recommended.
+## Limitations
+
+* **No historical alternate-line prices.** The hit rates are measured; the ROI figures are scenarios.
+* **Opening-line availability and limits:** openers move fast and limits are low; alternate
+  lines may not be posted at the opener everywhere.
+* **Variance:** single seasons ranged from 57.7% to 72.7%.
+* **Edge decay:** the model's information edge halved between the 2011-18 and 2018-21
+  periods. A forward test is the only remaining truth (`scripts/grade_ledger.py`).
+* No injury or lineup data. NBA is not supported for cards because it has no edge.

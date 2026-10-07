@@ -134,9 +134,13 @@ def main():
         print(f"\nDependence:\nsame-day games measured independent (|corr| < 0.01); product used")
         print(f"\nBreak-even DOUBLE odds:\n{1 / jm:.3f}  -> only bet the double at {1 / jm:.2f} or better")
         print(f"Break-even per leg (as singles):\nleg 1 {1 / c.p_a:.3f}, leg 2 {1 / c.p_b:.3f}")
-        print("\nTrack record of this exact engine (locked, out-of-sample):")
-        print("  development 2011-18: 572/870 cards 2/2 (65.7%)")
-        print("  holdout 2018-21:     221/363 cards 2/2 (60.9%, 95% CI 55.8-65.8%)")
+        print("\nTrack record (locked engines, never-seen seasons; see reports/STAGE2_SUMMARY.md):")
+        if a.engine == "v2":
+            print("  holdout 2018-21:          221/363 cards 2/2 (60.9%, 95% CI 55.8-65.8%)")
+            print("  independent test 2021-26: 424/664 cards 2/2 (63.9%, 95% CI 60.1-67.4%)")
+        else:
+            print("  independent test 2021-26: 428/664 cards 2/2 (64.5%, 95% CI 60.7-68.0%)")
+            print("  (v3 was developed on 2007-21, so 2021-26 is its only out-of-sample record)")
         print(f"\nFINAL:\nTAKE BOTH — ONLY IF your book offers these alternate lines at or above the break-even odds\n{BAR}")
         if a.record:
             rec = {"date": a.date, "engine": a.engine, "recorded_at": pd.Timestamp.utcnow().isoformat()}

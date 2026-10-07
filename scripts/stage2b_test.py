@@ -35,8 +35,10 @@ def h(s=""):
 
 
 def american_to_decimal(a):
-    a = pd.to_numeric(a, errors="coerce")
-    return np.where(a > 0, 1 + a / 100.0, 1 + 100.0 / np.abs(a))
+    """American -> decimal odds; malformed prices (|a| < 100, e.g. a 0 in the feed) -> NaN."""
+    a = np.asarray(pd.to_numeric(pd.Series(np.atleast_1d(a)), errors="coerce"), float)
+    out = np.where(a >= 100, 1 + a / 100.0, np.where(a <= -100, 1 + 100.0 / np.abs(a), np.nan))
+    return out if out.size > 1 else out[0]
 
 
 def best_open_for_side(books_json: str, side: int):
@@ -53,6 +55,8 @@ def best_open_for_side(books_json: str, side: int):
         if line is None or price is None:
             continue
         dec = float(american_to_decimal(price))
+        if np.isnan(dec):
+            continue
         key = (-line if side == 1 else line, dec)          # better line first, then better price
         if best is None or key > best[0]:
             best = (key, line, dec, name)
@@ -70,7 +74,9 @@ def median_open_price(books_json: str, side: int, line: float):
     ps = [b.get("open_over") if side == 1 else b.get("open_under") for b in books.values()
           if b.get("open") == line]
     ps = [p for p in ps if p is not None]
-    return float(np.median(american_to_decimal(ps))) if ps else np.nan
+    dec = np.atleast_1d(american_to_decimal(ps)) if ps else np.array([])
+    dec = dec[~np.isnan(dec)]
+    return float(np.median(dec)) if dec.size else np.nan
 
 
 def evaluate_engine(name, d, seasons, test_seasons, lock_model, policy, decays, F_extra):

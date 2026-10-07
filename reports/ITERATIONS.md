@@ -358,3 +358,13 @@ Main-line log-loss gain +8.8×10⁻⁴ (max two-sided P 58.6%). Buffered cards:
 Lesson: a 60%+ 2/2 rate can be *bought* in any market by moving lines ~13 points — but
 without an information edge (NBA closing line) every such card loses roughly the margin.
 The NCAAB opening line is where the edge that pays for the buffer exists.
+
+---
+## Stage 2b independent test (NCAAB 2021-22..2025-26, 6 US books, run once)
+| engine | cards | 2/2 | 95% CI | line-shopping 2/2 | ROI open-priced 4.5% | ROI close-priced 4.5% |
+|---|---|---|---|---|---|---|
+| v2 (primary) | 664 | **63.9%** | 60.1–67.4% | 65.5% | +7.4% | −0.9% |
+| v3 (secondary) | 664 | 64.5% | 60.7–68.0% | 66.9% | +3.6% | −3.1% |
+
+Main-line singles at REAL opening prices (v2, P 55–60%): 3,526 bets, 56.9% win, ROI +8.5%
+(median book) / +10.5% (best book). Full report: `stage2b_independent_test.md`.
