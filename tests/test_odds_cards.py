@@ -55,3 +55,14 @@ def test_card_respects_floor_and_gate():
     W = _toy_legs([0.55, 0.55, 0.50])
     assert odds_cards(W, floor=2.5, margin=0.045).empty
     assert len(odds_cards(W, floor=2.5, margin=0.045, force=True)) == 1
+
+
+def test_best_main_ignores_outlier_books():
+    books = json.dumps({"a": {"open": 166.5, "open_over": -110, "open_under": -110},
+                        "b": {"open": 166.0, "open_over": -110, "open_under": -110},
+                        "c": {"open": 167.0, "open_over": -110, "open_under": -110},
+                        "stale": {"open": 145.5, "open_over": -110, "open_under": -110}})
+    line, _, book = best_main(books, 1)
+    assert (line, book) == (166.0, "b")              # the 145.5 outlier is never "best"
+    line, _, book = best_main(books, 1, max_dev=None)
+    assert book == "stale"                          # (guard off reproduces the old behaviour)

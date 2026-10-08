@@ -41,16 +41,22 @@ def american_to_decimal(a):
     return out if out.size > 1 else out[0]
 
 
-def best_open_for_side(books_json: str, side: int):
+def best_open_for_side(books_json: str, side: int, max_dev: float = 3.0):
     """Best opening number and its price for a side across books: lowest total for an
-    Over, highest total for an Under. Returns (line, decimal_odds, book)."""
+    Over, highest total for an Under. Returns (line, decimal_odds, book).
+    Books whose opener is > max_dev points from the cross-book median are ignored
+    (data-quality guard added after the stage-2b run; see the erratum in the report)."""
     try:
         books = json.loads(books_json)
     except Exception:  # noqa: BLE001
         return np.nan, np.nan, None
+    opens = [b.get("open") for b in books.values() if b.get("open") is not None]
+    med = float(np.median(opens)) if opens else np.nan
     best = None
     for name, b in books.items():
         line = b.get("open")
+        if line is not None and max_dev is not None and abs(line - med) > max_dev:
+            continue
         price = b.get("open_over") if side == 1 else b.get("open_under")
         if line is None or price is None:
             continue

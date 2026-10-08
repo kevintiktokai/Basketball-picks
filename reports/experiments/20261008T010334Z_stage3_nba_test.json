@@ -1,0 +1,223 @@
+{
+  "experiment": "stage3_nba_test",
+  "timestamp_utc": "20261008T010334Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "1ebd0a9",
+  "params": {
+    "lock_nba": {
+      "comment": "LOCKED NBA opener engine \u2014 committed BEFORE the 2023-26 NBA test is evaluated (and before its seasons finished downloading). Chosen by the pre-stated rule (best pooled development log-loss gain at the real opener, 2021-23).",
+      "variant": "N3_no_style",
+      "model": {
+        "mean_feats": [
+          "x_pts",
+          "x_eff",
+          "early",
+          "log_games",
+          "abs_spread",
+          "neutral_i",
+          "line_rel",
+          "x_poss",
+          "vol_sum",
+          "mkt_bias_sum",
+          "open_bias_sum",
+          "move_hist_sum",
+          "rest_min",
+          "weekend",
+          "march",
+          "log_slate",
+          "lg_drift"
+        ],
+        "var_feats": [
+          "line_rel",
+          "x_poss",
+          "vol_sum",
+          "abs_spread",
+          "early",
+          "log_games",
+          "neutral_i",
+          "log_slate"
+        ],
+        "kind": "ridge",
+        "shape": "normal",
+        "alpha": 50.0,
+        "min_games": 3,
+        "train_decay": 0.6,
+        "calib_decay": 0.6
+      },
+      "dev_evidence": {
+        "ll_gain_x1e4": {
+          "N1_same_as_ncaab": -8.1,
+          "N2_plus_real_open_interactions": -10.3,
+          "N3_no_style": 7.3
+        },
+        "note": "gains are small and season-to-season unstable; NBA openers are sharp"
+      },
+      "products": "config/stage3_locked.yaml (same as NCAAB)",
+      "locked_at_revision": "5325f74"
+    },
+    "lock": {
+      "engine": "v3",
+      "products": {
+        "target_card": {
+          "objective": "joint",
+          "min_combined_odds": 2.5,
+          "leg_odds_band": [
+            1.4,
+            1.9
+          ],
+          "release_gate": "conservative EV > 0",
+          "alt_price_margin": 0.045,
+          "alt_price_reference": "open",
+          "alt_ladder": "median"
+        },
+        "main_line_double": {
+          "objective": "ev",
+          "legs": "best book's opening number at its REAL price",
+          "min_combined_odds": 2.5,
+          "release_gate": "conservative EV > 0"
+        }
+      },
+      "dev_results_ncaab_2018_21": {
+        "target_card": {
+          "cards": 363,
+          "hit": 0.463,
+          "avg_odds": 2.548,
+          "roi": 0.167,
+          "roi_ci95": [
+            0.039,
+            0.298
+          ]
+        },
+        "target_card_close_priced": {
+          "roi": -0.027
+        }
+      },
+      "locked_at_revision": "0c1130d"
+    }
+  },
+  "params_hash": "c60c550c6be5",
+  "results": {
+    "pooled": [
+      {
+        "product": "TARGET CARD (locked: ~1.6 legs, >=2.5, max win prob)",
+        "season": "POOLED",
+        "cards": 543,
+        "pct_slates": 0.8674121405750799,
+        "hit": 0.3462246777163904,
+        "hit_ci95": [
+          0.30741368874515207,
+          0.38719623120241586
+        ],
+        "avg_odds": 3.050192420873467,
+        "breakeven": 0.33639878873756895,
+        "model_hit": 0.36315753421778263,
+        "leg_win": 0.58195211786372,
+        "leg_p": 0.6011138080598449,
+        "roi": 0.03262513550104339,
+        "roi_ci95": [
+          -0.09320647246983371,
+          0.15378263833618716
+        ],
+        "units": 17.71544857706656,
+        "max_dd": 55.73991256188545,
+        "losing_run": 16
+      },
+      {
+        "product": "  sensitivity: alternate margin 8%",
+        "season": "POOLED",
+        "cards": 510,
+        "pct_slates": 0.8146964856230032,
+        "hit": 0.3333333333333333,
+        "hit_ci95": [
+          0.2938002363685734,
+          0.37535850827179823
+        ],
+        "avg_odds": 3.3608729289584036,
+        "breakeven": 0.3025867697498533,
+        "model_hit": 0.32902610010817973,
+        "leg_win": 0.553921568627451,
+        "leg_p": 0.5726607938864945,
+        "roi": 0.09062384979685241,
+        "roi_ci95": [
+          -0.047071802341835604,
+          0.2208566422915664
+        ],
+        "units": 46.21816339639473,
+        "max_dd": 32.0012088876007,
+        "losing_run": 13
+      },
+      {
+        "product": "  stress: alternates priced off the CLOSE",
+        "season": "POOLED",
+        "cards": 543,
+        "pct_slates": 0.8674121405750799,
+        "hit": 0.3462246777163904,
+        "hit_ci95": [
+          0.30741368874515207,
+          0.38719623120241586
+        ],
+        "avg_odds": 2.9275990482599643,
+        "breakeven": 0.3618418409319259,
+        "model_hit": 0.36315753421778263,
+        "leg_win": 0.58195211786372,
+        "leg_p": 0.6011138080598449,
+        "roi": -0.030984844432633503,
+        "roi_ci95": [
+          -0.14944362658103752,
+          0.08581294016955009
+        ],
+        "units": -16.82477052691999,
+        "max_dd": 60.178139968346215,
+        "losing_run": 16
+      },
+      {
+        "product": "  variant: alternates shopped at best book",
+        "season": "POOLED",
+        "cards": 550,
+        "pct_slates": 0.8785942492012779,
+        "hit": 0.42363636363636364,
+        "hit_ci95": [
+          0.3830090009678723,
+          0.4653230853181705
+        ],
+        "avg_odds": 2.592871819530661,
+        "breakeven": 0.38831167495866764,
+        "model_hit": 0.44295221270812457,
+        "leg_win": 0.6527272727272727,
+        "leg_p": 0.6643889528399719,
+        "roi": 0.08407333363125809,
+        "roi_ci95": [
+          -0.020516065550354103,
+          0.19458109306443105
+        ],
+        "units": 46.24033349719195,
+        "max_dd": 18.726910169123183,
+        "losing_run": 9
+      },
+      {
+        "product": "MAIN-LINE DOUBLE (real prices only)",
+        "season": "POOLED",
+        "cards": 493,
+        "pct_slates": 0.7875399361022364,
+        "hit": 0.30628803245436104,
+        "hit_ci95": [
+          0.26722581465089956,
+          0.3483458283033136
+        ],
+        "avg_odds": 3.6402782300959475,
+        "breakeven": 0.2747316464194624,
+        "model_hit": 0.33107850368018427,
+        "leg_win": 0.5537525354969574,
+        "leg_p": 0.5749217905846992,
+        "roi": 0.10779116634952736,
+        "roi_ci95": [
+          -0.03884148720143903,
+          0.2514776234600295
+        ],
+        "units": 53.14104501031699,
+        "max_dd": 17.512857557115936,
+        "losing_run": 11
+      }
+    ]
+  }
+}
