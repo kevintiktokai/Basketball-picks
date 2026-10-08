@@ -109,6 +109,30 @@ user's odds. That is a long way from a 60% hit rate, but a positive-expectation 
 2026-27). Then the model (Q3) and cards with real ladder prices (Q4) are developed, the
 engine is locked, and it is tested once on 2026-27.
 
+## October 2026: optimising the card strategy on the games we have
+
+Declared first ([`config/europe.yaml`](../config/europe.yaml)): grid, objective (mean joint CLV per card
+against Pinnacle's close), selection rule, nested time split, and a **holdout** carved from the
+not-yet-fetched part of 2025-26 (21 Mar – Jun 2026). Then 1,680 strategies were scored on the
+144 development games ([`euro_optimize.md`](euro_optimize.md)).
+
+| | cards | mean odds | CLV | both won | ROI |
+|---|---|---|---|---|---|
+| Locked strategy, in sample (acts the instant Pinnacle opens; legs 1.70–2.10 above Pinnacle's fair price by > 1%, model agrees, 1 card per date) | 9 | 3.68 | +12.8% | 5 of 9 | +113% (CI −15% to +239%) |
+| Same, acting 30 min after Pinnacle opens | 10 | 3.77 | **+6.5%** | 3 of 10 | |
+| Honest nested estimate (select on one half, score on the other) | 1 and 5 | | +9% / +17% | 0/1, 3/5 | too few cards to judge |
+| Your odds band (legs 1.50–1.75, all positive-EV pairs), +30 min | 13 | 2.82 | +2.0% | 4 of 13 | |
+
+* **Read the in-sample row as luck on top of a small edge.** At odds 3.68 a +12.8% edge implies
+  winning ~31% of cards, not 56%; the best of 1,680 strategies on 9 cards is flattered by selection.
+* **The robust part:** every one of the 15 best strategies acts right after Pinnacle opens, usually
+  the day before the game around 13:00 Madrid time. Value prices fade fast (half change within 36
+  minutes) but about half the value survives a 30–60 minute delay
+  ([`euro_execution.md`](euro_execution.md)). By mid-morning on game day it is gone.
+* **Locked** in [`config/europe_locked.yaml`](../config/europe_locked.yaml) before the holdout was fetched.
+  `scripts/euro_holdout.py` runs once when November's quota brings those games in (it refuses
+  earlier, and refuses a second run).
+
 ## What the free data showed (details: [`euro_info_study.md`](euro_info_study.md))
 
 | question | answer |

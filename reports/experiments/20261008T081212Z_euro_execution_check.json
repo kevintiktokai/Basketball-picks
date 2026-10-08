@@ -1,0 +1,148 @@
+{
+  "experiment": "euro_execution_check",
+  "timestamp_utc": "20261008T081212Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "b80a96c",
+  "params": {
+    "rules": {
+      "locked": "{'leg_ev_min': 0.01, 'leg_odds_band': (1.7, 2.1), 'books': 'all_soft', 'model_agrees': True, 'cards_per_date': '1'}",
+      "baseline": "{'leg_ev_min': 0.0, 'leg_odds_band': (1.4, 1.9), 'books': 'all_soft', 'model_agrees': False, 'cards_per_date': '1'}",
+      "user_band": "{'leg_ev_min': 0.0, 'leg_odds_band': (1.5, 1.75), 'books': 'all_soft', 'model_agrees': False, 'cards_per_date': 'all_disjoint'}"
+    }
+  },
+  "params_hash": "4940c91cb571",
+  "results": {
+    "persistence": [
+      {
+        "value legs at Pinnacle's opening": 721,
+        "median minutes until the price changed": 39.6582,
+        "still there after 15 min": 0.5742024965325936,
+        "still there after 30 min": 0.5339805825242718,
+        "still there after 60 min": 0.46601941747572817,
+        "still there after 120 min": 0.391123439667129
+      }
+    ],
+    "delays": [
+      {
+        "executed": "Pinnacle open +0 min",
+        "rule": "locked",
+        "cards": "9",
+        "mean odds": "3.6821733333333335",
+        "mean CLV": "0.1279606150974233",
+        "both won": "0.5555555555555556"
+      },
+      {
+        "executed": "Pinnacle open +0 min",
+        "rule": "baseline",
+        "cards": "17",
+        "mean odds": "3.116408588235294",
+        "mean CLV": "0.07339484656183748",
+        "both won": "0.29411764705882354"
+      },
+      {
+        "executed": "Pinnacle open +0 min",
+        "rule": "user_band",
+        "cards": "22",
+        "mean odds": "2.886128272727273",
+        "mean CLV": "0.04285721895005429",
+        "both won": "0.2727272727272727"
+      },
+      {
+        "executed": "Pinnacle open +15 min",
+        "rule": "locked",
+        "cards": "10",
+        "mean odds": "3.831142",
+        "mean CLV": "0.0760101349199522",
+        "both won": "0.2"
+      },
+      {
+        "executed": "Pinnacle open +15 min",
+        "rule": "baseline",
+        "cards": "15",
+        "mean odds": "3.036800533333333",
+        "mean CLV": "0.047805357585532074",
+        "both won": "0.26666666666666666"
+      },
+      {
+        "executed": "Pinnacle open +15 min",
+        "rule": "user_band",
+        "cards": "14",
+        "mean odds": "2.8327088571428574",
+        "mean CLV": "0.03732546771477323",
+        "both won": "0.14285714285714285"
+      },
+      {
+        "executed": "Pinnacle open +30 min",
+        "rule": "locked",
+        "cards": "10",
+        "mean odds": "3.7701520000000004",
+        "mean CLV": "0.06487586128450756",
+        "both won": "0.3"
+      },
+      {
+        "executed": "Pinnacle open +30 min",
+        "rule": "baseline",
+        "cards": "17",
+        "mean odds": "3.091712588235294",
+        "mean CLV": "0.025375698757522748",
+        "both won": "0.29411764705882354"
+      },
+      {
+        "executed": "Pinnacle open +30 min",
+        "rule": "user_band",
+        "cards": "13",
+        "mean odds": "2.817030615384615",
+        "mean CLV": "0.019772266851763254",
+        "both won": "0.3076923076923077"
+      },
+      {
+        "executed": "Pinnacle open +60 min",
+        "rule": "locked",
+        "cards": "11",
+        "mean odds": "3.8031462727272727",
+        "mean CLV": "0.06052308557744852",
+        "both won": "0.36363636363636365"
+      },
+      {
+        "executed": "Pinnacle open +60 min",
+        "rule": "baseline",
+        "cards": "17",
+        "mean odds": "3.0277321176470586",
+        "mean CLV": "0.020913078047041227",
+        "both won": "0.23529411764705882"
+      },
+      {
+        "executed": "Pinnacle open +60 min",
+        "rule": "user_band",
+        "cards": "15",
+        "mean odds": "2.7806813333333333",
+        "mean CLV": "0.04078090986033654",
+        "both won": "0.26666666666666666"
+      },
+      {
+        "executed": "Pinnacle open +120 min",
+        "rule": "locked",
+        "cards": "10",
+        "mean odds": "3.8175209000000003",
+        "mean CLV": "0.050049870846349674",
+        "both won": "0.3"
+      },
+      {
+        "executed": "Pinnacle open +120 min",
+        "rule": "baseline",
+        "cards": "12",
+        "mean odds": "3.044274916666667",
+        "mean CLV": "0.038853276151993056",
+        "both won": "0.3333333333333333"
+      },
+      {
+        "executed": "Pinnacle open +120 min",
+        "rule": "user_band",
+        "cards": "11",
+        "mean odds": "2.7441007272727274",
+        "mean CLV": "0.04083768138268909",
+        "both won": "0.36363636363636365"
+      }
+    ]
+  }
+}

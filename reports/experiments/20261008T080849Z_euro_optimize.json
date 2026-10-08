@@ -1,0 +1,127 @@
+{
+  "experiment": "euro_optimize",
+  "timestamp_utc": "20261008T080849Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "b80a96c",
+  "params": {
+    "grid": {
+      "decision_time": [
+        "pinnacle_open",
+        "24h",
+        "12h",
+        "6h",
+        "3h",
+        "1h",
+        "game_day_10am"
+      ],
+      "leg_ev_min": [
+        0.0,
+        0.01,
+        0.02,
+        0.03,
+        0.05
+      ],
+      "leg_odds_band": [
+        [
+          1.4,
+          1.9
+        ],
+        [
+          1.5,
+          1.75
+        ],
+        [
+          1.55,
+          1.7
+        ],
+        [
+          1.7,
+          2.1
+        ]
+      ],
+      "books": [
+        "all_soft",
+        "1xbet",
+        "betway"
+      ],
+      "model_agrees": [
+        false,
+        true
+      ],
+      "cards_per_date": [
+        1,
+        "all_disjoint"
+      ]
+    },
+    "split_date": "2026-02-13"
+  },
+  "params_hash": "7608e7b961f0",
+  "results": {
+    "nested": [
+      {
+        "selected on": "first half",
+        "decision_time": "pinnacle_open",
+        "leg_ev_min": 0.05,
+        "leg_odds_band": [
+          1.7,
+          2.1
+        ],
+        "books": "1xbet",
+        "model_agrees": false,
+        "cards_per_date": "all_disjoint",
+        "selection-half CLV": 0.17175696484948877,
+        "scored on": "second half",
+        "cards": 1,
+        "CLV": 0.08894101417360134,
+        "both won": 0.0,
+        "ROI": -1.0
+      },
+      {
+        "selected on": "second half",
+        "decision_time": "pinnacle_open",
+        "leg_ev_min": 0.01,
+        "leg_odds_band": [
+          1.7,
+          2.1
+        ],
+        "books": "all_soft",
+        "model_agrees": true,
+        "cards_per_date": "1",
+        "selection-half CLV": 0.07987099718188967,
+        "scored on": "first half",
+        "cards": 5,
+        "CLV": 0.16643230942985018,
+        "both won": 0.6,
+        "ROI": 1.3042022
+      }
+    ],
+    "selected": {
+      "decision_time": "pinnacle_open",
+      "leg_ev_min": 0.01,
+      "leg_odds_band": [
+        1.7,
+        2.1
+      ],
+      "books": "all_soft",
+      "model_agrees": true,
+      "cards_per_date": "1",
+      "min_combined_odds": 2.5
+    },
+    "summary": {
+      "cards": "9",
+      "dates": "9",
+      "mean odds": "3.6821733333333335",
+      "mean EV": "0.12228138128148501",
+      "mean CLV": "0.1279606150974233",
+      "CLV > 0": "1.0",
+      "both won": "0.5555555555555556",
+      "break-even": "0.2734050948935617",
+      "ROI": "1.1271845555555555",
+      "profit (units)": "10.144661",
+      "max drawdown": "3.0",
+      "longest losing run": "3",
+      "ROI 95% CI": "(np.float64(-0.14975422222222232), np.float64(2.3903998444444428))"
+    },
+    "n_configs": 1680
+  }
+}

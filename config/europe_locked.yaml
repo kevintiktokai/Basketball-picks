@@ -1,0 +1,93 @@
+comment: LOCKED European card strategy, selected on development games by the rule
+  declared in config/europe.yaml (optimisation). Committed BEFORE the holdout (2026-03-21..06-30)
+  is fetched and before any 2026-27 result is compared with a line.
+strategy:
+  decision_time: pinnacle_open
+  leg_ev_min: 0.01
+  leg_odds_band:
+  - 1.7
+  - 2.1
+  books: all_soft
+  model_agrees: true
+  cards_per_date: '1'
+  min_combined_odds: 2.5
+dev_evidence:
+  cards: 9
+  dates: 9
+  mean odds: 3.6821733333333335
+  mean EV: 0.12228138128148501
+  mean CLV: 0.1279606150974233
+  CLV > 0: 1.0
+  both won: 0.5555555555555556
+  break-even: 0.2734050948935617
+  ROI: 1.1271845555555555
+  profit (units): 10.144661
+  max drawdown: 3.0
+  longest losing run: 3
+  ROI 95% CI:
+  - -0.14975422222222232
+  - 2.3903998444444428
+nested_cv:
+- selected on: first half
+  cards: 1
+  CLV: 0.08894101417360134
+  both won: 0.0
+  ROI: -1.0
+- selected on: second half
+  cards: 5
+  CLV: 0.16643230942985018
+  both won: 0.6
+  ROI: 1.3042022
+configs_tried: 1680
+selected_at_revision: b80a96c
+evaluation:
+  declared: 2026-10-08, after the development grid and before the holdout was fetched
+  primary: the locked strategy executed 30 minutes after Pinnacle opens (a person
+    cannot act instantly; on development data half of the value prices changed within
+    36 minutes)
+  also_reported:
+  - executed at Pinnacle's opening (instant)
+  - executed 60 minutes after Pinnacle opens
+  comparison_arms:
+    baseline:
+      decision_time: pinnacle_open
+      leg_ev_min: 0.0
+      leg_odds_band:
+      - 1.4
+      - 1.9
+      books: all_soft
+      model_agrees: false
+      cards_per_date: '1'
+    user_band:
+      decision_time: pinnacle_open
+      leg_ev_min: 0.0
+      leg_odds_band:
+      - 1.5
+      - 1.75
+      books: all_soft
+      model_agrees: false
+      cards_per_date: all_disjoint
+  metrics:
+  - cards
+  - mean odds
+  - mean CLV vs Pinnacle's close
+  - both won
+  - ROI with date-bootstrap CI
+  holdout: 2025-26 games 2026-03-21 .. 2026-06-30 except the three development samples;
+    run once (scripts/euro_holdout.py refuses a second run)
+  dev_execution_check:
+    pinnacle_open+0:
+      cards: 9
+      clv: 0.128
+    +15m:
+      cards: 10
+      clv: 0.076
+    +30m:
+      cards: 10
+      clv: 0.065
+    +60m:
+      cards: 11
+      clv: 0.061
+    +120m:
+      cards: 10
+      clv: 0.05
