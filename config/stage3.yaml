@@ -37,6 +37,22 @@ nba:
     lines (aggregate results only). Opening lines, real prices and odds-targeted cards
     on these seasons have never been evaluated.
 
+wnba:
+  pre_registered: "2026-10-08, before the WNBA odds were downloaded"
+  odds_source: "sportsbookreview.com, wnba-basketball, totals + point spread, open & latest per book (2-8 books)"
+  seasons_scraped: ["2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026"]
+  date_range_each_season: ["05-01", "10-25"]
+  history_only: ["2019", "2020"]          # training only; 2020 = the bubble (every game neutral-site)
+  development: ["2021", "2022"]           # variant selection by log-loss gain at the real opener
+  test: ["2023", "2024", "2025", "2026"]  # pristine; evaluated ONCE with the locked stage-3 products
+  box_scores: "ESPN via sportsdataverse/wehoop-wnba-data, commit a885b8b5834d1937329635cb8c4ba54ffaa09f1e"
+  ratings: "DailyRatings with venue_tempo=True (the tempo fix; a new league, so no locked engine changes)"
+  variants: [W1_same_as_ncaab, W3_no_style]   # the NBA variants minus the archive-only N2
+  rule: "lock the variant with the best pooled development log-loss gain at the real opener"
+  disclosure: >
+    A format probe of 14 single dates (2017-2026) displayed the opening lines and final scores
+    of a handful of games while checking coverage; nothing was analysed.
+
 ncaab:
   reanalysis: ["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"]
   disclosure: >

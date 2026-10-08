@@ -30,6 +30,8 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
 LEAGUES = {
     "ncaab": {"slug": "ncaa-basketball", "start": "11-01", "end": "04-10", "out": "ncaab_live_raw.parquet"},
     "nba": {"slug": "nba-basketball", "start": "10-15", "end": "06-25", "out": "nba_live_raw.parquet"},
+    "wnba": {"slug": "wnba-basketball", "start": "05-01", "end": "10-25", "out": "wnba_live_raw.parquet",
+             "same_year": True},              # a WNBA season lies inside one calendar year
 }
 
 
@@ -67,7 +69,8 @@ def season_dates(season: str, start="11-01", end="04-10", league: str | None = N
         start, end = LEAGUES[league]["start"], LEAGUES[league]["end"]
     y0 = int(season[:4])
     d = date.fromisoformat(f"{y0}-{start}")
-    stop = date.fromisoformat(f"{y0 + 1}-{end}")
+    same_year = league is not None and LEAGUES[league].get("same_year")
+    stop = date.fromisoformat(f"{y0 if same_year else y0 + 1}-{end}")
     while d <= stop:
         yield d
         d += timedelta(days=1)
@@ -176,7 +179,7 @@ def parse(league: str = "ncaab") -> pd.DataFrame:
     df["start"] = pd.to_datetime(df.start, utc=True)
     # US-Eastern calendar date of tip-off (pages are keyed by US date)
     df["date"] = pd.to_datetime(df.start.dt.tz_convert("America/New_York").dt.date)
-    df["season"] = df.date.map(_season_of)
+    df["season"] = df.date.dt.year.astype(str) if LEAGUES[league].get("same_year") else df.date.map(_season_of)
     df = df.drop_duplicates("sbr_game_id")
     out = ROOT / "data" / "processed" / LEAGUES[league]["out"]
     df.to_parquet(out, index=False)
@@ -185,8 +188,8 @@ def parse(league: str = "ncaab") -> pd.DataFrame:
 
 if __name__ == "__main__":
     league = sys.argv[2] if len(sys.argv) > 2 else "ncaab"
-    if league == "nba":
-        seasons = yaml.safe_load((ROOT / "config" / "stage3.yaml").read_text())["nba"]["seasons_scraped"]
+    if league in ("nba", "wnba"):
+        seasons = yaml.safe_load((ROOT / "config" / "stage3.yaml").read_text())[league]["seasons_scraped"]
     else:
         seasons = yaml.safe_load((ROOT / "config" / "stage2b.yaml").read_text())["test_seasons"]
     if sys.argv[1] == "fetch":
