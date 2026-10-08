@@ -9,7 +9,7 @@ time **on seasons it has never seen**.
 | 1 | NBA, Overs only, main line | **No.** Each leg needs ~77%; the NBA close tops out near 60%. 0 cards in 2,896 slates. [`RESEARCH_SUMMARY.md`](reports/RESEARCH_SUMMARY.md) |
 | 2 | NCAA men's basketball, Over **or** Under, opening line, **buffered (alternate) lines** | **Yes:** 63.9% 2/2 over 664 never-seen cards, 2021-26 (95% CI 60.1–67.4%). 60.9% on the 2018-21 holdout. [`STAGE2_SUMMARY.md`](reports/STAGE2_SUMMARY.md) |
 | 3 | Odds-targeted cards: combined odds ≥ 2.5 (legs ≈ 1.6), NCAAB + NBA openers, real prices | **NCAAB: 46.8% of cards won at 2.57 avg (break-even 39%), ROI ≈ +20%** (2021-26 re-analysis; +16–17% in development). NBA: no reliable edge. [`STAGE3_SUMMARY.md`](reports/STAGE3_SUMMARY.md) |
-| Europe | EuroLeague + EuroCup: free official data (2016-26, with referees) loaded; odds history pending | Ratings work (residual SD ~17 pts); referees/rest add nothing out of sample. The missing input is historical odds; a free OddsPapi key unlocks them (~200 games a month on the free tier). [`EUROPE_DATA.md`](reports/EUROPE_DATA.md) |
+| Europe | EuroLeague + EuroCup: free official data (2016-26, with referees) + free OddsPapi odds timelines (Pinnacle, 1xBet, Betway; archive from 20 Jan 2026, ~200 games a month) | In development (144 games so far): soft-book prices above Pinnacle's fair price beat Pinnacle's close by +2–5% (CLV); results not yet conclusive. [`EUROPE_DATA.md`](reports/EUROPE_DATA.md) |
 
 The 60% is bought with price. Each leg is an alternate total about 10 points better than
 the opener (~80% win, ~1.25 odds), so the double pays ~1.65. Whether it makes money depends

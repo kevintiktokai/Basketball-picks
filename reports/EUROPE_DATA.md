@@ -19,13 +19,12 @@
   several books, including Pinnacle, plus the alternate-line ladders. Our NCAAB edge was
   built on exactly this: stale openers, a market-memory record of each team, and checks
   against the close. Without it, nothing European can be tested or priced honestly.
-* **The best free source is OddsPapi's free key.** One request returns a finished game's full
-  price timeline at up to three books (Pinnacle and bet365 included), giving the opening line,
-  the closing line and the alternate ladder. The free tier allows about 200 requests a month,
-  and its history probably starts in 2024 (the company was founded then). Backfilling 2024-26
-  (1,123 games) therefore takes about **6 months of free quota**; the current season costs about
-  80 requests a month. The adapter is built for the free API, never exceeds the budget, and is
-  tested offline (`data/oddspapi.py`). It needs only the key.
+* **The best free source is OddsPapi's free key, and it is now in use.** One request returns a
+  finished game's full price timeline at up to three books, giving the opening line, the
+  closing line and the alternate ladder. The free tier allows about 200 requests a month and
+  its archive starts on **20 January 2026** (measured). October's quota fetched 144 games
+  (20 Jan – 20 Mar 2026); the rest of 2025-26 takes about two more months, then the current
+  season costs about 80 requests a month. First results are below.
 
 ## Sources, checked in this session
 
@@ -55,13 +54,51 @@
 |---|---|
 | `probe` (key, catalogue, depth check) | ≤ 8, once |
 | fixture lists (9 per season per competition, cached) | ~54, once |
-| backfill 2024-25 and 2025-26 (EuroLeague 732 + EuroCup 391 games) | 1,123, one per game |
+| backfill 2025-26 from the archive start (20 Jan 2026; ~400 games) | one per game; 144 done in October |
 | current season, as games finish | ~80 a month |
 
-At 200 a month that is about 6 months to cover 2024-26 while keeping the current season
-complete. `python -m data.oddspapi update` spends whatever is left of the month, newest games
-first, and stops at the budget. Each month the quota is unused, ~200 games of history are
-not collected.
+`python -m data.oddspapi update` spends whatever is left of the month, oldest games first
+(in case the archive is a rolling window), and stops at the budget. Each month the quota is
+unused, ~200 games are not collected.
+
+## October 2026: the free key in use
+
+**What the free tier really gives** (measured, not from the marketing pages):
+
+* v4 API, about 200 requests a month, and a ~5-second cooldown between history requests.
+  One request returns one game's full price history at up to three books (~20 MB, almost
+  all of it in-game; the cache keeps the pre-game part, ~0.4 MB per game).
+* **The archive starts on 20 January 2026** (nothing on 15 January or earlier). It may be a
+  rolling ~9-month window, so games are fetched oldest first.
+* Book coverage grows through 2025-26. Pinnacle's pre-game prices start in late January.
+  1xBet has the fullest archive, then Betway; Unibet is patchy until March; bet365 has almost
+  nothing before 2026-27. The soft books tracked are therefore **1xBet and Betway**, with
+  Pinnacle as the reference ([`config/europe.yaml`](../config/europe.yaml), changed before
+  any result was looked at).
+
+**What was fetched:** 144 development games (EuroLeague and EuroCup, 20 Jan – 20 Mar 2026,
+plus three later samples), all matched to official results; 110 have Pinnacle's closing
+line. The pre-registration was committed before any of it was analysed.
+
+**First development numbers** ([`euro_dev_q1q2.md`](euro_dev_q1q2.md)). Small samples, so
+read them as direction, not proof:
+
+| finding | numbers |
+|---|---|
+| Soft books' main line vs Pinnacle's fair line, when both are first posted | 1.0–1.2 points apart on average |
+| Betting the soft line toward Pinnacle when the gap is ≥ 2 points | closing-line value **+2%** (1xBet 20 games, Betway 12); the close stays on Pinnacle's side ~75% of the time |
+| Best soft price per game above Pinnacle's fair price, when Pinnacle opens | +4.8% expected, **+1.9% CLV** (74 games); with ≥ 4% expected: +4.5% CLV (35 games) |
+| Same, 6 h / 1 h before tip, expected ≥ 2% | **+4.8% / +4.9% CLV**, beating the close in 87% / 94% of games (15 / 18 games) |
+| Actual results | too few games to tell: ROI confidence intervals are ±25 to ±60 points wide |
+
+The pattern a real price edge leaves is there: soft-book prices that beat Pinnacle's fair
+price keep beating its close. It is small (2–5% per bet), and it is not yet proven by
+results. Two such legs per card would make roughly +5–10% expected per card at the
+user's odds. That is a long way from a 60% hit rate, but a positive-expectation process.
+
+**Next:** each month's ~200 requests continue the backfill (21 Mar – May 2026, then
+2026-27). Then the model (Q3) and cards with real ladder prices (Q4) are developed, the
+engine is locked, and it is tested once on 2026-27.
 
 ## What the free data showed (details: [`euro_info_study.md`](euro_info_study.md))
 
@@ -86,17 +123,17 @@ not collected.
 
 ## What is needed from you
 
-* **A free OddsPapi key** (sign up at oddspapi.io). Add it in this cloud environment's
-  settings (environment menu in the session title bar → *Edit*) under the name
-  **`ODDSPAPI_KEY`**: *Network secrets* (*API credentials* in older apps) if offered,
-  otherwise an environment variable. A new session picks it up. Please don't paste the key
-  into the chat.
-* Then: `probe` (≤ 8 requests) shows how far back the free history goes; `update` once a month
-  spends that month's quota; `parse` builds the opening/closing/ladder tables.
+* **The OddsPapi key, rotated.** The first key was used once and removed from this session;
+  add the new one in this cloud environment's settings (environment menu in the session
+  title bar → *Edit*) as **`ODDSPAPI_KEY`**, *Network secrets* (*API credentials* in older
+  apps) if offered, otherwise an environment variable. A new session picks it up; please
+  don't paste keys into the chat.
+* Then, once a month: `python -m data.oddspapi update` (spends that month's quota, oldest
+  games first) and `python scripts/euro_dev_study.py` (refreshes the development numbers).
 * Optional and also free: a Betfair account would unlock exchange price files that may reach
   back much further. Send one downloaded basketball file and the parser will be built against it.
-* With two seasons the protocol is: develop on 2024-25, test once on 2025-26, then the forward
-  ledger. First question to answer: do soft-book openers beat Pinnacle's fair price often enough?
+* Protocol ([`config/europe.yaml`](../config/europe.yaml)): develop on 2025-26 (from 20 Jan
+  2026), lock, test once on 2026-27, then the forward ledger.
 
 ## Disclosure: a bug found along the way
 

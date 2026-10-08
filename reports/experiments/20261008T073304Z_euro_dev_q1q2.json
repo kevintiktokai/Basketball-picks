@@ -1,0 +1,547 @@
+{
+  "experiment": "euro_dev_q1q2",
+  "timestamp_utc": "20261008T073304Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "8b54ed7",
+  "params": {
+    "dev": [
+      "2026-01-20 00:00:00+00:00",
+      "2026-07-01 00:00:00+00:00"
+    ],
+    "soft": [
+      "1xbet",
+      "betway",
+      "unibet",
+      "bet365"
+    ],
+    "thresh": [
+      0.0,
+      0.02,
+      0.04
+    ],
+    "band": [
+      1.4,
+      1.9
+    ]
+  },
+  "params_hash": "ef5857c131a1",
+  "results": {
+    "q1": [
+      {
+        "soft book": "1xbet",
+        "gap >= pts (abs)": 0.0,
+        "games": 96,
+        "mean abs gap": 1.1661391238992536,
+        "close stays on Pinnacle's side": 0.6875,
+        "mean CLV": -0.015419825658060065,
+        "won": 0.5416666666666666,
+        "ROI": 0.031041666666666634,
+        "ROI 95% CI": [
+          -0.16635677083333336,
+          0.22774296874999997
+        ]
+      },
+      {
+        "soft book": "1xbet",
+        "gap >= pts (abs)": 1.0,
+        "games": 50,
+        "mean abs gap": 1.8541946571945847,
+        "close stays on Pinnacle's side": 0.76,
+        "mean CLV": 0.011730252236020484,
+        "won": 0.58,
+        "ROI": 0.10883999999999999,
+        "ROI 95% CI": [
+          -0.15696400000000002,
+          0.3754634999999999
+        ]
+      },
+      {
+        "soft book": "1xbet",
+        "gap >= pts (abs)": 2.0,
+        "games": 20,
+        "mean abs gap": 2.560943231990018,
+        "close stays on Pinnacle's side": 0.75,
+        "mean CLV": 0.019652889409462165,
+        "won": 0.5,
+        "ROI": -0.04045000000000001,
+        "ROI 95% CI": [
+          -0.42800000000000005,
+          0.35015874999999996
+        ]
+      },
+      {
+        "soft book": "1xbet",
+        "gap >= pts (abs)": 3.0,
+        "games": 5,
+        "mean abs gap": 3.1344850425988797,
+        "close stays on Pinnacle's side": 0.8,
+        "mean CLV": 0.03288334243402931,
+        "won": 0.4,
+        "ROI": -0.22800000000000004,
+        "ROI 95% CI": [
+          -1.0,
+          0.5439999999999999
+        ]
+      },
+      {
+        "soft book": "betway",
+        "gap >= pts (abs)": 0.0,
+        "games": 77,
+        "mean abs gap": 1.0219861829725583,
+        "close stays on Pinnacle's side": 0.7012987012987013,
+        "mean CLV": -0.017185685558507954,
+        "won": 0.5844155844155844,
+        "ROI": 0.10757142857142864,
+        "ROI 95% CI": [
+          -0.10834675324675326,
+          0.3236100649350647
+        ]
+      },
+      {
+        "soft book": "betway",
+        "gap >= pts (abs)": 1.0,
+        "games": 37,
+        "mean abs gap": 1.7218759199193867,
+        "close stays on Pinnacle's side": 0.7027027027027027,
+        "mean CLV": -0.0007505671629143405,
+        "won": 0.6216216216216216,
+        "ROI": 0.18,
+        "ROI 95% CI": [
+          -0.12031486486486487,
+          0.4835432432432432
+        ]
+      },
+      {
+        "soft book": "betway",
+        "gap >= pts (abs)": 2.0,
+        "games": 12,
+        "mean abs gap": 2.327954551498325,
+        "close stays on Pinnacle's side": 0.75,
+        "mean CLV": 0.019191724478667477,
+        "won": 0.5833333333333334,
+        "ROI": 0.11066666666666669,
+        "ROI 95% CI": [
+          -0.3701666666666667,
+          0.5918333333333333
+        ]
+      },
+      {
+        "soft book": "betway",
+        "gap >= pts (abs)": 3.0,
+        "games": 2,
+        "mean abs gap": 3.0110330743687683,
+        "close stays on Pinnacle's side": 0.5,
+        "mean CLV": -0.023755127272942878,
+        "won": 0.5,
+        "ROI": -0.045499999999999985,
+        "ROI 95% CI": [
+          -1.0,
+          0.909
+        ]
+      },
+      {
+        "soft book": "unibet",
+        "gap >= pts (abs)": 0.0,
+        "games": 9,
+        "mean abs gap": 1.2630571632684786,
+        "close stays on Pinnacle's side": 0.6666666666666666,
+        "mean CLV": -0.016306282196480153,
+        "won": 0.5555555555555556,
+        "ROI": 0.05444444444444439,
+        "ROI 95% CI": [
+          -0.5777777777777778,
+          0.6866666666666666
+        ]
+      },
+      {
+        "soft book": "unibet",
+        "gap >= pts (abs)": 1.0,
+        "games": 4,
+        "mean abs gap": 2.3734009218782504,
+        "close stays on Pinnacle's side": 0.75,
+        "mean CLV": -0.01881174539899516,
+        "won": 0.5,
+        "ROI": -0.05500000000000005,
+        "ROI 95% CI": [
+          -1.0,
+          0.8899999999999999
+        ]
+      },
+      {
+        "soft book": "unibet",
+        "gap >= pts (abs)": 2.0,
+        "games": 2,
+        "mean abs gap": 3.7164702283594693,
+        "close stays on Pinnacle's side": 1.0,
+        "mean CLV": 0.020042788591505323,
+        "won": 0.5,
+        "ROI": -0.06000000000000005,
+        "ROI 95% CI": [
+          -1.0,
+          0.8799999999999999
+        ]
+      },
+      {
+        "soft book": "unibet",
+        "gap >= pts (abs)": 3.0,
+        "games": 1,
+        "mean abs gap": 4.977933851262435,
+        "close stays on Pinnacle's side": 1.0,
+        "mean CLV": -0.04281353031341206,
+        "won": 0.0,
+        "ROI": -1.0,
+        "ROI 95% CI": [
+          -1.0,
+          -1.0
+        ]
+      },
+      {
+        "soft book": "bet365",
+        "gap >= pts (abs)": 0.0,
+        "games": 4,
+        "mean abs gap": 1.10516457413312,
+        "close stays on Pinnacle's side": 0.5,
+        "mean CLV": -0.08586586374108426,
+        "won": 0.5,
+        "ROI": -0.06999999999999995,
+        "ROI 95% CI": [
+          -1.0,
+          0.8600000000000001
+        ]
+      },
+      {
+        "soft book": "bet365",
+        "gap >= pts (abs)": 1.0,
+        "games": 2,
+        "mean abs gap": 1.5086586625719463,
+        "close stays on Pinnacle's side": 0.5,
+        "mean CLV": -0.11209200536957498,
+        "won": 0.5,
+        "ROI": -0.06999999999999995,
+        "ROI 95% CI": [
+          -1.0,
+          0.8600000000000001
+        ]
+      },
+      {
+        "soft book": "bet365",
+        "gap >= pts (abs)": 2.0,
+        "games": 0,
+        "mean abs gap": NaN,
+        "close stays on Pinnacle's side": NaN,
+        "mean CLV": NaN,
+        "won": NaN,
+        "ROI": NaN,
+        "ROI 95% CI": [
+          NaN,
+          NaN
+        ]
+      },
+      {
+        "soft book": "bet365",
+        "gap >= pts (abs)": 3.0,
+        "games": 0,
+        "mean abs gap": NaN,
+        "close stays on Pinnacle's side": NaN,
+        "mean CLV": NaN,
+        "won": NaN,
+        "ROI": NaN,
+        "ROI 95% CI": [
+          NaN,
+          NaN
+        ]
+      }
+    ],
+    "q2": [
+      {
+        "decision time": "when Pinnacle opens",
+        "EV now >": 0.0,
+        "odds 1.40-1.90 only": false,
+        "legs available": 894,
+        "games (1 bet each)": 74,
+        "mean EV now": 0.04780694505642994,
+        "mean CLV": 0.018532372244505862,
+        "CLV > 0": 0.6486486486486487,
+        "won": 0.527027027027027,
+        "ROI": -0.041418918918918926,
+        "ROI 95% CI": [
+          -0.2460635135135135,
+          0.17707499999999987
+        ]
+      },
+      {
+        "decision time": "when Pinnacle opens",
+        "EV now >": 0.0,
+        "odds 1.40-1.90 only": true,
+        "legs available": 408,
+        "games (1 bet each)": 64,
+        "mean EV now": 0.04369600965472362,
+        "mean CLV": 0.01917654448120039,
+        "CLV > 0": 0.71875,
+        "won": 0.53125,
+        "ROI": -0.077140625,
+        "ROI 95% CI": [
+          -0.295673828125,
+          0.1427695312499999
+        ]
+      },
+      {
+        "decision time": "when Pinnacle opens",
+        "EV now >": 0.02,
+        "odds 1.40-1.90 only": false,
+        "legs available": 557,
+        "games (1 bet each)": 50,
+        "mean EV now": 0.0660460094876916,
+        "mean CLV": 0.030913156289577887,
+        "CLV > 0": 0.7,
+        "won": 0.52,
+        "ROI": -0.009040000000000017,
+        "ROI 95% CI": [
+          -0.2792925,
+          0.265590499999999
+        ]
+      },
+      {
+        "decision time": "when Pinnacle opens",
+        "EV now >": 0.02,
+        "odds 1.40-1.90 only": true,
+        "legs available": 263,
+        "games (1 bet each)": 47,
+        "mean EV now": 0.05687215173061225,
+        "mean CLV": 0.02575683559386689,
+        "CLV > 0": 0.723404255319149,
+        "won": 0.5106382978723404,
+        "ROI": -0.10210638297872339,
+        "ROI 95% CI": [
+          -0.35449095744680853,
+          0.16475265957446789
+        ]
+      },
+      {
+        "decision time": "when Pinnacle opens",
+        "EV now >": 0.04,
+        "odds 1.40-1.90 only": false,
+        "legs available": 301,
+        "games (1 bet each)": 35,
+        "mean EV now": 0.08051737597635684,
+        "mean CLV": 0.0449442968500106,
+        "CLV > 0": 0.7142857142857143,
+        "won": 0.45714285714285713,
+        "ROI": -0.09648571428571433,
+        "ROI 95% CI": [
+          -0.41984428571428567,
+          0.23591785714285712
+        ]
+      },
+      {
+        "decision time": "when Pinnacle opens",
+        "EV now >": 0.04,
+        "odds 1.40-1.90 only": true,
+        "legs available": 131,
+        "games (1 bet each)": 29,
+        "mean EV now": 0.07373266012307328,
+        "mean CLV": 0.036915031696011257,
+        "CLV > 0": 0.7586206896551724,
+        "won": 0.5172413793103449,
+        "ROI": -0.07248275862068963,
+        "ROI 95% CI": [
+          -0.40814310344827587,
+          0.2517336206896549
+        ]
+      },
+      {
+        "decision time": "6 h before tip",
+        "EV now >": 0.0,
+        "odds 1.40-1.90 only": false,
+        "legs available": 276,
+        "games (1 bet each)": 52,
+        "mean EV now": 0.02127806710827201,
+        "mean CLV": 0.016952407033979298,
+        "CLV > 0": 0.6730769230769231,
+        "won": 0.6346153846153846,
+        "ROI": 0.042903846153846154,
+        "ROI 95% CI": [
+          -0.1764899038461538,
+          0.27595480769230757
+        ]
+      },
+      {
+        "decision time": "6 h before tip",
+        "EV now >": 0.0,
+        "odds 1.40-1.90 only": true,
+        "legs available": 125,
+        "games (1 bet each)": 39,
+        "mean EV now": 0.020062022169242296,
+        "mean CLV": 0.015387072008471381,
+        "CLV > 0": 0.717948717948718,
+        "won": 0.5897435897435898,
+        "ROI": 0.010153846153846175,
+        "ROI 95% CI": [
+          -0.24864423076923078,
+          0.2773583333333332
+        ]
+      },
+      {
+        "decision time": "6 h before tip",
+        "EV now >": 0.02,
+        "odds 1.40-1.90 only": false,
+        "legs available": 85,
+        "games (1 bet each)": 15,
+        "mean EV now": 0.05338836088799659,
+        "mean CLV": 0.048453301890111815,
+        "CLV > 0": 0.8666666666666667,
+        "won": 0.7333333333333333,
+        "ROI": 0.4056666666666665,
+        "ROI 95% CI": [
+          -0.04843833333333337,
+          0.809768333333333
+        ]
+      },
+      {
+        "decision time": "6 h before tip",
+        "EV now >": 0.02,
+        "odds 1.40-1.90 only": true,
+        "legs available": 41,
+        "games (1 bet each)": 11,
+        "mean EV now": 0.051259127532269175,
+        "mean CLV": 0.0483187953900797,
+        "CLV > 0": 1.0,
+        "won": 0.5454545454545454,
+        "ROI": -0.036999999999999984,
+        "ROI 95% CI": [
+          -0.5387272727272727,
+          0.45772727272727276
+        ]
+      },
+      {
+        "decision time": "6 h before tip",
+        "EV now >": 0.04,
+        "odds 1.40-1.90 only": false,
+        "legs available": 34,
+        "games (1 bet each)": 8,
+        "mean EV now": 0.07550935368035741,
+        "mean CLV": 0.06758471788972242,
+        "CLV > 0": 1.0,
+        "won": 0.625,
+        "ROI": 0.18437499999999996,
+        "ROI 95% CI": [
+          -0.5046250000000001,
+          0.766
+        ]
+      },
+      {
+        "decision time": "6 h before tip",
+        "EV now >": 0.04,
+        "odds 1.40-1.90 only": true,
+        "legs available": 17,
+        "games (1 bet each)": 5,
+        "mean EV now": 0.07882593168311085,
+        "mean CLV": 0.06689828440171981,
+        "CLV > 0": 1.0,
+        "won": 0.6,
+        "ROI": 0.014800000000000013,
+        "ROI 95% CI": [
+          -0.7108000000000001,
+          0.7404
+        ]
+      },
+      {
+        "decision time": "1 h before tip",
+        "EV now >": 0.0,
+        "odds 1.40-1.90 only": false,
+        "legs available": 277,
+        "games (1 bet each)": 45,
+        "mean EV now": 0.02490063904844022,
+        "mean CLV": 0.026067514150095193,
+        "CLV > 0": 0.8222222222222222,
+        "won": 0.5555555555555556,
+        "ROI": -0.11848888888888891,
+        "ROI 95% CI": [
+          -0.3511672222222222,
+          0.12091166666666633
+        ]
+      },
+      {
+        "decision time": "1 h before tip",
+        "EV now >": 0.0,
+        "odds 1.40-1.90 only": true,
+        "legs available": 131,
+        "games (1 bet each)": 31,
+        "mean EV now": 0.026024395938869394,
+        "mean CLV": 0.027705352238667755,
+        "CLV > 0": 0.8709677419354839,
+        "won": 0.5161290322580645,
+        "ROI": -0.14345161290322578,
+        "ROI 95% CI": [
+          -0.41575,
+          0.15261290322580645
+        ]
+      },
+      {
+        "decision time": "1 h before tip",
+        "EV now >": 0.02,
+        "odds 1.40-1.90 only": false,
+        "legs available": 103,
+        "games (1 bet each)": 18,
+        "mean EV now": 0.04955111596429899,
+        "mean CLV": 0.048805350740222964,
+        "CLV > 0": 0.9444444444444444,
+        "won": 0.3888888888888889,
+        "ROI": -0.3161111111111111,
+        "ROI 95% CI": [
+          -0.7015583333333334,
+          0.10600972222222216
+        ]
+      },
+      {
+        "decision time": "1 h before tip",
+        "EV now >": 0.02,
+        "odds 1.40-1.90 only": true,
+        "legs available": 59,
+        "games (1 bet each)": 14,
+        "mean EV now": 0.0479989274266205,
+        "mean CLV": 0.04362824678910377,
+        "CLV > 0": 0.9285714285714286,
+        "won": 0.42857142857142855,
+        "ROI": -0.2609285714285714,
+        "ROI 95% CI": [
+          -0.6822857142857143,
+          0.22049999999999997
+        ]
+      },
+      {
+        "decision time": "1 h before tip",
+        "EV now >": 0.04,
+        "odds 1.40-1.90 only": false,
+        "legs available": 35,
+        "games (1 bet each)": 9,
+        "mean EV now": 0.07033334122586535,
+        "mean CLV": 0.06984174385560395,
+        "CLV > 0": 1.0,
+        "won": 0.5555555555555556,
+        "ROI": 0.00988888888888886,
+        "ROI 95% CI": [
+          -0.6028277777777777,
+          0.6223333333333332
+        ]
+      },
+      {
+        "decision time": "1 h before tip",
+        "EV now >": 0.04,
+        "odds 1.40-1.90 only": true,
+        "legs available": 19,
+        "games (1 bet each)": 7,
+        "mean EV now": 0.0668324295686477,
+        "mean CLV": 0.06492821853766625,
+        "CLV > 0": 1.0,
+        "won": 0.5714285714285714,
+        "ROI": -0.05114285714285712,
+        "ROI 95% CI": [
+          -0.7391428571428571,
+          0.5214285714285715
+        ]
+      }
+    ],
+    "games": 144
+  }
+}

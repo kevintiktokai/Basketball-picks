@@ -84,7 +84,7 @@ def fair_curve(B: pd.DataFrame, book: str = "pinnacle") -> pd.DataFrame:
         main = g.iloc[(g.p - 0.5).abs().argmin()]
         out.append({"fixture_id": fid, "a": a, "b": b, "fair_mu": a / b, "pin_main": main.line,
                     "pin_lines": len(g)})
-    return pd.DataFrame(out)
+    return pd.DataFrame(out, columns=["fixture_id", "a", "b", "fair_mu", "pin_main", "pin_lines"])
 
 
 def fair_p(curve: pd.DataFrame, fixture_id, line, side) -> np.ndarray:
