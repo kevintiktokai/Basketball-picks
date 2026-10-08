@@ -154,3 +154,45 @@ study_5:
   selection_rule: "as study_2 (both eras: lower log loss AND higher matched-volume ROI at -110); the better pooled matched ROI if both qualify"
   confirmation: "as study_2, on the sealed 2021-26 seasons, run once"
   disclosure: "Opening and closing lines of all seasons were used before as data; no close-target model was ever fitted."
+
+# ---------------------------------------------------------------------------------------------
+study_6:
+  name: venue_park_factor
+  status: pre-registered 2026-10-08, before any candidate below was fitted (2021-26 still sealed)
+  motivation: >
+    Loss autopsy (reports/loss_autopsy.md, reports/loss_autopsy_round2.md; 2011-21 only). Most losses
+    are shooting and pace variance, but two pre-game ideas passed the screen rule (|t| >= 2 in
+    2011-18 and the same sign with |t| >= 1.5 in 2018-21) against the locked engine's own forecast:
+    (1) a home floor's "park factor": floors whose earlier games ran over their closing totals keep
+    doing so (t +5.50, +4.95 on all games; +3.40, +2.23 on the bets' own margins; about +0.5 points
+    of total per point of factor in both eras); (2) high-altitude venues (t +3.48, +2.82), which keep
+    about +1.7 points after the venue factor is controlled for. Ratings average a team's home and
+    road games and the opener is set from team numbers, so venue-specific scoring is left over.
+  engine: locked v3 (config/stage3_v3_locked.yaml); only the mean model gets extra features; the
+    variance model, calibrator, decays, eligibility and products are unchanged.
+  definitions:
+    venue_factor: >
+      non-neutral game: the home team's earlier non-neutral home games, from the first day of the
+      season three seasons back up to the day before the game, shrunk mean of (final total - closing
+      total) = sum / (n + 40); clean games with a valid close only. Neutral-site games: 0.
+      (scripts/loss_autopsy_round2.py venue_features, extended to every season.)
+    high_altitude: "venue city (ESPN schedule) in the fixed 17-city list of scripts/loss_autopsy.py HIGH_ALT; unknown venue = 0"
+  candidates:
+    V1_venue: "locked v3 mean features + venue_factor"
+    V2_venue_altitude: "locked v3 mean features + venue_factor + high_altitude"
+  selection_seasons: "2011-12 .. 2020-21 (eras dev 2011-18 and holdout 2018-21)"
+  selection_rule: >
+    as study_2: a candidate qualifies with lower log loss AND higher matched-volume ROI at -110 than
+    the locked engine in BOTH eras; among qualifiers the higher pooled 2011-21 matched ROI is
+    selected (V1 on a tie). If none qualifies, the study stops and 2021-26 stays sealed.
+  confirmation: >
+    as study_2: ONE run on the sealed 2021-22 .. 2025-26 seasons for the selected candidate only (the
+    script refuses to run twice). Passes with lower log loss AND matched-volume ROI not lower at -110
+    and at the best book's real price. Pass = recorded next to the locked engine in the 2026-27
+    forward ledger; the forward season decides any switch.
+  secondary: "bets with a strong venue factor (|factor| >= 1) that agrees or disagrees with the bet; 2.5+ cards and main-line doubles at real prices if the confirmation runs. Not part of the rule."
+  disclosure: >
+    Both ideas were found on 2011-21, the same seasons the selection rule uses, so the selection is
+    optimistic; the 2021-26 run is the real test. 2021-26 was used before only with the locked
+    engine (stage-2b test, stage-3 re-analysis, diagnostics, money pages, 2023-24 ledger); no venue,
+    altitude or availability analysis has read it.
