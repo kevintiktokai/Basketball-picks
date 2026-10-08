@@ -31,10 +31,30 @@ archive:
   budget: "~200 requests/month on the free tier, one request per game"
 
 splits:
-  development: "2025-26 games with history (from 2026-01-20), EuroLeague and EuroCup"
+  development: "2025-26 games fetched in October 2026: 2026-01-20 .. 2026-03-20, plus three
+    sample games (2026-04-03, 2026-04-07, 2026-05-05) already analysed in Q1-Q4"
+  holdout: "2025-26 games 2026-03-21 .. 2026-06-30 except the three samples; NOT yet fetched
+    when the strategy is locked; evaluated ONCE when November's quota brings them in"
   test: "2026-27 season, all games; joined to results and evaluated ONCE, after the engine
     is locked in config/europe_locked.yaml (committed first)"
   forward: "games after the lock date also go to the live ledger"
+  amended: "2026-10-08, before the optimisation was run: the holdout was carved out of the
+    not-yet-fetched part of 2025-26 so the locked strategy gets an early out-of-sample check"
+
+optimisation:                            # declared before the grid was run
+  unit: "two-leg card, legs from different games of the same date (Europe/Madrid), combined
+    odds >= 2.5; legs are real soft-book prices; EV and CLV against Pinnacle's no-vig ladder"
+  grid:
+    decision_time: [pinnacle_open, 24h, 12h, 6h, 3h, 1h, game_day_10am]
+    leg_ev_min: [0.0, 0.01, 0.02, 0.03, 0.05]
+    leg_odds_band: [[1.40, 1.90], [1.50, 1.75], [1.55, 1.70], [1.70, 2.10]]
+    books: [all_soft, 1xbet, betway]
+    model_agrees: [false, true]
+    cards_per_date: [1, all_disjoint]
+  objective: "mean joint CLV per card (primary); profit is too noisy at this sample size"
+  selection: "best objective with >= 8 cards on all development data -> locked strategy"
+  honest_estimate: "nested 2-fold time CV: select on the first half of the development dates,
+    score on the second half, and vice versa (>= 4 cards in the selection fold)"
 
 questions:                               # in this order; development data only until locked
   Q1_soft_vs_sharp_opener: >
