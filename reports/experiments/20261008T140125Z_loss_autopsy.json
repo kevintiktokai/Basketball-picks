@@ -1,0 +1,157 @@
+{
+  "experiment": "loss_autopsy",
+  "timestamp_utc": "20261008T140125Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "9dd76ec",
+  "params": {
+    "eras": {
+      "discovery": [
+        "2011-12",
+        "2012-13",
+        "2013-14",
+        "2014-15",
+        "2015-16",
+        "2016-17",
+        "2017-18"
+      ],
+      "validation": [
+        "2018-19",
+        "2019-20",
+        "2020-21"
+      ]
+    },
+    "rule": "|t|>=2 disc and |t|>=1.5 same sign val"
+  },
+  "params_hash": "d6cc6fa21138",
+  "results": {
+    "ideas": [
+      {
+        "idea": "rematch (2nd+ meeting this season)",
+        "t all games (disc)": -2.7569477489181997,
+        "t our bets (disc)": -1.5806712385272494,
+        "n games (disc)": 17060,
+        "t all games (val)": -1.3502704650858552,
+        "t our bets (val)": -0.8252862847886321,
+        "n games (val)": 12855,
+        "lead?": false
+      },
+      {
+        "idea": "3rd+ meeting (conference tournament rematches)",
+        "t all games (disc)": -3.882023380416762,
+        "t our bets (disc)": -0.3667110620135278,
+        "n games (disc)": 17060,
+        "t all games (val)": -1.4418598113149959,
+        "t our bets (val)": 0.1871603347694519,
+        "n games (val)": 12855,
+        "lead?": false
+      },
+      {
+        "idea": "last meeting beat its closing total by more",
+        "t all games (disc)": 1.053640105266066,
+        "t our bets (disc)": 2.2093186163235483,
+        "n games (disc)": 5385,
+        "t all games (val)": 0.1576777567576329,
+        "t our bets (val)": -0.06570390678755011,
+        "n games (val)": 4428,
+        "lead?": false
+      },
+      {
+        "idea": "both teams' last game beat its closing total by more",
+        "t all games (disc)": 1.7751640887244637,
+        "t our bets (disc)": 0.429577432666925,
+        "n games (disc)": 15546,
+        "t all games (val)": 2.276958089165432,
+        "t our bets (val)": 0.7188710529336135,
+        "n games (val)": 12124,
+        "lead?": false
+      },
+      {
+        "idea": "early tip on the away team's body clock (< 1 pm)",
+        "t all games (disc)": -0.844762767822184,
+        "t our bets (disc)": -0.6955242312475277,
+        "n games (disc)": 14448,
+        "t all games (val)": 1.0326902278688834,
+        "t our bets (val)": -0.8361824595224446,
+        "n games (val)": 10860,
+        "lead?": false
+      },
+      {
+        "idea": "late tip on the away team's body clock (9 pm+)",
+        "t all games (disc)": -0.2912411366843069,
+        "t our bets (disc)": -1.2300978243207428,
+        "n games (disc)": 14448,
+        "t all games (val)": -2.004564312466167,
+        "t our bets (val)": -1.7231833729552135,
+        "n games (val)": 10860,
+        "lead?": false
+      },
+      {
+        "idea": "time zones crossed by the away team",
+        "t all games (disc)": 1.3819125132037142,
+        "t our bets (disc)": 0.2593930277665905,
+        "n games (disc)": 17060,
+        "t all games (val)": 1.7713772343977285,
+        "t our bets (val)": 0.5153777801779387,
+        "n games (val)": 12855,
+        "lead?": false
+      },
+      {
+        "idea": "high-altitude venue",
+        "t all games (disc)": 3.478385235406311,
+        "t our bets (disc)": -0.856037404740198,
+        "n games (disc)": 14448,
+        "t all games (val)": 2.821396229007576,
+        "t our bets (val)": 0.7058763664143987,
+        "n games (val)": 10860,
+        "lead?": true
+      },
+      {
+        "idea": "close game expected (spread 3 or less)",
+        "t all games (disc)": -0.35759519477795,
+        "t our bets (disc)": 0.2839108891682222,
+        "n games (disc)": 17060,
+        "t all games (val)": -2.3264444971951903,
+        "t our bets (val)": 1.0191583859356985,
+        "n games (val)": 12855,
+        "lead?": false
+      },
+      {
+        "idea": "blowout expected (spread 18+)",
+        "t all games (disc)": 0.8502174688701053,
+        "t our bets (disc)": -0.3661981293830987,
+        "n games (disc)": 17060,
+        "t all games (val)": 0.47879257966632527,
+        "t our bets (val)": 0.9820305968095288,
+        "n games (val)": 12855,
+        "lead?": false
+      },
+      {
+        "idea": "3-point-heavy matchup (style)",
+        "t all games (disc)": -0.7502666827296991,
+        "t our bets (disc)": 0.6006160388904488,
+        "n games (disc)": 17027,
+        "t all games (val)": -2.125800413069874,
+        "t our bets (val)": -1.941207931519223,
+        "n games (val)": 12854,
+        "lead?": false
+      },
+      {
+        "idea": "opening total (level)",
+        "t all games (disc)": 0.6825593560561812,
+        "t our bets (disc)": 0.7061927016388898,
+        "n games (disc)": 17060,
+        "t all games (val)": -2.5396017024076656,
+        "t our bets (val)": -2.313691737026569,
+        "n games (val)": 12855,
+        "lead?": false
+      }
+    ],
+    "causes": {
+      "pace vs the engine's forecast": 35.7,
+      "3-point shooting vs league rate": 30.9,
+      "2-point shooting vs league rate": 30.3,
+      "free-throw shooting vs league rate": 2.0,
+      "overtime points": 1.1
+    }
+  }
+}
