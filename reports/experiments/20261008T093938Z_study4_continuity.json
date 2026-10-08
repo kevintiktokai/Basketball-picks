@@ -1,0 +1,115 @@
+{
+  "experiment": "study4_continuity",
+  "timestamp_utc": "20261008T093938Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "5430288",
+  "params": {
+    "pre_registration": {
+      "name": "roster_continuity",
+      "status": "pre-registered 2026-10-08, before any fit below (study 3 still running; its result unseen)",
+      "motivation": "The engine's early-season ratings lean on last season's games, but college rosters turn over: the median team had about 55-60% of last season's minutes back before 2021 and only 26% in 2025-26 (transfer portal), with incoming transfers worth about 20% of a team's minutes. The market's preseason numbers use roster information the engine does not have. Continuity tells the model when last season's ratings deserve less trust (and the forecast more uncertainty).\n",
+      "data": "ESPN player box scores via hoopR-mbb-data, commit 13b41edecaf52edc704ef6966eb5ada0bb4167d5 (data/ncaab_players.py)",
+      "definition": "data/ncaab_continuity.py, point in time: cont = share of the team's minutes last season played by players who have already appeared (minutes > 0) for it this season; xfer = last-season minutes of those players for other teams, as a share of the team's own last-season minutes. Game features: cont_avg and xfer_avg (mean of the two teams), lowcont = 1 - cont_avg, x_pts_lowcont = x_pts x lowcont.\n",
+      "candidates": {
+        "R1_continuity": "locked v3 + mean features [cont_avg, xfer_avg, x_pts_lowcont] + variance feature [lowcont]"
+      },
+      "selection_seasons": "2011-12 .. 2020-21 (eras dev 2011-18 and holdout 2018-21)",
+      "selection_rule": "as study_2: lower log loss AND higher matched-volume ROI at -110 than the locked engine in BOTH eras",
+      "confirmation": "as study_2, on the sealed 2021-26 seasons, run once",
+      "secondary": "early-season games (a team with < 6 games) reported separately; not part of the rule",
+      "disclosure": "Season-level medians of cont and xfer were looked at (no outcomes). If study 3 also reaches its confirmation, 2021-26 is used twice; both uses are reported."
+    }
+  },
+  "params_hash": "dc0727fa80ed",
+  "results": {
+    "selection": [
+      {
+        "engine": "locked_v3",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6881112066598433,
+        "matched bets": 4395,
+        "matched win": 0.5779921892947393,
+        "matched ROI @-110": 0.10245113248526218,
+        "bets P>=55%": 4395,
+        "ROI @-110 at P>=55%": 0.10245113248526218
+      },
+      {
+        "engine": "locked_v3",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6895360920286506,
+        "matched bets": 2262,
+        "matched win": 0.5672645739910314,
+        "matched ROI @-110": 0.08178603006189213,
+        "bets P>=55%": 2262,
+        "ROI @-110 at P>=55%": 0.08178603006189213
+      },
+      {
+        "engine": "locked_v3",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6887238156893853,
+        "matched bets": 6657,
+        "matched win": 0.5743581953516633,
+        "matched ROI @-110": 0.09542928154915536,
+        "bets P>=55%": 6657,
+        "ROI @-110 at P>=55%": 0.09542928154915536
+      },
+      {
+        "engine": "R1_continuity",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6881153721707393,
+        "matched bets": 4395,
+        "matched win": 0.5813419117647058,
+        "matched ROI @-110": 0.10875995449374289,
+        "bets P>=55%": 4391,
+        "ROI @-110 at P>=55%": 0.10175772758327985
+      },
+      {
+        "engine": "R1_continuity",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6893970225461699,
+        "matched bets": 2262,
+        "matched win": 0.5714926042133572,
+        "matched ROI @-110": 0.08978377943895184,
+        "bets P>=55%": 2224,
+        "ROI @-110 at P>=55%": 0.0882112491824722
+      },
+      {
+        "engine": "R1_continuity",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6886663993690618,
+        "matched bets": 6657,
+        "matched win": 0.5780039495670667,
+        "matched ROI @-110": 0.10231198874731996,
+        "bets P>=55%": 6615,
+        "ROI @-110 at P>=55%": 0.09720332577475435
+      }
+    ],
+    "early": [
+      {
+        "engine": "locked_v3",
+        "early games": 3801,
+        "log loss": 0.6903967034624932,
+        "bets P>=55%": 881,
+        "ROI @-110": 0.09906098441853267
+      },
+      {
+        "engine": "R1_continuity",
+        "early games": 3801,
+        "log loss": 0.6906131105768911,
+        "bets P>=55%": 885,
+        "ROI @-110": 0.10374935798664613
+      }
+    ],
+    "qualifies": {
+      "R1_continuity": false
+    },
+    "selected": null,
+    "confirmed": null
+  }
+}
