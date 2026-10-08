@@ -1,0 +1,137 @@
+{
+  "experiment": "study6_venue",
+  "timestamp_utc": "20261008T170538Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "ea72593",
+  "params": {
+    "pre_registration": {
+      "name": "venue_park_factor",
+      "status": "pre-registered 2026-10-08, before any candidate below was fitted (2021-26 still sealed)",
+      "motivation": "Loss autopsy (reports/loss_autopsy.md, reports/loss_autopsy_round2.md; 2011-21 only). Most losses are shooting and pace variance, but two pre-game ideas passed the screen rule (|t| >= 2 in 2011-18 and the same sign with |t| >= 1.5 in 2018-21) against the locked engine's own forecast: (1) a home floor's \"park factor\": floors whose earlier games ran over their closing totals keep doing so (t +5.50, +4.95 on all games; +3.40, +2.23 on the bets' own margins; about +0.5 points of total per point of factor in both eras); (2) high-altitude venues (t +3.48, +2.82), which keep about +1.7 points after the venue factor is controlled for. Ratings average a team's home and road games and the opener is set from team numbers, so venue-specific scoring is left over.\n",
+      "engine": "locked v3 (config/stage3_v3_locked.yaml); only the mean model gets extra features; the variance model, calibrator, decays, eligibility and products are unchanged.",
+      "definitions": {
+        "venue_factor": "non-neutral game: the home team's earlier non-neutral home games, from the first day of the season three seasons back up to the day before the game, shrunk mean of (final total - closing total) = sum / (n + 40); clean games with a valid close only. Neutral-site games: 0. (scripts/loss_autopsy_round2.py venue_features, extended to every season.)\n",
+        "high_altitude": "venue city (ESPN schedule) in the fixed 17-city list of scripts/loss_autopsy.py HIGH_ALT; unknown venue = 0"
+      },
+      "candidates": {
+        "V1_venue": "locked v3 mean features + venue_factor",
+        "V2_venue_altitude": "locked v3 mean features + venue_factor + high_altitude"
+      },
+      "selection_seasons": "2011-12 .. 2020-21 (eras dev 2011-18 and holdout 2018-21)",
+      "selection_rule": "as study_2: a candidate qualifies with lower log loss AND higher matched-volume ROI at -110 than the locked engine in BOTH eras; among qualifiers the higher pooled 2011-21 matched ROI is selected (V1 on a tie). If none qualifies, the study stops and 2021-26 stays sealed.\n",
+      "confirmation": "as study_2: ONE run on the sealed 2021-22 .. 2025-26 seasons for the selected candidate only (the script refuses to run twice). Passes with lower log loss AND matched-volume ROI not lower at -110 and at the best book's real price. Pass = recorded next to the locked engine in the 2026-27 forward ledger; the forward season decides any switch.\n",
+      "secondary": "bets with a strong venue factor (|factor| >= 1) that agrees or disagrees with the bet; 2.5+ cards and main-line doubles at real prices if the confirmation runs. Not part of the rule.",
+      "disclosure": "Both ideas were found on 2011-21, the same seasons the selection rule uses, so the selection is optimistic; the 2021-26 run is the real test. 2021-26 was used before only with the locked engine (stage-2b test, stage-3 re-analysis, diagnostics, money pages, 2023-24 ledger); no venue, altitude or availability analysis has read it.\n"
+    }
+  },
+  "params_hash": "0941583aeba2",
+  "results": {
+    "selection": [
+      {
+        "engine": "locked_v3",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6881112066598433,
+        "matched bets": 4395,
+        "matched win": 0.5779921892947393,
+        "matched ROI @-110": 0.10245113248526218,
+        "bets P>=55%": 4395,
+        "ROI @-110 at P>=55%": 0.10245113248526218
+      },
+      {
+        "engine": "locked_v3",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6895360920286506,
+        "matched bets": 2262,
+        "matched win": 0.5672645739910314,
+        "matched ROI @-110": 0.08178603006189213,
+        "bets P>=55%": 2262,
+        "ROI @-110 at P>=55%": 0.08178603006189213
+      },
+      {
+        "engine": "locked_v3",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6887238156893853,
+        "matched bets": 6657,
+        "matched win": 0.5743581953516633,
+        "matched ROI @-110": 0.09542928154915536,
+        "bets P>=55%": 6657,
+        "ROI @-110 at P>=55%": 0.09542928154915536
+      },
+      {
+        "engine": "V1_venue",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6874495643521885,
+        "matched bets": 4395,
+        "matched win": 0.5873563218390805,
+        "matched ROI @-110": 0.12007446478436237,
+        "bets P>=55%": 4630,
+        "ROI @-110 at P>=55%": 0.12014529746711172
+      },
+      {
+        "engine": "V1_venue",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6884446702916976,
+        "matched bets": 2262,
+        "matched win": 0.5795607350963693,
+        "matched ROI @-110": 0.1049754842858291,
+        "bets P>=55%": 2803,
+        "ROI @-110 at P>=55%": 0.09201180553303277
+      },
+      {
+        "engine": "V1_venue",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6878773958797201,
+        "matched bets": 6657,
+        "matched win": 0.5847135693663577,
+        "matched ROI @-110": 0.11494394144236415,
+        "bets P>=55%": 7433,
+        "ROI @-110 at P>=55%": 0.10953609823514303
+      },
+      {
+        "engine": "V2_venue_altitude",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6872791962213183,
+        "matched bets": 4395,
+        "matched win": 0.5859770114942529,
+        "matched ROI @-110": 0.11746819733167856,
+        "bets P>=55%": 4739,
+        "ROI @-110 at P>=55%": 0.12501678528266416
+      },
+      {
+        "engine": "V2_venue_altitude",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6880565949189065,
+        "matched bets": 2262,
+        "matched win": 0.5781459919390954,
+        "matched ROI @-110": 0.10240334378265413,
+        "bets P>=55%": 2928,
+        "ROI @-110 at P>=55%": 0.10211748633879782
+      },
+      {
+        "engine": "V2_venue_altitude",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6876134276424013,
+        "matched bets": 6657,
+        "matched win": 0.5833206744645298,
+        "matched ROI @-110": 0.1123492700779767,
+        "bets P>=55%": 7667,
+        "ROI @-110 at P>=55%": 0.11627162455387316
+      }
+    ],
+    "qualifies": {
+      "V1_venue": true,
+      "V2_venue_altitude": true
+    },
+    "selected": "V1_venue",
+    "confirmed": false
+  }
+}

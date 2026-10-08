@@ -36,12 +36,15 @@ the forward season.
 | 3 | ratings on shooting-luck-neutral points (league-average 3P% and FT%) | matched ROI lower in both eras (10.1% vs 10.2%, 6.8% vs 8.2%) → not adopted: the engine's ratings, and the market, already discount shooting luck |
 | 4 | roster continuity and transfers (player box scores) | matched ROI up in both eras (+0.6, +0.8 pts) and log loss better in 2018-21, but 2011-18 log loss was 0.04×10⁻⁴ worse, so the strict rule says no. It matters most in the transfer-portal era, so it is the best candidate for a forward shadow test |
 | 5 | learn from the closing line (train on close − open, or add the predicted move) | probabilities worse (close target) or unchanged (move feature); matched ROI not better → not adopted. The engine's outcome model already carries what the market's move would teach it |
+| 6 | the home floor's "park factor" (does it run over or under its closing totals?), and high-altitude venues; from the loss autopsy | **passed 2011-21** (matched ROI 12.0% vs 10.3% and 10.5% vs 8.2%, log loss better in both eras), then **failed its one-time 2021-26 check**: log loss slightly better, but straight bets at matched volume 7.9% vs 8.3% (-110) and 9.8% vs 10.3% (real prices). The 2.5+ card and the main-line double did better with it (ROI 24.0% vs 19.9%, 33.4% vs 29.0%), which the rule does not count → not adopted; forward shadow candidate for cards ([`study6_venue.md`](study6_venue.md), [`loss_autopsy.md`](loss_autopsy.md)) |
 | staking | size by the engine's edge (1/8 Kelly, fixed bankroll) | +11.7% per unit staked vs +9.5% flat (2011-21); +11.5% vs +10.3% (2021-26); drawdown no larger → **adopted as the staking rule** |
 
-The lesson: on the data we already have, model tweaks are close to exhausted. Five studies and seven
-candidates each moved the backtest by a fraction of a point, and none held up in both periods
-(continuity came closest). The remaining gains are
-in execution and in information the engine does not yet have.
+The lesson: on the data we already have, model tweaks are close to exhausted. Six studies and nine
+candidates each moved the backtest by a fraction of a point to two points, and none held up on the
+seasons it had not seen (continuity and the venue factor came closest). The loss autopsy says why: won and
+lost bets looked the same when they were placed (+4.7 vs +4.6 points of expected edge), and 97% of losses
+were driven mainly by shooting or pace swings after tip-off. The remaining gains are in execution and in
+information the engine does not yet have.
 
 ## 4. Levers, ranked by expected value
 
@@ -58,6 +61,11 @@ in execution and in information the engine does not yet have.
      officials on game day, after the opener, so this would be a late-bet product judged
      against the closing line.
    * Roster continuity (study 4): forward shadow test.
+   * Venue park factor (study 6): forward shadow test for the 2.5+ card. Its information is real in all
+     three eras (the locked engine's bets against a strong venue factor won 55.2% and 53.9%, against
+     57-59% for the rest), but as a model feature it did not improve the straight bets on 2021-26.
+   * Before an Over, check for a missing starter: Overs placed right after a 25+ minute player sat
+     won about 2.5-3 points less often (2011-21; not significant, not a rule).
 3. **New markets.**
    * First-half totals and team totals are thinner and softer markets. They need SBR
      first-half lines; ESPN has scores by half for 2023 onward.
