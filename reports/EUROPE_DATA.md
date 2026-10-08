@@ -91,8 +91,17 @@ read them as direction, not proof:
 | Same, 6 h / 1 h before tip, expected ≥ 2% | **+4.8% / +4.9% CLV**, beating the close in 87% / 94% of games (15 / 18 games) |
 | Actual results | too few games to tell: ROI confidence intervals are ±25 to ±60 points wide |
 
+Q3 and Q4 ([`euro_dev_q3q4.md`](euro_dev_q3q4.md), 108 games with both Pinnacle ladders):
+
+| finding | numbers |
+|---|---|
+| Does Pinnacle's line move toward our rating model? | slightly: correlation +0.18 (95% CI 0.02–0.32) between the model's disagreement and the open-to-close move |
+| Betting the model's side at Pinnacle's own price | CLV −3.6%: the model cannot beat Pinnacle's margin |
+| Two-leg cards (combined ≥ 2.5) from soft prices above Pinnacle's fair price, when Pinnacle opens | 17 cards, mean odds 3.1 (break-even 32%), **joint CLV +7.3%**, 88% of cards beat the close; 5 of 17 won (too few to judge) |
+
 The pattern a real price edge leaves is there: soft-book prices that beat Pinnacle's fair
-price keep beating its close. It is small (2–5% per bet), and it is not yet proven by
+price keep beating its close. In Europe the edge comes from prices, not from out-predicting
+the market. It is small (2–5% per bet), and it is not yet proven by
 results. Two such legs per card would make roughly +5–10% expected per card at the
 user's odds. That is a long way from a 60% hit rate, but a positive-expectation process.
 
