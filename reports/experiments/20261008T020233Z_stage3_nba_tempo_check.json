@@ -1,0 +1,95 @@
+{
+  "experiment": "stage3_nba_tempo_check",
+  "timestamp_utc": "20261008T020233Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "b95efeb",
+  "params": {
+    "ratings": {
+      "half_life_days": 45,
+      "prev_season_weight": 0.15,
+      "ridge": 3.0
+    },
+    "variant": "N3_no_style",
+    "dev": [
+      "2021-22",
+      "2022-23"
+    ]
+  },
+  "params_hash": "cb2f3ae1005c",
+  "results": {
+    "table": [
+      {
+        "ratings": "as locked (bug)",
+        "season": "2021-22",
+        "games": 1227,
+        "ll_gain_x1e4": 19.457194299249416,
+        "bets_p>=55%": 310,
+        "win_p>=55%": 0.5580645161290323,
+        "ci95": [
+          0.5024049002037765,
+          0.6123026465331762
+        ]
+      },
+      {
+        "ratings": "as locked (bug)",
+        "season": "2022-23",
+        "games": 1260,
+        "ll_gain_x1e4": -4.463513619923365,
+        "bets_p>=55%": 106,
+        "win_p>=55%": 0.5283018867924528,
+        "ci95": [
+          0.4339500438390183,
+          0.620674069429543
+        ]
+      },
+      {
+        "ratings": "as locked (bug)",
+        "season": "DEV POOLED",
+        "games": 2487,
+        "ll_gain_x1e4": 7.338138417399831,
+        "bets_p>=55%": 416,
+        "win_p>=55%": 0.5504807692307693,
+        "ci95": [
+          0.5024328849160473,
+          0.5976048435987069
+        ]
+      },
+      {
+        "ratings": "venue_tempo fixed",
+        "season": "2021-22",
+        "games": 1227,
+        "ll_gain_x1e4": 20.161112930580096,
+        "bets_p>=55%": 296,
+        "win_p>=55%": 0.543918918918919,
+        "ci95": [
+          0.4869769006273159,
+          0.5997355502133948
+        ]
+      },
+      {
+        "ratings": "venue_tempo fixed",
+        "season": "2022-23",
+        "games": 1260,
+        "ll_gain_x1e4": -5.780261993730829,
+        "bets_p>=55%": 116,
+        "win_p>=55%": 0.5344827586206896,
+        "ci95": [
+          0.4440632412936442,
+          0.6226915416865563
+        ]
+      },
+      {
+        "ratings": "venue_tempo fixed",
+        "season": "DEV POOLED",
+        "games": 2487,
+        "ll_gain_x1e4": 7.018317432135879,
+        "bets_p>=55%": 412,
+        "win_p>=55%": 0.5412621359223301,
+        "ci95": [
+          0.4929857523578227,
+          0.5887761492893429
+        ]
+      }
+    ]
+  }
+}

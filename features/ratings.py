@@ -3,13 +3,20 @@
 For every game date D, ratings are fitted on games with date < D only:
   * points model     : pts_team = mu + off_t + def_opp + h * venue
   * efficiency model : 100*pts/poss = mu_e + oe_t + de_opp + h_e * venue   (box games)
-  * tempo model      : poss = tau + tp_home + tp_away                       (box games)
+  * tempo model      : poss = tau + tp_home + tp_away + h_t * venue         (box games)
 Weights decay with game age (half-life in days); the previous season's games
 enter with a reduced weight, which acts as a shrinking pre-season prior that
 current-season games quickly override. A ridge penalty shrinks every team
 toward league average (strongest when a team has few games).
 
 Each emitted rating row carries `asof` = last game date used, < D.
+
+`venue_tempo`: the tempo fit has a venue term, but the original prediction omitted it.
+With many neutral-site games (NCAAB) tau is still the neutral-court baseline and the
+omission costs ~nothing; in a league with (almost) no neutral games (NBA, EuroLeague)
+tau and h_t are collinear, the solver splits the intercept between them, and the
+predicted possessions come out about half size. The default (False) reproduces the
+locked stage-2/3 engines exactly; new work sets True.
 """
 from __future__ import annotations
 
@@ -25,7 +32,8 @@ def _season_index(seasons: pd.Series) -> pd.Series:
 
 class DailyRatings:
     def __init__(self, half_life_days: float = 45.0, prev_season_weight: float = 0.35,
-                 ridge: float = 3.0, lookback_days: int = 400):
+                 ridge: float = 3.0, lookback_days: int = 400, venue_tempo: bool = False):
+        self.venue_tempo = venue_tempo
         self.hl = half_life_days
         self.prev_w = prev_season_weight
         self.lam = ridge
@@ -75,7 +83,7 @@ class DailyRatings:
                 row["rt_off_away"], row["rt_def_away"] = off[a], dfn[a]
                 if eff_fit is not None:
                     mue, oe, de, he, tau, tp, ht = eff_fit
-                    poss = tau + tp[h] + tp[a]
+                    poss = tau + tp[h] + tp[a] + (ht * v if self.venue_tempo else 0.0)
                     oe_h = mue + oe[h] + de[a] + he * v
                     oe_a = mue + oe[a] + de[h] - he * v
                     row.update({"rt_poss": poss, "rt_oe_home": oe_h, "rt_oe_away": oe_a,

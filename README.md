@@ -9,6 +9,7 @@ time **on seasons it has never seen**.
 | 1 | NBA, Overs only, main line | **No.** Each leg needs ~77%; the NBA close tops out near 60%. 0 cards in 2,896 slates. [`RESEARCH_SUMMARY.md`](reports/RESEARCH_SUMMARY.md) |
 | 2 | NCAA men's basketball, Over **or** Under, opening line, **buffered (alternate) lines** | **Yes:** 63.9% 2/2 over 664 never-seen cards, 2021-26 (95% CI 60.1–67.4%). 60.9% on the 2018-21 holdout. [`STAGE2_SUMMARY.md`](reports/STAGE2_SUMMARY.md) |
 | 3 | Odds-targeted cards: combined odds ≥ 2.5 (legs ≈ 1.6), NCAAB + NBA openers, real prices | **NCAAB: 46.8% of cards won at 2.57 avg (break-even 39%), ROI ≈ +20%** (2021-26 re-analysis; +16–17% in development). NBA: no reliable edge. [`STAGE3_SUMMARY.md`](reports/STAGE3_SUMMARY.md) |
+| Europe | EuroLeague + EuroCup: free official data (2016-26, with referees) loaded; odds history pending | Ratings work (residual SD ~17 pts); referees/rest add nothing out of sample. The missing input is historical odds; a free OddsPapi key unlocks them. [`EUROPE_DATA.md`](reports/EUROPE_DATA.md) |
 
 The 60% is bought with price. Each leg is an alternate total about 10 points better than
 the opener (~80% win, ~1.25 odds), so the double pays ~1.65. Whether it makes money depends
@@ -43,6 +44,7 @@ config/       config.yaml (stage 1), stage2.yaml / stage2b.yaml (pre-registratio
               stage2_locked.yaml (v2), stage3_v3_locked.yaml (v3)
 data/         NBA: sources.py, ingest.py · NCAAB: ncaab_ingest.py (SBR archive + ESPN box),
               sbr_live.py (sportsbookreview.com scraper/parser), ncaab_unify.py (ESPN team ids)
+              Europe: euroleague.py (official API: games, box, referees), oddspapi.py (historical odds)
 features/     pit.py (NBA), ratings.py (daily ridge ratings), ncaab_features.py (3 markets)
 models/       total_models.py (stage 1), dist_models.py (mean+variance, edge-aware calibrator),
               live.py (NBA CLI), live_ncaab.py (NCAAB card engine)
@@ -50,6 +52,7 @@ backtest/     walkforward.py / cards.py / engine.py (stage 1), wf2.py (stage 2 w
               leg pricing, buffered card engine)
 scripts/      run_research.py, run_holdout.py, predict.py (stage 1)
               stage2_iterate.py, stage2_holdout.py, stage2b_test.py, predict_cards.py, grade_ledger.py
+              euro_info_study.py (what the free European data adds)
 reports/      RESEARCH_SUMMARY.md, STAGE2_SUMMARY.md, ITERATIONS.md, holdout & test reports,
               experiments/*.json (one record per run)
 tests/        leakage tests (NBA + NCAAB, all markets) and engine unit tests

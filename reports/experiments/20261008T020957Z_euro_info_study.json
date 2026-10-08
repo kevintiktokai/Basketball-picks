@@ -1,0 +1,159 @@
+{
+  "experiment": "euro_info_study",
+  "timestamp_utc": "20261008T020957Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "b95efeb",
+  "params": {
+    "codes": [
+      "E2016",
+      "E2017",
+      "E2018",
+      "E2019",
+      "E2020",
+      "E2021",
+      "E2022",
+      "E2023",
+      "E2024",
+      "E2025",
+      "U2016",
+      "U2017",
+      "U2018",
+      "U2019",
+      "U2020",
+      "U2021",
+      "U2022",
+      "U2023",
+      "U2024",
+      "U2025"
+    ],
+    "hl": 25.0,
+    "shrink": 15.0,
+    "feats": [
+      "crew_fta",
+      "crew_pf",
+      "crew_resid",
+      "short_rest_home",
+      "short_rest_away"
+    ]
+  },
+  "params_hash": "91a865422fc4",
+  "results": {
+    "accuracy": [
+      {
+        "competition": "eurocup",
+        "games": 1323,
+        "mean total": 164.68631897203326,
+        "SD of totals (around season mean)": 18.39593430565135,
+        "rating model residual SD": 17.505974868014693,
+        "rating model MAE": 13.973504077418932,
+        "mean residual": 1.0578116066241265
+      },
+      {
+        "competition": "euroleague",
+        "games": 2270,
+        "mean total": 163.09691629955947,
+        "SD of totals (around season mean)": 17.367421963298682,
+        "rating model residual SD": 17.05475741532892,
+        "rating model MAE": 13.3398630869265,
+        "mean residual": 0.7417777084523384
+      }
+    ],
+    "walk_forward": [
+      {
+        "season": "2019-20",
+        "games": 420,
+        "baseline MSE": 303.27586824357263,
+        "with referees+rest MSE": 297.7184456013007,
+        "MSE reduction %": 1.8324645064765166
+      },
+      {
+        "season": "2020-21",
+        "games": 513,
+        "baseline MSE": 310.66987688774066,
+        "with referees+rest MSE": 309.34856426873057,
+        "MSE reduction %": 0.42531082583443514
+      },
+      {
+        "season": "2021-22",
+        "games": 488,
+        "baseline MSE": 306.0089306674929,
+        "with referees+rest MSE": 308.21809091110185,
+        "MSE reduction %": -0.7219267224620296
+      },
+      {
+        "season": "2022-23",
+        "games": 523,
+        "baseline MSE": 259.7960475048407,
+        "with referees+rest MSE": 259.47148683193063,
+        "MSE reduction %": 0.12492902645258042
+      },
+      {
+        "season": "2023-24",
+        "games": 526,
+        "baseline MSE": 292.798014199601,
+        "with referees+rest MSE": 295.47330132718207,
+        "MSE reduction %": -0.9136971556635176
+      },
+      {
+        "season": "2024-25",
+        "games": 526,
+        "baseline MSE": 287.52251256854765,
+        "with referees+rest MSE": 287.9936165626951,
+        "MSE reduction %": -0.16384942867215813
+      },
+      {
+        "season": "2025-26",
+        "games": 597,
+        "baseline MSE": 317.4390914214838,
+        "with referees+rest MSE": 318.3283555661161,
+        "MSE reduction %": -0.28013693608124335
+      },
+      {
+        "season": "all (out of sample)",
+        "games": 3593,
+        "baseline MSE": 296.88698501952456,
+        "with referees+rest MSE": 296.90988134794577,
+        "MSE reduction %": -0.007712136124693458
+      }
+    ],
+    "quintiles": [
+      {
+        "q": "most Under-leaning 20%",
+        "games": 719,
+        "predicted_adj": -1.9597158094441807,
+        "realised": -1.1098072348678163,
+        "over_rate": 0.4603616133518776
+      },
+      {
+        "q": "2nd",
+        "games": 718,
+        "predicted_adj": -0.40757473755341717,
+        "realised": 0.6204019736449051,
+        "over_rate": 0.4986072423398329
+      },
+      {
+        "q": "middle",
+        "games": 719,
+        "predicted_adj": 0.3691151364853499,
+        "realised": -0.2299406402855656,
+        "over_rate": 0.4909596662030598
+      },
+      {
+        "q": "4th",
+        "games": 718,
+        "predicted_adj": 1.0933227309544626,
+        "realised": 1.6778668675531556,
+        "over_rate": 0.532033426183844
+      },
+      {
+        "q": "most Over-leaning 20%",
+        "games": 719,
+        "predicted_adj": 2.138199226351079,
+        "realised": 0.8745913287226228,
+        "over_rate": 0.5187760778859527
+      }
+    ],
+    "stability": -0.005611262785041452,
+    "n_eval": 3593
+  }
+}

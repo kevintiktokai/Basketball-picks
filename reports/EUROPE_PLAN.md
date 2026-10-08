@@ -1,5 +1,9 @@
 # Taking the engine to European basketball — plan
 
+> **Update, October 2026:** the sources have been checked and the free official EuroLeague/EuroCup
+> data loaded (4,888 games, 2016-26). What it shows, and which odds source is still missing, is in
+> [`EUROPE_DATA.md`](EUROPE_DATA.md). Corrections to this plan are marked below.
+
 ## What carries over unchanged
 
 The engine is league-agnostic. A new league needs only an **adapter** that produces
@@ -21,9 +25,10 @@ that this loses only a little.
   its own price, e.g. Over 157.5 @ 1.62 and Over 160.5 @ 1.87. This is exactly what
   the odds-targeted card engine models. Real ladder prices replace our modelled
   alternate prices, which removes the biggest assumption in the US results.
-* **Scale.** 40-minute games, fewer possessions: totals around 150–175, residual SD
-  around 13–15 points (NCAAB ~17, NBA ~18). A leg at ~1.6 sits about 3–4 points off the
-  main line rather than 4–5.
+* **Scale.** 40-minute games, fewer possessions: totals around 150–175. *Corrected:* this
+  plan guessed a residual SD of 13–15 points; the measured value for a team-rating model is
+  **~17 points** in both EuroLeague and EuroCup, close to NCAAB. A leg at ~1.6 therefore sits
+  about 4 points off the main line, as in NCAAB.
 * **Softness varies by league.** EuroLeague is sharp; second-tier domestic leagues
   likely less so, but with lower limits. The same CLV check (does the market move our
   way?) tells us which leagues are worth it.
@@ -34,10 +39,11 @@ that this loses only a little.
 
 | need | source | status |
 |---|---|---|
-| EuroLeague / EuroCup results | `api-live.euroleague.net/v1/results?seasonCode=E2024` (U = EuroCup) | ✅ free; 330 EuroLeague games in 2024-25 |
-| EuroLeague box scores, by quarter | `live.euroleague.net/api/Boxscore`, `api-live.euroleague.net/v2/.../stats` | ✅ free |
+| EuroLeague / EuroCup results | `api-live.euroleague.net/v1/results?seasonCode=E2024` (U = EuroCup) | ✅ free; **loaded**: 3,049 EuroLeague + 1,839 EuroCup games, 2016-26 (`data/euroleague.py`) |
+| EuroLeague box scores, referees, attendance | `api-live.euroleague.net/v2/.../games/{n}` + `v3/.../stats` (legacy `live.euroleague.net/api/Boxscore` as fallback) | ✅ free; loaded |
 | domestic league results/box (ACB, LNB, BBL, LBA, BSL, GBL, ABA…) | league sites / aggregators | per league; to be built |
 | **historical odds with opening + closing ladders** | OddsPortal / BetExplorer | pages load, but odds are loaded dynamically; automated collection may breach their terms |
+| | **OddsPapi** (opening + closing price per book per outcome, Pinnacle included) | free key; adapter ready (`data/oddspapi.py`), history depth unknown until a key is used |
 | | The Odds API (historical snapshots since 2020, includes EuroLeague) | needs a paid key |
 | | sportsbookreview.com (used for NCAAB/NBA) | ❌ no European leagues |
 

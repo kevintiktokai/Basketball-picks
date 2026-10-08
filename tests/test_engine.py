@@ -111,3 +111,24 @@ def test_line_shopping_and_real_prices():
     assert (line, book) == (141.5, "mgm") and abs(dec - 2.0) < 1e-9
     assert abs(median_open_price(books, 1, 140.5) - (1 + 100 / 110)) < 1e-9
     assert abs(float(american_to_decimal(150)) - 2.5) < 1e-9
+
+
+def test_tempo_venue_term_restores_possessions_without_neutral_games():
+    """Without neutral-site games the tempo intercept is collinear with the venue term; the
+    locked default drops that term (~half-size possessions), venue_tempo=True keeps it."""
+    from features.ratings import DailyRatings
+    rng = np.random.default_rng(0)
+    teams = [f"T{i}" for i in range(8)]
+    rows = []
+    for d in range(60):
+        perm = rng.permutation(teams)
+        for k in range(4):
+            rows.append({"date": pd.Timestamp("2024-10-01") + pd.Timedelta(days=d), "season": "2024-25",
+                         "home": perm[2 * k], "away": perm[2 * k + 1], "neutral": False,
+                         "home_pts": 80 + rng.normal(0, 8), "away_pts": 78 + rng.normal(0, 8),
+                         "poss": 72 + rng.normal(0, 3), "game_key": f"g{d}_{k}"})
+    g = pd.DataFrame(rows)
+    old = DailyRatings(half_life_days=60).run(g).rt_poss.dropna()
+    new = DailyRatings(half_life_days=60, venue_tempo=True).run(g).rt_poss.dropna()
+    assert abs(new.mean() - 72) < 1.5
+    assert old.mean() < 50                                   # the documented legacy behaviour
