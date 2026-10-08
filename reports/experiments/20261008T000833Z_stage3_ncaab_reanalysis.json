@@ -1,0 +1,172 @@
+{
+  "experiment": "stage3_ncaab_reanalysis",
+  "timestamp_utc": "20261008T000833Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "024b485",
+  "params": {
+    "lock": {
+      "engine": "v3",
+      "products": {
+        "target_card": {
+          "objective": "joint",
+          "min_combined_odds": 2.5,
+          "leg_odds_band": [
+            1.4,
+            1.9
+          ],
+          "release_gate": "conservative EV > 0",
+          "alt_price_margin": 0.045,
+          "alt_price_reference": "open",
+          "alt_ladder": "median"
+        },
+        "main_line_double": {
+          "objective": "ev",
+          "legs": "best book's opening number at its REAL price",
+          "min_combined_odds": 2.5,
+          "release_gate": "conservative EV > 0"
+        }
+      },
+      "dev_results_ncaab_2018_21": {
+        "target_card": {
+          "cards": 363,
+          "hit": 0.463,
+          "avg_odds": 2.548,
+          "roi": 0.167,
+          "roi_ci95": [
+            0.039,
+            0.298
+          ]
+        },
+        "target_card_close_priced": {
+          "roi": -0.027
+        }
+      },
+      "locked_at_revision": "0c1130d"
+    }
+  },
+  "params_hash": "8111c1a12c4b",
+  "results": {
+    "pooled": [
+      {
+        "product": "TARGET CARD (locked: ~1.6 legs, >=2.5, max win prob)",
+        "season": "POOLED",
+        "cards": 664,
+        "pct_slates": 0.9693430656934306,
+        "hit": 0.46987951807228917,
+        "hit_ci95": [
+          0.4321994188870479,
+          0.5079061390775952
+        ],
+        "avg_odds": 2.581329567324915,
+        "breakeven": 0.3892590570382298,
+        "model_hit": 0.45414795309537653,
+        "leg_win": 0.6754518072289156,
+        "leg_p": 0.6740630706154767,
+        "roi": 0.20613226874897098,
+        "roi_ci95": [
+          0.10972007588322967,
+          0.30768592133841094
+        ],
+        "units": 136.87182644931673,
+        "max_dd": 13.920347932087182,
+        "losing_run": 8
+      },
+      {
+        "product": "  sensitivity: alternate margin 8%",
+        "season": "POOLED",
+        "cards": 654,
+        "pct_slates": 0.9547445255474453,
+        "hit": 0.42813455657492355,
+        "hit_ci95": [
+          0.39073965473710753,
+          0.46636880419890386
+        ],
+        "avg_odds": 2.705843141707115,
+        "breakeven": 0.37404778575131653,
+        "model_hit": 0.4221082091345676,
+        "leg_win": 0.650611620795107,
+        "leg_p": 0.6494099470217435,
+        "roi": 0.1492062896200641,
+        "roi_ci95": [
+          0.0439676618662062,
+          0.2517235693463217
+        ],
+        "units": 97.58091341152192,
+        "max_dd": 32.863423498809325,
+        "losing_run": 13
+      },
+      {
+        "product": "  stress: alternates priced off the CLOSE",
+        "season": "POOLED",
+        "cards": 664,
+        "pct_slates": 0.9693430656934306,
+        "hit": 0.46987951807228917,
+        "hit_ci95": [
+          0.4321994188870479,
+          0.5079061390775952
+        ],
+        "avg_odds": 2.364940427078327,
+        "breakeven": 0.43168600763182563,
+        "model_hit": 0.45414795309537653,
+        "leg_win": 0.6754518072289156,
+        "leg_p": 0.6740630706154767,
+        "roi": 0.10129622221305645,
+        "roi_ci95": [
+          0.012305261228581024,
+          0.19490191584308886
+        ],
+        "units": 67.26069154946948,
+        "max_dd": 19.755422867978673,
+        "losing_run": 8
+      },
+      {
+        "product": "  variant: alternates shopped at best book",
+        "season": "POOLED",
+        "cards": 664,
+        "pct_slates": 0.9693430656934306,
+        "hit": 0.5105421686746988,
+        "hit_ci95": [
+          0.4725680740759859,
+          0.548394980636389
+        ],
+        "avg_odds": 2.5274292724913052,
+        "breakeven": 0.39594171640209036,
+        "model_hit": 0.5060278657498825,
+        "leg_win": 0.7123493975903614,
+        "leg_p": 0.7104181274452422,
+        "roi": 0.29126333653866876,
+        "roi_ci95": [
+          0.1954939212418672,
+          0.3937201862860101
+        ],
+        "units": 193.39885546167605,
+        "max_dd": 13.152325223516215,
+        "losing_run": 11
+      },
+      {
+        "product": "MAIN-LINE DOUBLE (real prices only)",
+        "season": "POOLED",
+        "cards": 652,
+        "pct_slates": 0.9518248175182482,
+        "hit": 0.3834355828220859,
+        "hit_ci95": [
+          0.3468993246767155,
+          0.42133739589727676
+        ],
+        "avg_odds": 3.638104231555325,
+        "breakeven": 0.2749448233254547,
+        "model_hit": 0.37460191356627126,
+        "leg_win": 0.6050613496932515,
+        "leg_p": 0.6099717427844575,
+        "roi": 0.3868007791562048,
+        "roi_ci95": [
+          0.2573021104484713,
+          0.531096724875475
+        ],
+        "units": 252.19410800984554,
+        "max_dd": 14.710743801652882,
+        "losing_run": 12
+      }
+    ]
+  }
+}
