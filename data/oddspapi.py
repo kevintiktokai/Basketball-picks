@@ -41,8 +41,9 @@ TOURNAMENTS = {"euroleague": 138}          # documented id; EuroCup is looked up
 FIRST_SEASON_START = "2025-09-20"
 HISTORY_START = "2026-01-20"               # measured 2026-10-08: none on 15 Jan 2026, present from 20 Jan
 MAX_MISSES = 5                             # consecutive games without history -> stop that season
-BOOKS = "pinnacle,bet365,unibet"           # a sharp reference + two big European books (max 3)
-MIN_INTERVAL = 1.0                         # free tier: ~0.9 s cooldown per endpoint
+BOOKS = "pinnacle,1xbet,betway"            # sharp reference + the two soft books with the fullest
+                                           # 2025-26 archive (bet365 has almost none before 2026-27)
+MIN_INTERVAL = 5.5                         # free tier: ~5 s cooldown between history requests (measured)
 _last_call = [0.0]
 
 
@@ -63,15 +64,26 @@ def used(month: str | None = None) -> int:
     return json.loads(p.read_text()).get(month or _month(), 0) if p.exists() else 0
 
 
-def _spend() -> None:
+def _spend(kind: str = "") -> None:
+    """Count one request (kind='' -> the monthly budget; 'throttled' -> a separate tally of
+    rate-limited requests, which the API rejects before serving)."""
     p = RAW / "usage.json"
     u = json.loads(p.read_text()) if p.exists() else {}
-    m = _month()
-    if u.get(m, 0) >= budget():
+    m = _month() + (f"-{kind}" if kind else "")
+    if not kind and u.get(m, 0) >= budget():
         raise BudgetExhausted(f"monthly budget of {budget()} requests spent for {m}")
     u[m] = u.get(m, 0) + 1
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(u, indent=1))
+
+
+def _unspend() -> None:
+    """Move the request just counted from the budget to the 'throttled' tally."""
+    p = RAW / "usage.json"
+    u = json.loads(p.read_text())
+    u[_month()] -= 1
+    p.write_text(json.dumps(u, indent=1))
+    _spend("throttled")
 
 
 def _get_json(path: str, params: dict):
@@ -81,22 +93,29 @@ def _get_json(path: str, params: dict):
     if not key:
         raise SystemExit("Set ODDSPAPI_KEY (free key from oddspapi.io) in the environment, then start a new session.")
     url = f"{BASE}{path}?{urllib.parse.urlencode({**params, 'apiKey': key})}"
-    for attempt in range(3):
+    for attempt in range(4):
         wait = MIN_INTERVAL - (time.time() - _last_call[0])
         if wait > 0:
             time.sleep(wait)
         _spend()
-        _last_call[0] = time.time()
         req = urllib.request.Request(url, headers={"Accept": "application/json",
                                                    "User-Agent": "basketball-totals-research"})
         try:
             with urllib.request.urlopen(req, timeout=180) as r:
-                return json.loads(r.read())
+                body = r.read()
+            _last_call[0] = time.time()                  # pace from the END of the download
+            return json.loads(body)
         except urllib.error.HTTPError as e:
+            _last_call[0] = time.time()
             if e.code == 404:
                 return None
             if e.code == 429:
-                time.sleep(5 * (attempt + 1))
+                _unspend()
+                try:
+                    hint = float(e.headers.get("Retry-After") or json.loads(e.read()).get("retryAfterSec") or 0)
+                except Exception:  # noqa: BLE001
+                    hint = 0.0
+                time.sleep(max(hint, 2.0 * (attempt + 1)) + 0.5)
                 continue
             if e.code in (401, 403):
                 raise SystemExit(f"OddsPapi refused the key on {path} (HTTP {e.code}).") from None
@@ -239,15 +258,23 @@ def _slim(data: dict, keep: set, cutoff: pd.Timestamp | None = None) -> dict:
     return {"fixtureId": data.get("fixtureId"), "bookmakers": books}
 
 
+def hist_path(tid: int, fid: str, books: str = BOOKS):
+    """The first book set fetched for a game is `<id>.json`; any extra set is `<id>__<books>.json`."""
+    base = RAW / str(tid) / "hist" / f"{fid}.json"
+    if not base.exists() or json.loads(base.read_text()).get("_books", BOOKS) == books:
+        return base
+    return RAW / str(tid) / "hist" / f"{fid}__{books.replace(',', '_')}.json"
+
+
 def history(f: dict, tid: int, keep: set, books: str = BOOKS):
     """Full price timelines for one finished fixture (one request), cached with its fixture meta."""
-    path = RAW / str(tid) / "hist" / f"{f['fixtureId']}.json"
+    path = hist_path(tid, f["fixtureId"], books)
     if path.exists():
         return json.loads(path.read_text())
     data = _get_json("/historical-odds", {"fixtureId": f["fixtureId"], "bookmakers": books})
     slim = {**_slim(data or {}, keep, _cutoff(f)), "_fixture": {k: f.get(k) for k in (
         "fixtureId", "startTime", "trueStartTime", "participant1Name", "participant2Name", "statusId")},
-        "_tid": tid}
+        "_tid": tid, "_books": books}
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(slim))
     return slim
@@ -271,31 +298,33 @@ def seasons_to_cover(first: str = FIRST_SEASON_START):
 
 
 def update(names=("euroleague", "eurocup"), first: str = HISTORY_START, books: str = BOOKS) -> dict:
-    """Spend the remaining monthly budget, OLDEST games first: the free archive may be a rolling
-    window, so the oldest games are the ones about to disappear. Season by season (oldest
-    first), EuroLeague before EuroCup; a season stops after MAX_MISSES consecutive games without
-    history. Resumable; stops cleanly at the budget."""
+    """Spend the remaining monthly budget on finished games, OLDEST first across all competitions:
+    the free archive may be a rolling window, so the oldest games are the ones about to
+    disappear. A competition-season stops after MAX_MISSES consecutive games without history.
+    Resumable; stops cleanly at the budget."""
     M = markets()
     keep = _keep_ids(M)
     now = pd.Timestamp.now(tz="UTC")
     got = {n: 0 for n in names}
     try:
+        queue = []
         for start, end in reversed(seasons_to_cover(FIRST_SEASON_START)):
             start = max(start, first)
             if start > end:
                 continue
             for n in names:
                 tid = tournament_id(n)
-                misses = 0
-                for f in sorted((f for f in fixtures(tid, start, end) if _finished(f, now)), key=_start):
-                    path = RAW / str(tid) / "hist" / f"{f['fixtureId']}.json"
-                    h = json.loads(path.read_text()) if path.exists() else None
-                    if h is None:
-                        h = history(f, tid, keep, books)
-                        got[n] += 1
-                    misses = 0 if h["bookmakers"] else misses + 1
-                    if misses >= MAX_MISSES:
-                        break
+                queue += [(_start(f), n, tid, start, f) for f in fixtures(tid, start, end) if _finished(f, now)]
+        misses = {}
+        for _, n, tid, season, f in sorted(queue, key=lambda q: q[0]):
+            if misses.get((n, season), 0) >= MAX_MISSES:
+                continue
+            path = RAW / str(tid) / "hist" / f"{f['fixtureId']}.json"
+            h = json.loads(path.read_text()) if path.exists() else None
+            if h is None:
+                h = history(f, tid, keep, books)
+                got[n] += 1
+            misses[(n, season)] = 0 if h["bookmakers"] else misses.get((n, season), 0) + 1
     except BudgetExhausted as e:
         print(f"stopped: {e}")
     return got
