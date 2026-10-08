@@ -1,0 +1,131 @@
+{
+  "experiment": "study5_close_target",
+  "timestamp_utc": "20261008T095415Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "71776c8",
+  "params": {
+    "pre_registration": {
+      "name": "learn_from_the_closing_line",
+      "status": "pre-registered 2026-10-08, before any fit below (study 3 still running; its result unseen)",
+      "motivation": "The engine's edge shows up as line movement: its bets see the line move their way 67-80% of the time. The closing line is the market's best estimate of the total, so close - open is a nearly noise-free reading of how wrong the opener was (its spread is about 2-3 points, against about 17 for final total - opener). A model trained to predict the move learns the opener's systematic errors from far less noisy targets than final scores; since the close is close to unbiased, E[total - opener] is about the predicted move plus a constant.\n",
+      "candidates": {
+        "M1_close_target": "mean model (locked features, ridge, season weights) trained on close - open instead of total - open; the variance model and a constant are then fitted on total - open - predicted move; calibrator, eligibility and products as locked.\n",
+        "M2_move_feature": "the locked engine plus one mean feature: the predicted move from a ridge model on the locked features, trained on close - open within the same training seasons.\n"
+      },
+      "selection_seasons": "2011-12 .. 2020-21 (eras dev 2011-18 and holdout 2018-21)",
+      "selection_rule": "as study_2 (both eras: lower log loss AND higher matched-volume ROI at -110); the better pooled matched ROI if both qualify",
+      "confirmation": "as study_2, on the sealed 2021-26 seasons, run once",
+      "disclosure": "Opening and closing lines of all seasons were used before as data; no close-target model was ever fitted."
+    }
+  },
+  "params_hash": "63c9bb37a0ec",
+  "results": {
+    "selection": [
+      {
+        "engine": "locked_v3",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6881112066598433,
+        "matched bets": 4395,
+        "matched win": 0.5779921892947393,
+        "matched ROI @-110": 0.10245113248526218,
+        "bets P>=55%": 4395,
+        "ROI @-110 at P>=55%": 0.10245113248526218
+      },
+      {
+        "engine": "locked_v3",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6895360920286506,
+        "matched bets": 2262,
+        "matched win": 0.5672645739910314,
+        "matched ROI @-110": 0.08178603006189213,
+        "bets P>=55%": 2262,
+        "ROI @-110 at P>=55%": 0.08178603006189213
+      },
+      {
+        "engine": "locked_v3",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6887238156893853,
+        "matched bets": 6657,
+        "matched win": 0.5743581953516633,
+        "matched ROI @-110": 0.09542928154915536,
+        "bets P>=55%": 6657,
+        "ROI @-110 at P>=55%": 0.09542928154915536
+      },
+      {
+        "engine": "M1_close_target",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6892621986385514,
+        "matched bets": 4395,
+        "matched win": 0.5753393144697493,
+        "matched ROI @-110": 0.09730065156686317,
+        "bets P>=55%": 2810,
+        "ROI @-110 at P>=55%": 0.13057263021675833
+      },
+      {
+        "engine": "M1_close_target",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6902235479044461,
+        "matched bets": 2262,
+        "matched win": 0.5664429530201343,
+        "matched ROI @-110": 0.08041958041958042,
+        "bets P>=55%": 2342,
+        "ROI @-110 at P>=55%": 0.09040447170250757
+      },
+      {
+        "engine": "M1_close_target",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6896755169683787,
+        "matched bets": 6657,
+        "matched win": 0.5723184442418717,
+        "matched ROI @-110": 0.09156458683272563,
+        "bets P>=55%": 5152,
+        "ROI @-110 at P>=55%": 0.11231295878035008
+      },
+      {
+        "engine": "M2_move_feature",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6880833740734323,
+        "matched bets": 4395,
+        "matched win": 0.5775327360441075,
+        "matched ROI @-110": 0.10158237666770091,
+        "bets P>=55%": 4383,
+        "ROI @-110 at P>=55%": 0.09893597162591002
+      },
+      {
+        "engine": "M2_move_feature",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6895040310964783,
+        "matched bets": 2262,
+        "matched win": 0.5663677130044843,
+        "matched ROI @-110": 0.08009806285668356,
+        "bets P>=55%": 2282,
+        "ROI @-110 at P>=55%": 0.08067086287945184
+      },
+      {
+        "engine": "M2_move_feature",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6886941651863546,
+        "matched bets": 6657,
+        "matched win": 0.5737505696490962,
+        "matched ROI @-110": 0.09428216368279461,
+        "bets P>=55%": 6665,
+        "ROI @-110 at P>=55%": 0.09268226147445953
+      }
+    ],
+    "qualifies": {
+      "M1_close_target": false,
+      "M2_move_feature": false
+    },
+    "selected": null,
+    "confirmed": null
+  }
+}
