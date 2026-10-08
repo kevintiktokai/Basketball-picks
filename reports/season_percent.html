@@ -1,0 +1,302 @@
+<title>NCAAB $10,000 Season</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: one reading column (max 1040px) — stake controls, four plan tiles, four season paths, the real seasons, notes */
+:root {
+  --bg: #f3f5f8; --surface: #ffffff; --ink: #12161c; --ink-2: #465061; --muted: #747e8c;
+  --grid: #e5e9ef; --axis: #c3cad4; --hair: rgba(18, 22, 28, 0.10); --wash: #eef2f7;
+  --straight: #2a78d6; --card: #eb6834; --double: #1baf7a; --both: #4a3aa7;
+  --good: #0f7a2e; --bad: #b42323;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+    --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --wash: #1b2029;
+    --straight: #3987e5; --card: #d95926; --double: #199e70; --both: #9085e9;
+    --good: #3ccf68; --bad: #f07272; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+  --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --wash: #1b2029;
+  --straight: #3987e5; --card: #d95926; --double: #199e70; --both: #9085e9;
+  --good: #3ccf68; --bad: #f07272; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--font-body); padding: 0 16px; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 26px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; text-wrap: balance; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(2rem, 4.6vw, 3rem); }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.12rem; }
+p { margin: 0; }
+.eyebrow { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--ink-2); max-width: 70ch; font-size: 1.06rem; }
+header { display: grid; gap: 12px; }
+.controls { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; border-bottom: 1px solid var(--hair); }
+.ctl { display: inline-flex; align-items: center; gap: 10px; }
+.ctl .lab { font-weight: 600; color: var(--ink-2); }
+.seg { display: inline-flex; border: 1px solid var(--axis); border-radius: 999px; overflow: hidden; background: var(--surface); }
+.seg button { font: 600 0.95rem var(--font-body); color: var(--ink-2); background: transparent; border: 0; padding: 8px 16px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.seg button:focus-visible { outline: 2px solid var(--straight); outline-offset: 2px; }
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.plan { background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 16px 18px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.plan h3 { display: flex; align-items: center; gap: 8px; }
+.plan .big { font-size: 2.1rem; font-weight: 700; line-height: 1.05; }
+.plan .cap { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.plan dl { margin: 6px 0 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; font-size: 0.9rem; }
+.plan dt { color: var(--ink-2); white-space: nowrap; }
+.plan dd { margin: 0; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.plan.rec { border-color: var(--both); box-shadow: inset 0 0 0 1px var(--both); }
+.flag { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--both); }
+.panel { background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 22px 22px 18px; display: grid; gap: 12px; min-width: 0; }
+.panel > p { color: var(--ink-2); max-width: 74ch; }
+.multiples { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px 22px; }
+@media (max-width: 420px) { .multiples { grid-template-columns: 1fr; } }
+.mult { display: grid; gap: 4px; min-width: 0; }
+.mult h3 { display: flex; align-items: center; gap: 8px; font-size: 1.02rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.88rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.key-box { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
+.key-line { width: 18px; height: 2px; border-radius: 1px; display: inline-block; flex: none; background: var(--ink-2); }
+.chart { width: 100%; position: relative; outline: none; border-radius: 6px; }
+.chart:focus-visible { box-shadow: 0 0 0 2px var(--straight); }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font-family: var(--font-body); }
+.tick { fill: var(--muted); font-size: 11.5px; }
+.lbl { fill: var(--ink-2); font-size: 12px; font-weight: 600; }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--axis); stroke-width: 1; }
+.cross { stroke: var(--ink-2); stroke-width: 1; }
+.ring { stroke: var(--surface); stroke-width: 2; }
+.tip { position: fixed; z-index: 10; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--hair);
+  border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16); padding: 10px 12px; font-size: 0.86rem; line-height: 1.4; min-width: 200px; max-width: 290px; }
+.tip .t-head { color: var(--muted); font-size: 0.8rem; margin-bottom: 4px; }
+.tip .t-row { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.tip .t-row b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.tip .t-name { color: var(--ink-2); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--hair); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { padding: 9px 10px; text-align: right; font-variant-numeric: tabular-nums; }
+td { white-space: nowrap; border-bottom: 1px solid var(--grid); }
+th { font-weight: 600; color: var(--ink-2); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--axis); vertical-align: bottom; }
+tr:last-child td { border-bottom: 0; }
+th:first-child, td:first-child { text-align: left; }
+td .sub { display: block; font-size: 0.78rem; font-weight: 400; color: var(--muted); }
+.pos { color: var(--good); font-weight: 600; }
+.neg { color: var(--bad); font-weight: 600; }
+.notes ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; color: var(--ink-2); max-width: 76ch; }
+.foot { font-size: 0.84rem; color: var(--muted); }
+@media (max-width: 560px) { .panel { padding: 16px 14px 14px; } .plan .big { font-size: 1.8rem; } }
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">NCAA men's basketball · game totals · percentage staking</p>
+    <h1>A season from $10,000 at 1% or 2% a bet</h1>
+    <p class="lede">Every bet stakes the same share of the account, worked out each morning from the current balance. Stakes grow
+      after winning days and shrink after losing ones. A busy slate never puts more than the whole balance in play: past that,
+      each bet is scaled down. These are 20,000 seasons replayed from 2021–26 at real opening prices, with the five real
+      seasons below.</p>
+  </header>
+
+  <div class="controls">
+    <div class="ctl" role="group" aria-label="Share of the account per bet"><span class="lab">Each bet</span>
+      <div class="seg"><button type="button" id="f1" aria-pressed="true">1% of account</button><button type="button" id="f2" aria-pressed="false">2% of account</button></div></div>
+    <div class="ctl" role="group" aria-label="Betting limit"><span class="lab">Limit</span>
+      <div class="seg"><button type="button" id="c0" aria-pressed="true">None</button><button type="button" id="c1" aria-pressed="false">$500 a bet</button></div></div>
+  </div>
+
+  <section class="plans" id="plans" aria-label="Season end by plan"></section>
+
+  <section class="panel">
+    <h2>The account through a season</h2>
+    <p>Each panel follows $10,000 from the first game to the last. The line is the typical season, the darker band holds half of
+      all seasons and the lighter band 8 in 10. Each panel has its own scale.</p>
+    <div class="legend"><span><i class="key-line"></i>Typical season</span><span><i class="key-box" style="background:var(--ink-2);opacity:.35"></i>Middle half</span><span><i class="key-box" style="background:var(--ink-2);opacity:.15"></i>8 in 10 seasons</span></div>
+    <div class="multiples" id="mult"></div>
+  </section>
+
+  <section class="panel">
+    <h2>The five real seasons, start to finish</h2>
+    <p>$10,000 at the start of each 2021–26 season, played in the real order of games. Under each balance: the deepest fall from a high point during that season.</p>
+    <div class="tablewrap"><table id="real"></table></div>
+  </section>
+
+  <section class="panel notes">
+    <h2>Before you pick 1% or 2%</h2>
+    <ul>
+      <li><b>1% of the account</b> is close to the 1/8 Kelly stake we tested. <b>2%</b> is about a quarter Kelly: it roughly
+        doubles the growth in good seasons and doubles the drops too.</li>
+      <li>Big slates: the straight bets can produce 50–66 picks on one Saturday. At 1% that puts half to two thirds of the
+        account in play that day; at 2% the day is capped at the whole balance about once a season.</li>
+      <li>The largest figures come from compounding into stakes books will not take. With a $500 limit per bet the 2% upside
+        roughly halves; at 1% the limit barely matters in the first season.</li>
+      <li>If you meant 1% of the starting $10,000, a flat $100 a bet, that is the $100 view of the season planner: a typical
+        +$7,400 from straight bets and +$10,400 with the daily card.</li>
+      <li>About 1 season in 10 ends below $10,000, mostly lean years like 2024-25. Prices assume each game's best opening
+        number across books, bet soon after the line appears.</li>
+    </ul>
+    <p class="foot">Source: locked v3 engine and locked card rules; reports/season_percent.md in the project repository.</p>
+  </section>
+</main>
+<div class="tip" id="tip" hidden></div>
+<script type="application/json" id="data">{"plans":{"straight@1%":{"p10":9867.8105,"p25":12442.9021,"p50":20519.0783,"p75":31630.9282,"p90":42081.1243,"mean":23556.3407,"loss":0.1066,"dd50":0.0877,"dd90":0.1926,"dd_over_25":0.0309,"dd_over_50":0.0,"min10":8810.9606,"capped_days":0.0},"card@1%":{"p10":9933.7553,"p25":11201.5245,"p50":12924.2022,"p75":14868.9098,"p90":16828.7809,"mean":13177.8974,"loss":0.1067,"dd50":0.0869,"dd90":0.1579,"dd_over_25":0.0095,"dd_over_50":0.0,"min10":8934.1653,"capped_days":0.0},"double@1%":{"p10":10406.7741,"p25":12057.7146,"p50":14359.3761,"p75":17000.2064,"p90":19826.0179,"mean":14803.0108,"loss":0.0746,"dd50":0.1083,"dd90":0.1843,"dd_over_25":0.0217,"dd_over_50":0.0,"min10":8815.6701,"capped_days":0.0},"straight+card@1%":{"p10":10247.5571,"p25":14778.5849,"p50":27368.3393,"p75":44775.0176,"p90":59352.5364,"mean":31739.0738,"loss":0.0916,"dd50":0.1249,"dd90":0.2456,"dd_over_25":0.0936,"dd_over_50":0.0007,"min10":8479.9529,"capped_days":0.0},"straight@2%":{"p10":9507.5793,"p25":15176.6364,"p50":38544.6267,"p75":91817.5862,"p90":160666.3325,"mean":67504.3042,"loss":0.1131,"dd50":0.1713,"dd90":0.3586,"dd_over_25":0.2701,"dd_over_50":0.014,"min10":7643.2925,"capped_days":1.227},"card@2%":{"p10":9662.4158,"p25":12280.3333,"p50":16336.6172,"p75":21612.5828,"p90":27677.3993,"mean":17682.5634,"loss":0.1163,"dd50":0.1695,"dd90":0.2972,"dd_over_25":0.1866,"dd_over_50":0.0032,"min10":7901.5001,"capped_days":0.0},"double@2%":{"p10":10455.392,"p25":14019.8459,"p50":19821.7255,"p75":27722.1576,"p90":37599.9634,"mean":22385.4351,"loss":0.0853,"dd50":0.208,"dd90":0.3418,"dd_over_25":0.3201,"dd_over_50":0.0081,"min10":7689.0817,"capped_days":0.0},"straight+card@2%":{"p10":9916.0258,"p25":20718.5719,"p50":65088.8901,"p75":174942.1301,"p90":304661.7083,"mean":123123.7435,"loss":0.1014,"dd50":0.2397,"dd90":0.4447,"dd_over_25":0.4631,"dd_over_50":0.0589,"min10":6999.212,"capped_days":1.4354},"straight@1%+cap500":{"p10":9867.8105,"p25":12442.9021,"p50":20519.0783,"p75":31630.9282,"p90":42081.1243,"mean":23496.7508,"loss":0.1066,"dd50":0.0875,"dd90":0.1926,"dd_over_25":0.0309,"dd_over_50":0.0,"min10":8810.9606,"capped_days":0.0},"card@1%+cap500":{"p10":9933.7553,"p25":11201.5245,"p50":12924.2022,"p75":14868.9098,"p90":16828.7809,"mean":13177.8974,"loss":0.1067,"dd50":0.0869,"dd90":0.1579,"dd_over_25":0.0095,"dd_over_50":0.0,"min10":8934.1653,"capped_days":0.0},"double@1%+cap500":{"p10":10406.7741,"p25":12057.7146,"p50":14359.3761,"p75":17000.2064,"p90":19826.0179,"mean":14803.0108,"loss":0.0746,"dd50":0.1083,"dd90":0.1843,"dd_over_25":0.0217,"dd_over_50":0.0,"min10":8815.6701,"capped_days":0.0},"straight+card@1%+cap500":{"p10":10247.5571,"p25":14778.5849,"p50":27368.3393,"p75":44775.0176,"p90":58938.4432,"mean":31304.8517,"loss":0.0916,"dd50":0.1244,"dd90":0.2456,"dd_over_25":0.0935,"dd_over_50":0.0007,"min10":8479.9529,"capped_days":0.0},"straight@2%+cap500":{"p10":9507.5793,"p25":15176.6364,"p50":37185.6921,"p75":60019.0667,"p90":74712.8755,"mean":39154.7498,"loss":0.1131,"dd50":0.147,"dd90":0.3511,"dd_over_25":0.2367,"dd_over_50":0.0132,"min10":7643.2925,"capped_days":1.227},"card@2%+cap500":{"p10":9662.4158,"p25":12280.3333,"p50":16336.6172,"p75":21613.629,"p90":27684.6292,"mean":17577.694,"loss":0.1163,"dd50":0.1693,"dd90":0.2972,"dd_over_25":0.1865,"dd_over_50":0.0032,"min10":7901.5001,"capped_days":0.0},"double@2%+cap500":{"p10":10455.392,"p25":14019.8459,"p50":19828.858,"p75":27889.7927,"p90":35939.6303,"mean":21704.2729,"loss":0.0853,"dd50":0.2065,"dd90":0.3414,"dd_over_25":0.3167,"dd_over_50":0.0081,"min10":7689.0817,"capped_days":0.0},"straight+card@2%+cap500":{"p10":9916.0258,"p25":20762.3285,"p50":52536.2678,"p75":78259.6813,"p90":92900.7185,"mean":51297.8674,"loss":0.1014,"dd50":0.2057,"dd90":0.4337,"dd_over_25":0.3664,"dd_over_50":0.0549,"min10":6999.212,"capped_days":1.4354}},"fans":{"straight@1%":{"p10":[10000,9736,9714,9726,9727,9747,9751,9773,9798,9805,9820,9842,9848,9860,9881,9886,9867,9885,9883,9891,9868],"p25":[10000,9980,10072,10190,10309,10431,10564,10687,10814,10933,11057,11197,11310,11449,11575,11714,11847,12001,12150,12285,12443],"p50":[10000,10252,10544,10855,11180,11547,11918,12342,12792,13226,13752,14317,14862,15480,16073,16752,17422,18155,18877,19670,20519],"p75":[10000,10689,11341,12032,12731,13503,14265,15102,15964,16911,17920,18945,20068,21311,22525,23877,25236,26757,28285,29973,31631],"p90":[10000,11217,12174,13124,14139,15179,16210,17405,18677,19951,21349,22755,24405,26039,28016,29983,32024,34304,36831,39442,42081]},"card@1%":{"p10":[10000,9732,9660,9584,9600,9618,9621,9626,9638,9641,9654,9690,9729,9738,9757,9780,9817,9855,9879,9895,9934],"p25":[10000,9847,9923,9990,10042,10099,10146,10216,10273,10351,10436,10507,10562,10638,10736,10813,10872,10942,11037,11119,11202],"p50":[10000,10096,10241,10377,10546,10651,10786,10925,11051,11211,11312,11496,11634,11809,11945,12099,12277,12409,12594,12738,12924],"p75":[10000,10349,10589,10834,11046,11242,11484,11677,11897,12138,12348,12572,12847,13090,13298,13598,13818,14098,14375,14683,14869],"p90":[10000,10571,10942,11215,11524,11808,12110,12426,12743,13070,13368,13672,13987,14294,14641,15039,15362,15685,16081,16418,16829]},"double@1%":{"p10":[10000,9683,9569,9538,9527,9544,9586,9622,9674,9707,9741,9781,9855,9894,9942,10011,10087,10177,10234,10315,10407],"p25":[10000,9878,9914,9971,10124,10190,10257,10372,10472,10599,10746,10844,10972,11092,11218,11363,11480,11603,11753,11907,12058],"p50":[10000,10088,10368,10538,10698,10940,11093,11336,11526,11719,11984,12150,12383,12604,12813,13115,13305,13569,13825,14070,14359],"p75":[10000,10442,10838,11094,11426,11762,12071,12335,12698,12978,13354,13655,14007,14374,14729,15115,15446,15867,16218,16621,17000],"p90":[10000,10794,11266,11714,12170,12603,13010,13401,13836,14303,14680,15140,15640,16097,16635,17112,17659,18162,18712,19298,19826]},"straight+card@1%":{"p10":[10000,9596,9575,9616,9656,9696,9749,9808,9855,9892,9940,9983,10028,10076,10121,10166,10170,10186,10249,10270,10248],"p25":[10000,9966,10140,10345,10546,10779,11016,11236,11481,11729,11942,12216,12467,12743,13009,13236,13536,13807,14107,14443,14779],"p50":[10000,10410,10871,11366,11889,12447,13041,13685,14367,15062,15867,16674,17522,18491,19479,20607,21696,23036,24316,25808,27368],"p75":[10000,10968,11836,12742,13727,14787,15870,17060,18373,19789,21421,22997,24780,26702,28712,30953,33322,35810,38660,41610,44775],"p90":[10000,11575,12856,14133,15484,16951,18394,20113,21945,23867,25958,28177,30684,33328,36349,39498,42627,46318,50398,54874,59353]},"straight@2%":{"p10":[10000,9457,9400,9413,9396,9418,9429,9448,9494,9507,9530,9547,9543,9553,9591,9578,9532,9553,9549,9534,9508],"p25":[10000,9950,10123,10336,10580,10812,11063,11322,11581,11813,12077,12366,12628,12913,13211,13510,13800,14137,14488,14830,15177],"p50":[10000,10495,11078,11693,12375,13138,13954,14895,15877,16904,18203,19592,21055,22613,24272,26308,28230,30539,32818,35559,38545],"p75":[10000,11385,12754,14288,15922,17836,19834,22107,24623,27533,30765,34229,38370,42943,47837,53500,59326,66614,74109,82811,91818],"p90":[10000,12507,14648,16939,19555,22411,25442,29209,33507,37859,43260,49056,56156,63371,73156,83074,94226,108061,124048,141106,160666]},"card@2%":{"p10":[10000,9465,9314,9159,9181,9206,9199,9203,9214,9210,9225,9281,9347,9357,9382,9417,9478,9543,9578,9597,9662],"p25":[10000,9687,9827,9949,10042,10147,10232,10362,10465,10615,10774,10912,11014,11163,11355,11507,11620,11759,11946,12114,12280],"p50":[10000,10183,10466,10733,11074,11282,11559,11846,12104,12446,12657,13057,13356,13745,14049,14394,14805,15109,15550,15889,16337],"p75":[10000,10697,11185,11697,12141,12565,13097,13529,14026,14585,15080,15610,16280,16883,17404,18175,18757,19498,20246,21102,21613],"p90":[10000,11159,11942,12531,13214,13859,14565,15314,16090,16903,17655,18447,19285,20121,21093,22222,23154,24123,25320,26367,27677]},"double@2%":{"p10":[10000,9365,9132,9059,9020,9042,9100,9155,9237,9283,9331,9393,9523,9581,9659,9769,9904,10057,10160,10301,10455],"p25":[10000,9744,9798,9897,10179,10290,10411,10626,10812,11060,11338,11522,11781,12019,12274,12560,12799,13053,13365,13692,14020],"p50":[10000,10159,10710,11039,11357,11851,12166,12675,13076,13491,14075,14448,14982,15487,15977,16700,17154,17811,18454,19080,19822],"p75":[10000,10879,11692,12229,12942,13682,14388,14988,15860,16527,17458,18222,19127,20113,21056,22142,23084,24289,25329,26556,27722],"p90":[10000,11616,12627,13618,14667,15697,16692,17676,18790,20045,21086,22354,23810,25180,26821,28314,30094,31780,33664,35711,37600]},"straight+card@2%":{"p10":[10000,9183,9105,9155,9194,9254,9331,9434,9485,9538,9605,9631,9703,9798,9846,9886,9878,9884,9984,9985,9916],"p25":[10000,9901,10215,10589,10971,11433,11902,12348,12847,13391,13830,14433,14965,15566,16299,16788,17502,18207,18966,19808,20719],"p50":[10000,10796,11721,12751,13872,15122,16523,18055,19795,21616,23785,26052,28641,31618,34827,38467,42695,47381,52342,58663,65089],"p75":[10000,11965,13826,15924,18352,21130,24160,27732,31872,36832,42746,49000,56448,65186,74932,86509,99479,114115,132226,152160,174942],"p90":[10000,13275,16241,19488,23193,27574,32300,38352,45226,53074,62316,73054,85911,100811,118945,139300,161177,189578,222135,262823,304662]},"straight@1%+cap500":{"p10":[10000,9736,9714,9726,9727,9747,9751,9773,9798,9805,9820,9842,9848,9860,9881,9886,9867,9885,9883,9891,9868],"p25":[10000,9980,10072,10190,10309,10431,10564,10687,10814,10933,11057,11197,11310,11449,11575,11714,11847,12001,12150,12285,12443],"p50":[10000,10252,10544,10855,11180,11547,11918,12342,12792,13226,13752,14317,14862,15480,16073,16752,17422,18155,18877,19670,20519],"p75":[10000,10689,11341,12032,12731,13503,14265,15102,15964,16911,17920,18945,20068,21311,22525,23877,25236,26757,28285,29973,31631],"p90":[10000,11217,12174,13124,14139,15179,16210,17405,18677,19951,21349,22755,24405,26039,28016,29983,32024,34304,36831,39442,42081]},"card@1%+cap500":{"p10":[10000,9732,9660,9584,9600,9618,9621,9626,9638,9641,9654,9690,9729,9738,9757,9780,9817,9855,9879,9895,9934],"p25":[10000,9847,9923,9990,10042,10099,10146,10216,10273,10351,10436,10507,10562,10638,10736,10813,10872,10942,11037,11119,11202],"p50":[10000,10096,10241,10377,10546,10651,10786,10925,11051,11211,11312,11496,11634,11809,11945,12099,12277,12409,12594,12738,12924],"p75":[10000,10349,10589,10834,11046,11242,11484,11677,11897,12138,12348,12572,12847,13090,13298,13598,13818,14098,14375,14683,14869],"p90":[10000,10571,10942,11215,11524,11808,12110,12426,12743,13070,13368,13672,13987,14294,14641,15039,15362,15685,16081,16418,16829]},"double@1%+cap500":{"p10":[10000,9683,9569,9538,9527,9544,9586,9622,9674,9707,9741,9781,9855,9894,9942,10011,10087,10177,10234,10315,10407],"p25":[10000,9878,9914,9971,10124,10190,10257,10372,10472,10599,10746,10844,10972,11092,11218,11363,11480,11603,11753,11907,12058],"p50":[10000,10088,10368,10538,10698,10940,11093,11336,11526,11719,11984,12150,12383,12604,12813,13115,13305,13569,13825,14070,14359],"p75":[10000,10442,10838,11094,11426,11762,12071,12335,12698,12978,13354,13655,14007,14374,14729,15115,15446,15867,16218,16621,17000],"p90":[10000,10794,11266,11714,12170,12603,13010,13401,13836,14303,14680,15140,15640,16097,16635,17112,17659,18162,18712,19298,19826]},"straight+card@1%+cap500":{"p10":[10000,9596,9575,9616,9656,9696,9749,9808,9855,9892,9940,9983,10028,10076,10121,10166,10170,10186,10249,10270,10248],"p25":[10000,9966,10140,10345,10546,10779,11016,11236,11481,11729,11942,12216,12467,12743,13009,13236,13536,13807,14107,14443,14779],"p50":[10000,10410,10871,11366,11889,12447,13041,13685,14367,15062,15867,16674,17522,18491,19479,20607,21696,23036,24316,25808,27368],"p75":[10000,10968,11836,12742,13727,14787,15870,17060,18373,19789,21421,22997,24780,26702,28712,30953,33322,35810,38660,41610,44775],"p90":[10000,11575,12856,14133,15484,16951,18394,20113,21945,23867,25958,28177,30684,33328,36349,39498,42627,46320,50442,54887,58938]},"straight@2%+cap500":{"p10":[10000,9457,9400,9413,9396,9418,9429,9448,9494,9507,9530,9547,9543,9553,9591,9578,9532,9553,9549,9534,9508],"p25":[10000,9950,10123,10336,10580,10812,11063,11322,11581,11813,12077,12366,12628,12913,13211,13510,13800,14137,14489,14831,15177],"p50":[10000,10495,11078,11693,12375,13138,13954,14895,15877,16904,18211,19612,21072,22730,24450,26622,28604,30833,32903,35035,37186],"p75":[10000,11385,12754,14288,15922,17836,19834,22112,24678,27574,30601,33463,36488,39571,42446,45439,48312,51350,54214,57223,60019],"p90":[10000,12507,14648,16939,19555,22411,25470,29125,32761,36141,39639,42982,46617,49952,53775,57238,60579,64262,67831,71370,74713]},"card@2%+cap500":{"p10":[10000,9465,9314,9159,9181,9206,9199,9203,9214,9210,9225,9281,9347,9357,9382,9417,9478,9543,9578,9597,9662],"p25":[10000,9687,9827,9949,10042,10147,10232,10362,10465,10615,10774,10912,11014,11163,11355,11507,11620,11759,11946,12114,12280],"p50":[10000,10183,10466,10733,11074,11282,11559,11846,12104,12446,12657,13057,13356,13745,14049,14394,14805,15109,15550,15889,16337],"p75":[10000,10697,11185,11697,12141,12565,13097,13529,14026,14585,15080,15610,16280,16883,17404,18175,18757,19498,20246,21102,21614],"p90":[10000,11159,11942,12531,13214,13859,14565,15314,16090,16903,17655,18447,19285,20121,21093,22223,23155,24144,25362,26441,27685]},"double@2%+cap500":{"p10":[10000,9365,9132,9059,9020,9042,9100,9155,9237,9283,9331,9393,9523,9581,9659,9769,9904,10057,10160,10301,10455],"p25":[10000,9744,9798,9897,10179,10290,10411,10626,10812,11060,11338,11522,11781,12019,12274,12560,12799,13053,13365,13692,14020],"p50":[10000,10159,10710,11039,11357,11851,12166,12675,13076,13491,14075,14448,14982,15487,15977,16700,17154,17812,18454,19080,19829],"p75":[10000,10879,11692,12229,12942,13682,14388,14988,15860,16527,17458,18222,19127,20113,21060,22146,23105,24325,25448,26712,27890],"p90":[10000,11616,12627,13618,14667,15697,16692,17676,18790,20045,21086,22354,23813,25232,26892,28377,29985,31433,32939,34562,35940]},"straight+card@2%+cap500":{"p10":[10000,9183,9105,9155,9194,9254,9331,9434,9485,9538,9605,9631,9703,9798,9846,9886,9878,9884,9984,9985,9916],"p25":[10000,9901,10215,10589,10971,11433,11902,12348,12847,13391,13830,14433,14965,15576,16300,16793,17530,18211,18975,19841,20762],"p50":[10000,10796,11721,12751,13872,15122,16523,18058,19806,21650,23917,26314,29028,31861,34537,37435,40188,43334,46153,49223,52536],"p75":[10000,11965,13826,15924,18352,21138,24210,27875,31682,35606,39755,43444,47339,51237,55063,58987,62831,66647,70582,74417,78260],"p90":[10000,13275,16241,19488,23199,27683,31925,36481,41023,45432,49725,53969,58431,62807,67356,71622,75559,79880,84370,88811,92901]}},"actual":[["2021-22","straight","1%",39676,0.1104,9956,1380,53],["2022-23","straight","1%",28446,0.0525,9814,503,22],["2023-24","straight","1%",21342,0.1523,9511,1331,66],["2024-25","straight","1%",9903,0.1828,8247,208,19],["2025-26","straight","1%",13105,0.0311,10000,88,6],["2021-22","card","1%",12173,0.1272,9800,130,1],["2022-23","card","1%",15753,0.0681,9703,128,1],["2023-24","card","1%",14119,0.0773,10000,136,1],["2024-25","card","1%",10461,0.0972,9545,134,1],["2025-26","card","1%",12538,0.082,10000,136,1],["2021-22","double","1%",15289,0.1588,9884,127,1],["2022-23","double","1%",17777,0.0894,9227,126,1],["2023-24","double","1%",13484,0.115,10000,135,1],["2024-25","double","1%",11153,0.1083,8917,129,1],["2025-26","double","1%",14648,0.1006,10000,135,1],["2021-22","straight+card","1%",47649,0.1587,9905,1510,54],["2022-23","straight+card","1%",44112,0.0781,9801,631,23],["2023-24","straight+card","1%",29604,0.2011,9840,1467,67],["2024-25","straight+card","1%",10299,0.2346,7897,342,20],["2025-26","straight+card","1%",16376,0.0959,10000,224,7],["2021-22","straight","2%",141670,0.212,9908,1380,53],["2022-23","straight","2%",75980,0.104,9619,503,22],["2023-24","straight","2%",40711,0.2894,9026,1331,66],["2024-25","straight","2%",9571,0.34,6720,208,19],["2025-26","straight","2%",17001,0.0617,10000,88,6],["2021-22","card","2%",14506,0.2408,9494,130,1],["2022-23","card","2%",24260,0.1328,9412,128,1],["2023-24","card","2%",19496,0.1507,10000,136,1],["2024-25","card","2%",10710,0.1902,9019,134,1],["2025-26","card","2%",15370,0.1583,9994,136,1],["2021-22","double","2%",22487,0.2956,9741,127,1],["2022-23","double","2%",30321,0.1725,8508,126,1],["2023-24","double","2%",17482,0.2214,10000,135,1],["2024-25","double","2%",12012,0.2127,7935,129,1],["2025-26","double","2%",20597,0.1936,10000,135,1],["2021-22","straight+card","2%",194358,0.2974,9794,1510,54],["2022-23","straight+card","2%",173536,0.1525,9604,631,23],["2023-24","straight+card","2%",74561,0.3786,9672,1467,67],["2024-25","straight+card","2%",10017,0.4287,6071,342,20],["2025-26","straight+card","2%",25791,0.184,10000,224,7],["2021-22","straight","1% cap $500",39676,0.1104,9956,1380,53],["2022-23","straight","1% cap $500",28446,0.0525,9814,503,22],["2023-24","straight","1% cap $500",21342,0.1523,9511,1331,66],["2024-25","straight","1% cap $500",9903,0.1828,8247,208,19],["2025-26","straight","1% cap $500",13105,0.0311,10000,88,6],["2021-22","card","1% cap $500",12173,0.1272,9800,130,1],["2022-23","card","1% cap $500",15753,0.0681,9703,128,1],["2023-24","card","1% cap $500",14119,0.0773,10000,136,1],["2024-25","card","1% cap $500",10461,0.0972,9545,134,1],["2025-26","card","1% cap $500",12538,0.082,10000,136,1],["2021-22","double","1% cap $500",15289,0.1588,9884,127,1],["2022-23","double","1% cap $500",17777,0.0894,9227,126,1],["2023-24","double","1% cap $500",13484,0.115,10000,135,1],["2024-25","double","1% cap $500",11153,0.1083,8917,129,1],["2025-26","double","1% cap $500",14648,0.1006,10000,135,1],["2021-22","straight+card","1% cap $500",47649,0.1587,9905,1510,54],["2022-23","straight+card","1% cap $500",44112,0.0781,9801,631,23],["2023-24","straight+card","1% cap $500",29604,0.2011,9840,1467,67],["2024-25","straight+card","1% cap $500",10299,0.2346,7897,342,20],["2025-26","straight+card","1% cap $500",16376,0.0959,10000,224,7],["2021-22","straight","2% cap $500",72277,0.1371,9908,1380,53],["2022-23","straight","2% cap $500",54490,0.104,9619,503,22],["2023-24","straight","2% cap $500",40399,0.1984,9026,1331,66],["2024-25","straight","2% cap $500",9571,0.34,6720,208,19],["2025-26","straight","2% cap $500",17001,0.0617,10000,88,6],["2021-22","card","2% cap $500",14506,0.2408,9494,130,1],["2022-23","card","2% cap $500",24260,0.1328,9412,128,1],["2023-24","card","2% cap $500",19496,0.1507,10000,136,1],["2024-25","card","2% cap $500",10710,0.1902,9019,134,1],["2025-26","card","2% cap $500",15370,0.1583,9994,136,1],["2021-22","double","2% cap $500",22487,0.2956,9741,127,1],["2022-23","double","2% cap $500",29959,0.1725,8508,126,1],["2023-24","double","2% cap $500",17482,0.2214,10000,135,1],["2024-25","double","2% cap $500",12012,0.2127,7935,129,1],["2025-26","double","2% cap $500",20597,0.1936,10000,135,1],["2021-22","straight+card","2% cap $500",82698,0.1779,9794,1510,54],["2022-23","straight+card","2% cap $500",77191,0.1,9604,631,23],["2023-24","straight+card","2% cap $500",58320,0.2516,9672,1467,67],["2024-25","straight+card","2% cap $500",10017,0.4287,6071,342,20],["2025-26","straight+card","2% cap $500",25953,0.1825,10000,224,7]]}</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const NS = 'http://www.w3.org/2000/svg';
+  const tip = document.getElementById('tip');
+  const nf0 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  const PLANS = [['straight', 'straight', 'Straight bets'], ['double', 'double', 'Main-line double'], ['card', 'card', '2.5+ card'], ['straight+card', 'both', 'Straight bets + 2.5+ card']];
+  let frac = 1, capped = false;
+  const key = p => `${p}@${frac}%` + (capped ? '+cap500' : '');
+  const usd = v => '$' + nf0.format(Math.round(v));
+  const compact = v => v >= 100000 ? '$' + Math.round(v / 1000) + 'k' : v >= 10000 ? '$' + (v / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : usd(v);
+  const pct = v => v < 0.005 ? 'under 1%' : Math.round(v * 100) + '%';
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  const text = (parent, x, y, s, cls, anchor) => { const t = el('text', { x, y, class: cls, 'text-anchor': anchor || 'start' }, parent); t.textContent = s; return t; };
+  function niceTicks(lo, hi, n) {
+    const span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+    const out = [];
+    for (let v = Math.floor(lo / step) * step; v < hi + step - 1e-9; v += step) out.push(Math.round(v * 100) / 100);
+    return out;
+  }
+  function showTip(x, y, head, rows) {
+    tip.replaceChildren();
+    const h = document.createElement('div'); h.className = 't-head'; h.textContent = head; tip.appendChild(h);
+    for (const [name, value] of rows) {
+      const r = document.createElement('div'); r.className = 't-row';
+      const n = document.createElement('span'); n.className = 't-name'; n.textContent = name;
+      const b = document.createElement('b'); b.textContent = value;
+      r.append(n, b); tip.appendChild(r);
+    }
+    tip.hidden = false;
+    const w = tip.offsetWidth, hgt = tip.offsetHeight;
+    let left = x + 14, top = y - hgt - 12;
+    if (left + w > window.innerWidth - 8) left = x - w - 14;
+    if (left < 8) left = 8;
+    if (top < 8) top = y + 16;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  const hideTip = () => { tip.hidden = true; };
+
+  function drawPlans() {
+    const host = document.getElementById('plans');
+    host.replaceChildren();
+    PLANS.forEach(([p, c, name]) => {
+      const r = D.plans[key(p)];
+      const box = document.createElement('div'); box.className = 'plan' + (c === 'both' ? ' rec' : '');
+      if (c === 'both') { const f = document.createElement('span'); f.className = 'flag'; f.textContent = 'Recommended plan'; box.appendChild(f); }
+      const h = document.createElement('h3'); const k = document.createElement('i'); k.className = 'key-box'; k.style.background = `var(--${c})`; h.append(k, document.createTextNode(name));
+      const cap = document.createElement('span'); cap.className = 'cap'; cap.textContent = 'Typical season ends at';
+      const big = document.createElement('span'); big.className = 'big'; big.textContent = usd(r.p50);
+      const dl = document.createElement('dl');
+      const add = (t, v) => { const dt = document.createElement('dt'); dt.textContent = t; const dd = document.createElement('dd'); dd.textContent = v; dl.append(dt, dd); };
+      add('8 in 10 seasons', `${compact(r.p10)} to ${compact(r.p90)}`);
+      add('Ends below $10,000', pct(r.loss));
+      add('Worst drop, typical', '−' + pct(r.dd50));
+      add('Worst drop, 1 in 10', '−' + pct(r.dd90));
+      add('A drop over 25%', pct(r.dd_over_25));
+      box.append(h, cap, big, dl);
+      host.appendChild(box);
+    });
+  }
+
+  function drawMultiples() {
+    const host = document.getElementById('mult');
+    host.replaceChildren();
+    const charts = PLANS.map(([p, c, name]) => {
+      const F = D.fans[key(p)], k = F.p50.length;
+      const wrap = document.createElement('div'); wrap.className = 'mult';
+      const h = document.createElement('h3'); const kb = document.createElement('i'); kb.className = 'key-box'; kb.style.background = `var(--${c})`; h.append(kb, document.createTextNode(name));
+      const ch = document.createElement('div'); ch.className = 'chart'; ch.tabIndex = 0; ch.setAttribute('role', 'img');
+      ch.setAttribute('aria-label', `${name}: typical season ends at ${usd(F.p50[k - 1])}, 8 in 10 between ${usd(F.p10[k - 1])} and ${usd(F.p90[k - 1])}`);
+      wrap.append(h, ch); host.appendChild(wrap);
+      return [p, c, name, F, k, ch];
+    });
+    charts.forEach(([p, c, name, F, k, ch]) => {
+      const W = Math.max(260, ch.clientWidth || host.clientWidth), H = 220;
+      const m = { l: 52, r: 58, t: 10, b: 26 };
+      const lo = Math.min(...F.p10, 10000), hi = Math.max(...F.p90);
+      const ticks = niceTicks(lo, hi, 4), y0 = ticks[0], y1 = ticks[ticks.length - 1];
+      const sx = j => m.l + (j / (k - 1)) * (W - m.l - m.r);
+      const sy = v => m.t + (1 - (v - y0) / (y1 - y0)) * (H - m.t - m.b);
+      const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
+      ticks.forEach(v => { el('line', { x1: m.l, x2: W - m.r, y1: sy(v), y2: sy(v), class: 'gridline' }, svg); text(svg, m.l - 6, sy(v) + 4, compact(v), 'tick', 'end'); });
+      el('line', { x1: m.l, x2: W - m.r, y1: sy(10000), y2: sy(10000), class: 'baseline' }, svg);
+      [[0, 'start'], [(k - 1) / 2, 'mid-season'], [k - 1, 'end']].forEach(([j, s], i) => text(svg, sx(j), H - 6, s, 'tick', i === 0 ? 'start' : i === 2 ? 'end' : 'middle'));
+      const band = (a, b, op) => {
+        const up = F[b].map((v, j) => (j ? 'L' : 'M') + sx(j).toFixed(1) + ' ' + sy(v).toFixed(1)).join('');
+        const dn = F[a].map((v, j) => [j, v]).reverse().map(([j, v]) => 'L' + sx(j).toFixed(1) + ' ' + sy(v).toFixed(1)).join('');
+        el('path', { d: up + dn + 'Z', style: `fill:var(--${c})`, 'fill-opacity': op }, svg);
+      };
+      band('p10', 'p90', 0.14); band('p25', 'p75', 0.30);
+      el('path', { d: F.p50.map((v, j) => (j ? 'L' : 'M') + sx(j).toFixed(1) + ' ' + sy(v).toFixed(1)).join(''), style: `stroke:var(--${c})`, fill: 'none', 'stroke-width': 2, 'stroke-linecap': 'round' }, svg);
+      el('circle', { cx: sx(k - 1), cy: sy(F.p50[k - 1]), r: 4, style: `fill:var(--${c})`, class: 'ring' }, svg);
+      text(svg, sx(k - 1) + 7, sy(F.p50[k - 1]) + 4, compact(F.p50[k - 1]), 'lbl');
+      const yTop = sy(F.p90[k - 1]), yBot = sy(F.p10[k - 1]);
+      if (sy(F.p50[k - 1]) - yTop > 14) text(svg, sx(k - 1) + 7, yTop + 4, compact(F.p90[k - 1]), 'tick');
+      if (yBot - sy(F.p50[k - 1]) > 14) text(svg, sx(k - 1) + 7, yBot + 4, compact(F.p10[k - 1]), 'tick');
+      const cross = el('line', { x1: 0, x2: 0, y1: m.t, y2: H - m.b, class: 'cross', visibility: 'hidden' }, svg);
+      let cur = k - 1;
+      const show = (j, cx, cy) => {
+        cur = Math.max(0, Math.min(k - 1, j));
+        const x = sx(cur); cross.setAttribute('x1', x); cross.setAttribute('x2', x); cross.setAttribute('visibility', 'visible');
+        const box = svg.getBoundingClientRect();
+        showTip(cx ?? box.left + x * box.width / W, cy ?? box.top + sy(F.p50[cur]) * box.height / H, `${name} · ${Math.round(cur / (k - 1) * 100)}% through the season`,
+          [['Typical', usd(F.p50[cur])], ['Middle half', `${usd(F.p25[cur])}–${usd(F.p75[cur])}`], ['8 in 10', `${usd(F.p10[cur])}–${usd(F.p90[cur])}`]]);
+      };
+      const hide = () => { cross.setAttribute('visibility', 'hidden'); hideTip(); };
+      svg.addEventListener('pointermove', ev => { const b = svg.getBoundingClientRect(); const x = (ev.clientX - b.left) * W / b.width; show(Math.round((x - m.l) / (W - m.l - m.r) * (k - 1)), ev.clientX, ev.clientY); });
+      svg.addEventListener('pointerleave', hide);
+      ch.onkeydown = ev => { if (ev.key === 'ArrowRight') { show(cur + 1); ev.preventDefault(); } if (ev.key === 'ArrowLeft') { show(cur - 1); ev.preventDefault(); } if (ev.key === 'Escape') hide(); };
+      ch.onfocus = () => show(cur); ch.onblur = hide;
+      ch.appendChild(svg);
+    });
+  }
+
+  function drawReal() {
+    const t = document.getElementById('real');
+    t.replaceChildren();
+    const stakeLabel = `${frac}%` + (capped ? ' cap $500' : '');
+    const thead = document.createElement('thead'), hr = document.createElement('tr');
+    ['Season', ...PLANS.map(p => p[2])].forEach(c => { const th = document.createElement('th'); th.textContent = c; th.scope = 'col'; hr.appendChild(th); });
+    thead.appendChild(hr); t.appendChild(thead);
+    const tb = document.createElement('tbody');
+    const seasons = [...new Set(D.actual.map(a => a[0]))];
+    seasons.forEach(s => {
+      const tr = document.createElement('tr');
+      const td0 = document.createElement('td'); td0.textContent = s; tr.appendChild(td0);
+      PLANS.forEach(([p]) => {
+        const a = D.actual.find(r => r[0] === s && r[1] === p && r[2] === stakeLabel);
+        const td = document.createElement('td');
+        td.textContent = usd(a[3]); td.className = a[3] >= 10000 ? 'pos' : 'neg';
+        const sub = document.createElement('span'); sub.className = 'sub'; sub.textContent = `drop −${pct(a[4])} · ${nf0.format(a[6])} bets`;
+        td.appendChild(sub); tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+  }
+
+  const drawAll = () => { drawPlans(); drawMultiples(); drawReal(); };
+  const f1 = document.getElementById('f1'), f2 = document.getElementById('f2'), c0 = document.getElementById('c0'), c1 = document.getElementById('c1');
+  const sync = () => { f1.setAttribute('aria-pressed', String(frac === 1)); f2.setAttribute('aria-pressed', String(frac === 2));
+    c0.setAttribute('aria-pressed', String(!capped)); c1.setAttribute('aria-pressed', String(capped)); drawAll(); };
+  f1.addEventListener('click', () => { frac = 1; sync(); });
+  f2.addEventListener('click', () => { frac = 2; sync(); });
+  c0.addEventListener('click', () => { capped = false; sync(); });
+  c1.addEventListener('click', () => { capped = true; sync(); });
+  drawAll();
+  let rt = null;
+  window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawAll, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
+})();
+</script>
