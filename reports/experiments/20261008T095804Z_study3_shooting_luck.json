@@ -1,0 +1,103 @@
+{
+  "experiment": "study3_shooting_luck",
+  "timestamp_utc": "20261008T095804Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "9892381",
+  "params": {
+    "pre_registration": {
+      "name": "shooting_luck_neutral_ratings",
+      "status": "pre-registered 2026-10-08, after study 2 stopped (2021-26 still sealed), before any fit below",
+      "motivation": "A team's 3-point and free-throw percentages, and above all its opponents' percentages, swing from game to game far more than true ability does (opponent 3P% and FT% are close to pure luck). The engine's ratings are built on points scored, so a team that has allowed hot or cold shooting carries that luck into its next forecast, and so may the opening line. A second set of ratings built on \"shooting-neutral\" points (each game re-scored with league-average 3P% and FT%, shot volumes kept) separates repeatable scoring from shooting luck; the model learns how much weight each deserves.\n",
+      "definition": "pts_neutral = 2 x (FGM - 3PM) + 3 x 3PA x L3 + FTA x LFT, where L3 and LFT are the league's season-to-date 3P% and FT% up to the day before (previous season's rate until 5,000 attempts). Games without a box score keep their real points. Same DailyRatings settings as the engine. Features: x_pts_n = neutral points ratings total - opener; x_eff_n = neutral efficiency total - opener.\n",
+      "candidates": {
+        "L1_shooting_neutral": "locked v3 mean features + x_pts_n + x_eff_n (variance model, calibrator, products unchanged)"
+      },
+      "selection_seasons": "2011-12 .. 2020-21 (eras dev 2011-18 and holdout 2018-21)",
+      "selection_rule": "as study_2: lower log loss AND higher matched-volume ROI at -110 than the locked engine in BOTH eras",
+      "confirmation": "as study_2: one run on the sealed 2021-26 seasons; lower log loss and matched ROI not lower at -110 and at the best real price",
+      "disclosure": "Same 2021-26 history as study_2. Only one candidate, to keep the number of tests low."
+    },
+    "extra": {
+      "L1_shooting_neutral": [
+        "x_pts_n",
+        "x_eff_n"
+      ]
+    }
+  },
+  "params_hash": "5eda103ba23e",
+  "results": {
+    "selection": [
+      {
+        "engine": "locked_v3",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6881112066598433,
+        "matched bets": 4395,
+        "matched win": 0.5779921892947393,
+        "matched ROI @-110": 0.10245113248526218,
+        "bets P>=55%": 4395,
+        "ROI @-110 at P>=55%": 0.10245113248526218
+      },
+      {
+        "engine": "locked_v3",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6895360920286506,
+        "matched bets": 2262,
+        "matched win": 0.5672645739910314,
+        "matched ROI @-110": 0.08178603006189213,
+        "bets P>=55%": 2262,
+        "ROI @-110 at P>=55%": 0.08178603006189213
+      },
+      {
+        "engine": "locked_v3",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6887238156893853,
+        "matched bets": 6657,
+        "matched win": 0.5743581953516633,
+        "matched ROI @-110": 0.09542928154915536,
+        "bets P>=55%": 6657,
+        "ROI @-110 at P>=55%": 0.09542928154915536
+      },
+      {
+        "engine": "L1_shooting_neutral",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6882083891983936,
+        "matched bets": 4395,
+        "matched win": 0.5773030094187916,
+        "matched ROI @-110": 0.10114799875892025,
+        "bets P>=55%": 4641,
+        "ROI @-110 at P>=55%": 0.09543397778691895
+      },
+      {
+        "engine": "L1_shooting_neutral",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6893891985626026,
+        "matched bets": 2262,
+        "matched win": 0.5600896860986547,
+        "matched ROI @-110": 0.06828229242022346,
+        "bets P>=55%": 2073,
+        "ROI @-110 at P>=55%": 0.07485857124062624
+      },
+      {
+        "engine": "L1_shooting_neutral",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6887160612501374,
+        "matched bets": 6657,
+        "matched win": 0.5714719732644691,
+        "matched ROI @-110": 0.08998047168394172,
+        "bets P>=55%": 6714,
+        "ROI @-110 at P>=55%": 0.08908116012673654
+      }
+    ],
+    "qualifies": {
+      "L1_shooting_neutral": false
+    },
+    "selected": null,
+    "confirmed": null
+  }
+}

@@ -5,6 +5,7 @@ usage:
   python scripts/predict_cards.py --date 2026-11-20 --slate my.csv  # manual slate
         my.csv columns: home, away, line (opening total)[, home_spread, neutral]
   python scripts/predict_cards.py --date 2026-11-20 --update        # first refresh history (scrape + ESPN box)
+  python scripts/predict_cards.py --date 2026-11-20 --product singles --record   # P >= 55% singles with stakes
 
 What it prints:
   * the TWO-PICK CARD (or ONE QUALIFYING PICK / NO BET) chosen by the locked engine
@@ -134,6 +135,54 @@ def print_odds_card(R, a):
         print(f"recorded to {ledger}")
 
 
+SINGLES_P_MIN = 0.55
+KELLY_FRACTION = 1 / 8          # reports/staking_study.md: 1/8 Kelly on a fixed bankroll
+DAY_CAP = 0.25                  # the day's stakes never exceed 25% of the bankroll
+
+
+def single_stakes(p: np.ndarray, odds: np.ndarray) -> np.ndarray:
+    """Fraction of the bankroll per single: 1/8 Kelly at the offered decimal odds, day total capped."""
+    f = np.clip((p * odds - 1) / (odds - 1), 0, None) * KELLY_FRACTION
+    return f * min(1.0, DAY_CAP / f.sum()) if f.sum() > 0 else f
+
+
+def print_singles(R, a):
+    from backtest.odds_cards import best_main
+    M = R["main"]
+    S = M[M.eligible & (M.p_best >= SINGLES_P_MIN)].sort_values("p_best", ascending=False)
+    print(BAR + f"\nSINGLES — opening totals, model probability >= {SINGLES_P_MIN:.0%}\n"
+          f"NCAA men's basketball — {a.date} — engine {a.engine}\n" + BAR)
+    print(f"\nGames screened: {R['n_screened']}   eligible: {R['n_eligible']}   picks: {len(S)}")
+    if S.empty:
+        print("\nNO BET today: no game reaches the 55% threshold.\n" + BAR)
+        return
+    rows = []
+    for _, r in S.iterrows():
+        side = int(r.best_side)
+        line, price, book = best_main(r.get("books_json"), side)
+        if np.isnan(line):
+            line, price, book = r.line, 1 + 100 / 110, None
+        rows.append((r, side, line, price, book))
+    stakes = single_stakes(np.array([x[0].p_best for x in rows]), np.array([x[3] for x in rows]))
+    recs = []
+    for (r, side, line, price, book), f in zip(rows, stakes):
+        name = f"{r.get('away_name', r.away)} @ {r.get('home_name', r.home)}"
+        src = f"best price at {book}" if book else "assumed -110"
+        print(f"\n{name}\n  BET: {side_txt(side)} {line:.1f}   price {price:.3f} ({src}); opener {r.line:.1f}")
+        print(f"  Model probability {r.p_best:.1%}   fair odds {1 / r.p_best:.3f}   "
+              f"stake {f:.2%} of bankroll ({f * a.bankroll:.2f} of {a.bankroll:g})")
+        recs.append({"date": a.date, "engine": a.engine, "away": r.get("away_name", r.away),
+                     "home": r.get("home_name", r.home), "side": side_txt(side), "line": line, "price": price,
+                     "book": book or "", "p": r.p_best, "stake_frac": f,
+                     "recorded_at": pd.Timestamp.utcnow().isoformat()})
+    print(f"\nToday's total stake: {stakes.sum():.2%} of bankroll.  Take the number shown or better; "
+          "skip a pick if the line has moved past its fair odds.\n" + BAR)
+    if a.record:
+        ledger = Path(__file__).resolve().parents[1] / "reports" / "live_ledger_singles.csv"
+        pd.DataFrame(recs).to_csv(ledger, mode="a", header=not ledger.exists(), index=False)
+        print(f"recorded {len(recs)} singles to {ledger}")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--date", required=True)
@@ -141,9 +190,11 @@ def main():
     ap.add_argument("--update", action="store_true")
     ap.add_argument("--record", action="store_true",
                     help="append the released card to reports/live_ledger.csv for forward testing")
-    ap.add_argument("--product", choices=["target", "main", "sixty"], default="target",
+    ap.add_argument("--product", choices=["target", "main", "sixty", "singles"], default="target",
                     help="target: combined >=2.5, legs ~1.6, highest win chance (default); "
-                         "main: main-line double at real prices; sixty: stage-2 60%% buffered card")
+                         "main: main-line double at real prices; sixty: stage-2 60%% buffered card; "
+                         "singles: every P >= 55%% single with a 1/8-Kelly stake")
+    ap.add_argument("--bankroll", type=float, default=100.0, help="bankroll for the singles stakes (default 100 units)")
     ap.add_argument("--engine", choices=["v3", "v2"], default="v3",
                     help="v3 (default, recency-adapted, J=0.65) or v2 (stage-2 locked, J=0.625)")
     a = ap.parse_args()
@@ -165,6 +216,9 @@ def main():
         print(f"\nNO BET\n\nReason: {R['error']}\n")
         return
     lock, T, C, M, F = R["lock"], R["T"], R["card"], R["main"], R["frame"]
+    if a.product == "singles":
+        print_singles(R, a)
+        return
     if a.product in ("target", "main"):
         print_odds_card(R, a)
         return

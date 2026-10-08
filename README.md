@@ -11,7 +11,7 @@ time **on seasons it has never seen**.
 | 3 | Odds-targeted cards: combined odds ≥ 2.5 (legs ≈ 1.6), NCAAB + NBA openers, real prices | **NCAAB: 46.8% of cards won at 2.57 avg (break-even 39%), ROI ≈ +20%** (2021-26 re-analysis; +16–17% in development). NBA: no reliable edge. [`STAGE3_SUMMARY.md`](reports/STAGE3_SUMMARY.md) |
 | Europe | EuroLeague + EuroCup: free official data (2016-26, with referees) + free OddsPapi odds timelines (Pinnacle, 1xBet, Betway; archive from 20 Jan 2026, ~200 games a month) | In development (144 games so far): soft-book prices above Pinnacle's fair price beat Pinnacle's close by +2–5% (CLV); card strategy optimised and locked (`config/europe_locked.yaml`); the holdout (21 Mar–Jun 2026) waits for next month's free quota. [`EUROPE_DATA.md`](reports/EUROPE_DATA.md) |
 | WNBA | 2019-26 openers (sportsbookreview.com, 2-8 books) + ESPN box scores; same engine and locked products as NCAAB/NBA; one-time test 2023-26 | **No edge.** The model is worse than the market-only line (log loss 0.6943 vs 0.6933); 302 target cards won 23.8% vs 28.0% break-even (ROI −14%); legs moved our way only 44% of the time. [`stage3_wnba_test.md`](reports/stage3_wnba_test.md) |
-| Tuning | Bet-level diagnostics of 10,074 NCAAB bets; improvement study 1: side-aware calibration (overtime makes totals right-skewed) | Better probabilities in every era, **not better bets** (ROI 8.7% vs 9.2% at the 55% threshold): not adopted under the pre-registered rule. Next lead: tempo mismatch. [`bet_diagnostics.md`](reports/bet_diagnostics.md), [`improve_calibration.md`](reports/improve_calibration.md), [`improve_explore.md`](reports/improve_explore.md) |
+| Tuning | Bet-level diagnostics of 10,074 NCAAB bets; NCAAB stage map (6 stages, 2011-21); five pre-registered model studies (calibration, stage/matchup, shooting luck, roster continuity, closing-line target); staking | No model change survived both eras (roster continuity came closest), so the locked engine stays. **Staking by edge (1/8 Kelly) earns +1.2 to +2.2 pts more per unit staked** and is now in the CLI (`--product singles`). [`NCAAB_EDGE_ROADMAP.md`](reports/NCAAB_EDGE_ROADMAP.md), [`ncaab_stage_map.md`](reports/ncaab_stage_map.md), [`staking_study.md`](reports/staking_study.md) |
 
 The 60% is bought with price. Each leg is an alternate total about 10 points better than
 the opener (~80% win, ~1.25 odds), so the double pays ~1.65. Whether it makes money depends
@@ -29,6 +29,7 @@ python -m data.sbr_live fetch && python -m data.sbr_live parse   # 2021-26 odds 
 python scripts/predict_cards.py --date 2026-11-20 --update --record                 # target card (>=2.5, legs ~1.6)
 python scripts/predict_cards.py --date 2026-11-20 --product main --record         # main-line double, real prices
 python scripts/predict_cards.py --date 2026-11-20 --product sixty                 # stage-2 60% buffered card
+python scripts/predict_cards.py --date 2026-11-20 --product singles --record      # P >= 55% singles, 1/8-Kelly stakes
 python scripts/predict_cards.py --date 2026-11-20 --slate my_slate.csv   # manual openers
 python scripts/grade_ledger.py                     # forward-test record of recorded cards
 ```
@@ -49,6 +50,7 @@ data/         NBA: sources.py, ingest.py · NCAAB: ncaab_ingest.py (SBR archive 
               sbr_live.py (sportsbookreview.com scraper/parser), ncaab_unify.py (ESPN team ids)
               Europe: euroleague.py (official API: games, box, referees), oddspapi.py (historical odds)
               WNBA: wnba_unify.py (SBR odds + ESPN/wehoop box scores, preseason excluded)
+              NCAAB extras: ncaab_stages.py (season stage), ncaab_players.py + ncaab_continuity.py
 features/     pit.py (NBA), ratings.py (daily ridge ratings), ncaab_features.py (3 markets)
 models/       total_models.py (stage 1), dist_models.py (mean+variance, edge-aware calibrator),
               live.py (NBA CLI), live_ncaab.py (NCAAB card engine)
@@ -58,7 +60,8 @@ scripts/      run_research.py, run_holdout.py, predict.py (stage 1)
               stage2_iterate.py, stage2_holdout.py, stage2b_test.py, predict_cards.py, grade_ledger.py
               euro_info_study.py (what the free European data adds)
               stage3_wnba_dev.py / stage3_wnba_test.py (WNBA lock + one-time test)
-              diagnose_bets.py, improve_calibration.py, improve_explore.py (engine tuning)
+              diagnose_bets.py, improve_calibration.py, improve_explore.py, ncaab_stage_map.py,
+              study2..5_*.py, staking_study.py (engine tuning; config/improvements.yaml)
 reports/      RESEARCH_SUMMARY.md, STAGE2_SUMMARY.md, ITERATIONS.md, holdout & test reports,
               experiments/*.json (one record per run)
 tests/        leakage tests (NBA + NCAAB, all markets) and engine unit tests

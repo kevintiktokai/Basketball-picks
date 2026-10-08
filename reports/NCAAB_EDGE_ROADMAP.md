@@ -33,12 +33,14 @@ the forward season.
 |---|---|---|
 | 1 | side-aware calibration (overtime skews totals) | better probabilities in every era, not better bets → not adopted |
 | 2 | stage indicators, tempo and efficiency mismatch, fatigue | better in 2011-18, worse in 2018-21 (matched ROI 5.1–5.5% vs 8.2%) → not adopted |
-| 3 | ratings on shooting-luck-neutral points | STUDY3_RESULT |
+| 3 | ratings on shooting-luck-neutral points (league-average 3P% and FT%) | matched ROI lower in both eras (10.1% vs 10.2%, 6.8% vs 8.2%) → not adopted: the engine's ratings, and the market, already discount shooting luck |
 | 4 | roster continuity and transfers (player box scores) | matched ROI up in both eras (+0.6, +0.8 pts) and log loss better in 2018-21, but 2011-18 log loss was 0.04×10⁻⁴ worse, so the strict rule says no. It matters most in the transfer-portal era, so it is the best candidate for a forward shadow test |
+| 5 | learn from the closing line (train on close − open, or add the predicted move) | probabilities worse (close target) or unchanged (move feature); matched ROI not better → not adopted. The engine's outcome model already carries what the market's move would teach it |
 | staking | size by the engine's edge (1/8 Kelly, fixed bankroll) | +11.7% per unit staked vs +9.5% flat (2011-21); +11.5% vs +10.3% (2021-26); drawdown no larger → **adopted as the staking rule** |
 
-The lesson: on the data we already have, model tweaks are close to exhausted. Each one moves the
-backtest by a fraction of a point and none has held up in both periods. The remaining gains are
+The lesson: on the data we already have, model tweaks are close to exhausted. Five studies and seven
+candidates each moved the backtest by a fraction of a point, and none held up in both periods
+(continuity came closest). The remaining gains are
 in execution and in information the engine does not yet have.
 
 ## 4. Levers, ranked by expected value

@@ -17,6 +17,7 @@ from calibration.calibrate import wilson
 from data import sbr_live
 
 LEDGER = Path(__file__).resolve().parents[1] / "reports" / "live_ledger.csv"
+SINGLES = Path(__file__).resolve().parents[1] / "reports" / "live_ledger_singles.csv"
 
 
 def finals_for(date: str) -> dict:
@@ -37,9 +38,40 @@ def finals_for(date: str) -> dict:
     return res
 
 
+def grade_singles() -> None:
+    """Singles ledger: win/push/loss at the recorded line, profit = stake x (price - 1) or -stake."""
+    if not SINGLES.exists():
+        return
+    L = pd.read_csv(SINGLES)
+    for c in ("total", "result", "profit"):
+        if c not in L:
+            L[c] = np.nan
+    cache = {}
+    for i, r in L[L.result.isna()].iterrows():
+        fin = cache.setdefault(r.date, finals_for(r.date))
+        tot = fin.get((r.away, r.home))
+        if tot is None:
+            continue
+        L.at[i, "total"] = tot
+        res = 0 if tot == r.line else (1 if (tot > r.line if r.side == "OVER" else tot < r.line) else -1)
+        L.at[i, "result"] = res
+        L.at[i, "profit"] = r.stake_frac * (r.price - 1) if res == 1 else (-r.stake_frac if res == -1 else 0.0)
+    L.to_csv(SINGLES, index=False)
+    g = L[L.result.notna()]
+    if len(g):
+        dec = g[g.result != 0]
+        k, n = int((dec.result == 1).sum()), len(dec)
+        lo, hi = wilson(k, n)
+        print(f"[singles] graded: {len(g)}   won {k}/{n} ({k / max(n, 1):.1%}, 95% CI {lo:.1%}-{hi:.1%})   "
+              f"model expected {g.p.mean():.1%}   return per unit staked {g.profit.sum() / g.stake_frac.sum():+.1%}   "
+              f"bankroll change {g.profit.sum():+.2%}")
+    print(f"Ungraded singles: {int(L.result.isna().sum())}")
+
+
 def main():
+    grade_singles()
     if not LEDGER.exists():
-        sys.exit("no ledger yet: run predict_cards.py with --record")
+        sys.exit("no card ledger yet: run predict_cards.py with --record")
     L = pd.read_csv(LEDGER)
     for c in ("a_total", "b_total", "a_win", "b_win", "card_2of2"):
         if c not in L:
