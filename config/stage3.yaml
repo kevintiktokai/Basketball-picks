@@ -52,6 +52,15 @@ wnba:
   disclosure: >
     A format probe of 14 single dates (2017-2026) displayed the opening lines and final scores
     of a handful of games while checking coverage; nothing was analysed.
+  data_rules:   # amendment 2026-10-08, during the download, before any model was fitted or scored
+    preseason: "drop games dated before the season's first ESPN game (exhibitions; ESPN lists regular season + playoffs only)"
+    duplicates: "drop an SBR record that repeats another (same two teams and final score within a day) unless ESPN confirms its date, home team and score"
+    box_match: "match ESPN games by date (±1 day), both team names and the score (data/wnba_unify.match_box_named); the shared date+score matcher left games with equal scores on consecutive days unmatched"
+    why: >
+      Found while checking that SBR and ESPN games join (2019, 2020, 2025, 2026 partly downloaded):
+      SBR lists early-May preseason games with lines, and the date+score matcher missed about 5% of
+      games. Only game listings, scores and match rates were inspected; no model, line-vs-result
+      comparison or betting result was computed.
 
 ncaab:
   reanalysis: ["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"]
