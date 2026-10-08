@@ -1,0 +1,99 @@
+{
+  "experiment": "season_dollars",
+  "timestamp_utc": "20261008T121416Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "1c50a7e",
+  "params": {
+    "n_sim": 20000,
+    "seed": 20261009,
+    "stakes": [
+      50,
+      100
+    ]
+  },
+  "params_hash": "28c59df1d0d3",
+  "results": {
+    "plans": {
+      "straight": {
+        "bets per season (median)": 500.0,
+        "bets (10th-90th)": [
+          87.0,
+          1447.0
+        ],
+        "profit units: mean": 71.74894656745498,
+        "median": 74.0519792735694,
+        "10th": 0.27118296685607196,
+        "25th": 21.80023136875372,
+        "75th": 118.03460601349315,
+        "90th": 147.83198076022776,
+        "losing season": 0.0989,
+        "worst drop: median": 8.93937428690243,
+        "worst drop: 1 in 10": 20.243809220070325,
+        "worst drop: 1 in 20": 24.728684586603727,
+        "worst day: median": -4.363636363636363,
+        "busiest day bets (1 in 20)": 66.0,
+        "bankroll (1-in-20 drop + busiest day)": 90.72868458660372
+      },
+      "card": {
+        "bets per season (median)": 134.0,
+        "bets (10th-90th)": [
+          128.0,
+          136.0
+        ],
+        "profit units: mean": 26.31298685307146,
+        "median": 26.362875122280695,
+        "10th": 0.20544466704363534,
+        "25th": 12.159973883588403,
+        "75th": 40.473054042666014,
+        "90th": 52.60845629556015,
+        "losing season": 0.0986,
+        "worst drop: median": 9.0,
+        "worst drop: 1 in 10": 16.933549356314376,
+        "worst drop: 1 in 20": 20.296215988131863,
+        "worst day: median": -1.0,
+        "busiest day bets (1 in 20)": 1.0,
+        "bankroll (1-in-20 drop + busiest day)": 21.296215988131863
+      },
+      "double": {
+        "bets per season (median)": 130.0,
+        "bets (10th-90th)": [
+          125.0,
+          136.0
+        ],
+        "profit units: mean": 37.58785483082982,
+        "median": 37.99208526580669,
+        "10th": 4.901581341547839,
+        "25th": 20.741718244303396,
+        "75th": 54.74178379859338,
+        "90th": 69.78961104314924,
+        "losing season": 0.0708,
+        "worst drop: median": 11.355371900826446,
+        "worst drop: 1 in 10": 20.193317465420648,
+        "worst drop: 1 in 20": 23.970375968621596,
+        "worst day: median": -1.0,
+        "busiest day bets (1 in 20)": 1.0,
+        "bankroll (1-in-20 drop + busiest day)": 24.970375968621596
+      },
+      "straight+card": {
+        "bets per season (median)": 628.0,
+        "bets (10th-90th)": [
+          223.0,
+          1580.0
+        ],
+        "profit units: mean": 98.06193342052644,
+        "median": 104.4060342182278,
+        "10th": 4.931445018918794,
+        "25th": 40.50664506128422,
+        "75th": 154.6529626475616,
+        "90th": 184.09079352587796,
+        "losing season": 0.0821,
+        "worst drop: median": 13.020913431992028,
+        "worst drop: 1 in 10": 26.582455536969462,
+        "worst drop: 1 in 20": 32.70356095908142,
+        "worst day: median": -5.217962933629019,
+        "busiest day bets (1 in 20)": 67.0,
+        "bankroll (1-in-20 drop + busiest day)": 99.70356095908141
+      }
+    }
+  }
+}

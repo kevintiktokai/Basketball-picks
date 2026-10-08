@@ -1,0 +1,347 @@
+<title>NCAAB Season Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: one reading column (max 1040px) — stake control, four plan tiles, two charts, the bad-stretch table, notes */
+:root {
+  --bg: #f3f5f8; --surface: #ffffff; --ink: #12161c; --ink-2: #465061; --muted: #747e8c;
+  --grid: #e5e9ef; --axis: #c3cad4; --hair: rgba(18, 22, 28, 0.10); --wash: #eef2f7;
+  --straight: #2a78d6; --card: #eb6834; --double: #1baf7a; --both: #4a3aa7;
+  --good: #0f7a2e; --bad: #b42323;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+    --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --wash: #1b2029;
+    --straight: #3987e5; --card: #d95926; --double: #199e70; --both: #9085e9;
+    --good: #3ccf68; --bad: #f07272; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+  --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --wash: #1b2029;
+  --straight: #3987e5; --card: #d95926; --double: #199e70; --both: #9085e9;
+  --good: #3ccf68; --bad: #f07272; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--font-body); padding: 0 16px; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 26px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; text-wrap: balance; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(2rem, 4.6vw, 3rem); }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.12rem; }
+p { margin: 0; }
+.eyebrow { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--ink-2); max-width: 68ch; font-size: 1.06rem; }
+header { display: grid; gap: 12px; }
+.stakebar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; border-bottom: 1px solid var(--hair); }
+.stakebar .lab { font-weight: 600; color: var(--ink-2); }
+.seg { display: inline-flex; border: 1px solid var(--axis); border-radius: 999px; overflow: hidden; background: var(--surface); }
+.seg button { font: 600 0.95rem var(--font-body); color: var(--ink-2); background: transparent; border: 0; padding: 8px 16px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.seg button:focus-visible, .custom input:focus-visible { outline: 2px solid var(--straight); outline-offset: 2px; }
+.custom { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 0.92rem; }
+.custom input { width: 92px; font: 600 0.95rem var(--font-body); padding: 7px 10px; border: 1px solid var(--axis); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.plan { background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 16px 18px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.plan h3 { display: flex; align-items: center; gap: 8px; }
+.plan .big { font-size: 2.1rem; font-weight: 700; line-height: 1.05; }
+.plan .cap { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.plan dl { margin: 6px 0 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; font-size: 0.9rem; }
+.plan dt { color: var(--ink-2); white-space: nowrap; }
+.plan dd { margin: 0; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.plan.rec { border-color: var(--both); box-shadow: inset 0 0 0 1px var(--both); }
+.flag { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--both); }
+.panel { background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 22px 22px 18px; display: grid; gap: 12px; min-width: 0; }
+.panel > p { color: var(--ink-2); max-width: 74ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.88rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.key-box { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font-family: var(--font-body); }
+.tick { fill: var(--muted); font-size: 12px; }
+.lbl { fill: var(--ink-2); font-size: 12.5px; font-weight: 600; }
+.lbl-strong { fill: var(--ink); font-size: 13px; font-weight: 700; }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--axis); stroke-width: 1; }
+.ring { stroke: var(--surface); stroke-width: 2; }
+.f-straight { fill: var(--straight); } .f-card { fill: var(--card); } .f-double { fill: var(--double); } .f-both { fill: var(--both); }
+.s-straight { stroke: var(--straight); } .s-card { stroke: var(--card); } .s-double { stroke: var(--double); } .s-both { stroke: var(--both); }
+.hit { fill: transparent; cursor: default; }
+.hit:focus { outline: none; }
+.bar:hover, .bar:focus { opacity: 0.8; outline: none; }
+.tip { position: fixed; z-index: 10; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--hair);
+  border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16); padding: 10px 12px; font-size: 0.86rem; line-height: 1.4; min-width: 190px; max-width: 290px; }
+.tip .t-head { color: var(--muted); font-size: 0.8rem; margin-bottom: 4px; }
+.tip .t-row { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.tip .t-row b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.tip .t-name { color: var(--ink-2); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--hair); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { padding: 9px 10px; text-align: right; font-variant-numeric: tabular-nums; }
+td { white-space: nowrap; border-bottom: 1px solid var(--grid); }
+th { font-weight: 600; color: var(--ink-2); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--axis); vertical-align: bottom; }
+tr:last-child td { border-bottom: 0; }
+th:first-child, td:first-child { text-align: left; }
+td .k { display: inline-flex; align-items: center; gap: 8px; }
+.pos { color: var(--good); font-weight: 600; }
+.neg { color: var(--bad); font-weight: 600; }
+.notes ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; color: var(--ink-2); max-width: 76ch; }
+.foot { font-size: 0.84rem; color: var(--muted); }
+@media (max-width: 560px) { .panel { padding: 16px 14px 14px; } .plan .big { font-size: 1.8rem; } }
+@media (prefers-reduced-motion: no-preference) { .bar { transition: opacity 0.12s; } }
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">NCAA men's basketball · game totals · one season at a flat stake</p>
+    <h1>A season at $50 or $100 a bet</h1>
+    <p class="lede">Every bet gets the same stake: each straight bet, each 2.5+ card, each main-line double. These are 20,000
+      simulated seasons replayed from the 2021–26 seasons at real opening prices, keeping their busy Saturdays, quiet weeks
+      and lean years. Everything scales with the stake: at $100 every figure is double the $50 one.</p>
+  </header>
+
+  <div class="stakebar" role="group" aria-label="Stake per bet">
+    <span class="lab">Stake per bet</span>
+    <div class="seg"><button type="button" id="b50" aria-pressed="true">$50</button><button type="button" id="b100" aria-pressed="false">$100</button></div>
+    <label class="custom" for="stake-custom">or $ <input id="stake-custom" type="number" min="1" step="5" inputmode="decimal" placeholder="other"></label>
+  </div>
+
+  <section class="plans" id="plans" aria-label="One season, by plan"></section>
+
+  <section class="panel">
+    <h2>How a season can go</h2>
+    <p>Profit after a full season. The dot is the typical season, the thick bar holds half of all seasons and the thin line 8 in 10.
+      The straight bets swing the most because their volume does: a season can bring 90 qualifying bets or 1,400.</p>
+    <div class="chart" id="ranges" role="group" aria-label="Season profit range by plan"></div>
+  </section>
+
+  <section class="panel">
+    <h2>The last five seasons, as they happened</h2>
+    <p>Each 2021–26 season's actual result at this stake, before any simulation.</p>
+    <div class="legend"><span><i class="key-box" style="background:var(--straight)"></i>Straight bets</span><span><i class="key-box" style="background:var(--double)"></i>Main-line double</span><span><i class="key-box" style="background:var(--card)"></i>2.5+ card</span></div>
+    <div class="chart" id="bars" role="group" aria-label="Actual profit per season by strategy"></div>
+    <div class="tablewrap"><table id="actual"></table></div>
+  </section>
+
+  <section class="panel">
+    <h2>The bad stretches</h2>
+    <p>What to be ready for inside a season. A drop is the fall from the season's high point to its low.</p>
+    <div class="tablewrap"><table id="risk"></table></div>
+  </section>
+
+  <section class="panel notes">
+    <h2>Before you size up</h2>
+    <ul>
+      <li>Straight bets bunch up on big slates: on a busy Saturday the engine can produce 60 or more picks. At $100 each that
+        is several thousand dollars in play in one day, spread across your books.</li>
+      <li>“Cash on hand” covers a 1-in-20 bad stretch plus the busiest day's stakes. It is the money to keep across your
+        accounts so a cold run never stops you from placing the next bet.</li>
+      <li>Results assume each game's best opening price across books, bet soon after the line appears. Parlays sit at one
+        book; at −110 there the cards earned about 5 points less per card.</li>
+      <li>$50–$100 is well inside normal limits for college totals and parlays, but books limit accounts that win steadily,
+        so expect to need several books over a season.</li>
+      <li>Profit per season assumes next season behaves like one of 2021–26. 2024-25 was a near break-even year for the
+        straight bets, and the losing-season odds include years like it.</li>
+    </ul>
+    <p class="foot">Source: locked v3 engine and locked card rules; reports/season_dollars.md in the project repository.</p>
+  </section>
+</main>
+<div class="tip" id="tip" hidden></div>
+<script type="application/json" id="data">{"plans":{"straight":{"n":500.0,"nr":[87.0,1447.0],"mean":71.749,"p50":74.052,"p10":0.271,"p25":21.8,"p75":118.035,"p90":147.832,"loss":0.099,"dd50":8.939,"dd90":20.244,"dd95":24.729,"wday":-4.364,"busy":66.0,"bank":90.729},"card":{"n":134.0,"nr":[128.0,136.0],"mean":26.313,"p50":26.363,"p10":0.205,"p25":12.16,"p75":40.473,"p90":52.608,"loss":0.099,"dd50":9.0,"dd90":16.934,"dd95":20.296,"wday":-1.0,"busy":1.0,"bank":21.296},"double":{"n":130.0,"nr":[125.0,136.0],"mean":37.588,"p50":37.992,"p10":4.902,"p25":20.742,"p75":54.742,"p90":69.79,"loss":0.071,"dd50":11.355,"dd90":20.193,"dd95":23.97,"wday":-1.0,"busy":1.0,"bank":24.97},"straight+card":{"n":628.0,"nr":[223.0,1580.0],"mean":98.062,"p50":104.406,"p10":4.931,"p25":40.507,"p75":154.653,"p90":184.091,"loss":0.082,"dd50":13.021,"dd90":26.582,"dd95":32.704,"wday":-5.218,"busy":67.0,"bank":99.704}},"actual":[["2021-22",1380,143.2,130,20.7,127,44.4],["2022-23",503,107.8,128,46.6,126,59.7],["2023-24",1331,81.2,136,35.6,135,31.9],["2024-25",208,0.2,134,5.6,129,12.7],["2025-26",88,27.6,136,23.8,135,40.3]]}</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const NS = 'http://www.w3.org/2000/svg';
+  const tip = document.getElementById('tip');
+  const nf0 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  const PLANS = [
+    ['straight', 'Straight bets', 'Every 55%+ single'],
+    ['double', 'Main-line double', 'One a day, about 3.64'],
+    ['card', '2.5+ card', 'One a day, about 2.57'],
+    ['both', 'Straight bets + 2.5+ card', 'The two together'],
+  ];
+  const KEY = { straight: 'straight', double: 'double', card: 'card', both: 'straight+card' };
+  let stake = 50;
+  const usd = v => (v < 0 ? '−$' : '$') + nf0.format(Math.abs(Math.round(v)));
+  const signed = v => (v < 0 ? '−$' : '+$') + nf0.format(Math.abs(Math.round(v)));
+  const pct = v => v < 0.005 ? 'under 1%' : Math.round(v * 100) + '%';
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  const text = (parent, x, y, s, cls, anchor) => { const t = el('text', { x, y, class: cls, 'text-anchor': anchor || 'start' }, parent); t.textContent = s; return t; };
+  function niceTicks(lo, hi, n) {
+    const span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+    const out = [];
+    for (let v = Math.floor(lo / step) * step; v < hi + step - 1e-9; v += step) out.push(Math.round(v * 100) / 100);
+    return out;
+  }
+  function showTip(x, y, head, rows) {
+    tip.replaceChildren();
+    const h = document.createElement('div'); h.className = 't-head'; h.textContent = head; tip.appendChild(h);
+    for (const [name, value] of rows) {
+      const r = document.createElement('div'); r.className = 't-row';
+      const n = document.createElement('span'); n.className = 't-name'; n.textContent = name;
+      const b = document.createElement('b'); b.textContent = value;
+      r.append(n, b); tip.appendChild(r);
+    }
+    tip.hidden = false;
+    const w = tip.offsetWidth, hgt = tip.offsetHeight;
+    let left = x + 14, top = y - hgt - 12;
+    if (left + w > window.innerWidth - 8) left = x - w - 14;
+    if (left < 8) left = 8;
+    if (top < 8) top = y + 16;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  const hideTip = () => { tip.hidden = true; };
+  const P = k => D.plans[KEY[k]];
+
+  // ---------------- plan tiles
+  function drawPlans() {
+    const host = document.getElementById('plans');
+    host.replaceChildren();
+    PLANS.forEach(([k, name, sub]) => {
+      const p = P(k);
+      const box = document.createElement('div'); box.className = 'plan' + (k === 'both' ? ' rec' : '');
+      const h = document.createElement('h3');
+      const key = document.createElement('i'); key.className = 'key-box'; key.style.background = `var(--${k})`;
+      h.append(key, document.createTextNode(name));
+      const cap = document.createElement('span'); cap.className = 'cap'; cap.textContent = 'Typical season';
+      const big = document.createElement('span'); big.className = 'big'; big.textContent = signed(p.p50 * stake);
+      const dl = document.createElement('dl');
+      const add = (t, v) => { const dt = document.createElement('dt'); dt.textContent = t; const dd = document.createElement('dd'); dd.textContent = v; dl.append(dt, dd); };
+      add('8 in 10 seasons', `${signed(p.p10 * stake)} to ${signed(p.p90 * stake)}`);
+      add('Losing season', pct(p.loss));
+      add('Bets in a season', k === 'straight' || k === 'both' ? `about ${nf0.format(p.n)} (${nf0.format(p.nr[0])}–${nf0.format(p.nr[1])})` : `about ${nf0.format(p.n)}`);
+      add('Money staked', usd(p.n * stake));
+      add('Cash on hand', usd(p.bank * stake));
+      const s = document.createElement('p'); s.className = 'cap'; s.style.textTransform = 'none'; s.style.letterSpacing = '0'; s.textContent = sub;
+      box.append(h, s, cap, big, dl);
+      if (k === 'both') { const f = document.createElement('span'); f.className = 'flag'; f.textContent = 'Recommended plan'; box.prepend(f); }
+      host.appendChild(box);
+    });
+  }
+
+  // ---------------- season ranges
+  function drawRanges() {
+    const host = document.getElementById('ranges');
+    const W = Math.max(320, host.clientWidth), narrow = W < 600;
+    const rowH = narrow ? 64 : 58, lab = narrow ? 18 : 0;
+    const m = { l: narrow ? 8 : 190, r: 24, t: 8, b: 30 };
+    const H = m.t + m.b + PLANS.length * (rowH + lab);
+    const lo = Math.min(0, ...PLANS.map(([k]) => P(k).p10 * stake)), hi = Math.max(...PLANS.map(([k]) => P(k).p90 * stake)) * 1.03;
+    const ticks = niceTicks(lo, hi, narrow ? 4 : 6), x0 = ticks[0], x1 = ticks[ticks.length - 1];
+    const sx = v => m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
+    ticks.forEach(v => { el('line', { x1: sx(v), x2: sx(v), y1: m.t, y2: H - m.b, class: v === 0 ? 'baseline' : 'gridline' }, svg); text(svg, sx(v), H - m.b + 18, usd(v), 'tick', 'middle'); });
+    PLANS.forEach(([k, name], i) => {
+      const p = P(k), yc = m.t + i * (rowH + lab) + lab + rowH / 2;
+      if (narrow) text(svg, m.l, yc - 20, name, 'lbl');
+      else text(svg, m.l - 14, yc + 4, name, 'lbl-strong', 'end');
+      el('line', { x1: sx(p.p10 * stake), x2: sx(p.p90 * stake), y1: yc, y2: yc, class: 's-' + k, 'stroke-width': 2, 'stroke-linecap': 'round' }, svg);
+      el('rect', { x: sx(p.p25 * stake), y: yc - 7, width: Math.max(2, sx(p.p75 * stake) - sx(p.p25 * stake)), height: 14, rx: 4, class: 'f-' + k, opacity: 0.35 }, svg);
+      el('circle', { cx: sx(p.p50 * stake), cy: yc, r: 6, class: 'f-' + k + ' ring' }, svg);
+      text(svg, sx(p.p50 * stake), narrow ? yc + 22 : yc - 12, signed(p.p50 * stake), 'lbl', 'middle');
+      const hit = el('rect', { x: sx(p.p10 * stake) - 8, y: yc - 18, width: sx(p.p90 * stake) - sx(p.p10 * stake) + 16, height: 36, class: 'hit', tabindex: 0,
+        'aria-label': `${name}: typical ${signed(p.p50 * stake)}, 8 in 10 seasons ${signed(p.p10 * stake)} to ${signed(p.p90 * stake)}` }, svg);
+      const rows = () => [['Typical season', signed(p.p50 * stake)], ['Average season', signed(p.mean * stake)],
+        ['Half of seasons', `${signed(p.p25 * stake)} to ${signed(p.p75 * stake)}`], ['8 in 10 seasons', `${signed(p.p10 * stake)} to ${signed(p.p90 * stake)}`],
+        ['Losing season', pct(p.loss)]];
+      hit.addEventListener('pointermove', ev => showTip(ev.clientX, ev.clientY, `${name} · ${usd(stake)} a bet`, rows()));
+      hit.addEventListener('pointerleave', hideTip);
+      hit.addEventListener('focus', () => { const b = hit.getBoundingClientRect(); showTip(b.left + b.width / 2, b.top, `${name} · ${usd(stake)} a bet`, rows()); });
+      hit.addEventListener('blur', hideTip);
+    });
+    host.replaceChildren(svg);
+  }
+
+  // ---------------- actual seasons
+  function drawBars() {
+    const host = document.getElementById('bars');
+    const S = D.actual;   // [season, straight bets, straight units, cards, card units, doubles, double units]
+    const SER = [['straight', 'Straight bets', 2, 1], ['double', 'Main-line double', 6, 5], ['card', '2.5+ card', 4, 3]];
+    const W = Math.max(320, host.clientWidth), H = W < 560 ? 260 : 300;
+    const m = { l: 56, r: 8, t: 22, b: 30 };
+    const vals = S.flatMap(s => SER.map(([, , c]) => s[c] * stake));
+    const ticks = niceTicks(Math.min(0, ...vals), Math.max(...vals) * 1.1, 4), y0 = ticks[0], y1 = ticks[ticks.length - 1];
+    const sy = v => m.t + (1 - (v - y0) / (y1 - y0)) * (H - m.t - m.b);
+    const slot = (W - m.l - m.r) / S.length, bw = Math.min(24, (slot * 0.78) / 3 - 2);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
+    ticks.forEach(v => { el('line', { x1: m.l, x2: W - m.r, y1: sy(v), y2: sy(v), class: v === 0 ? 'baseline' : 'gridline' }, svg); text(svg, m.l - 8, sy(v) + 4, usd(v), 'tick', 'end'); });
+    S.forEach((s, i) => {
+      const c0 = m.l + slot * (i + 0.5);
+      text(svg, c0, H - m.b + 18, s[0], 'tick', 'middle');
+      SER.forEach(([k, name, c, nc], j) => {
+        const v = s[c] * stake, x = c0 + (j - 1) * (bw + 2) - bw / 2, top = sy(Math.max(v, 0)), base = sy(Math.min(v, 0));
+        const h = Math.max(1, base - top), r = Math.min(4, h, bw / 2);
+        const d = v >= 0 ? `M${x},${base}V${top + r}Q${x},${top} ${x + r},${top}H${x + bw - r}Q${x + bw},${top} ${x + bw},${top + r}V${base}Z`
+                         : `M${x},${top}V${base - r}Q${x},${base} ${x + r},${base}H${x + bw - r}Q${x + bw},${base} ${x + bw},${base - r}V${top}Z`;
+        const bar = el('path', { d, class: 'bar f-' + k, tabindex: 0, 'aria-label': `${s[0]}, ${name}: ${signed(v)}` }, svg);
+        const rows = () => [['Bets', nf0.format(s[nc])], ['Profit', signed(v)], ['Money staked', usd(s[nc] * stake)]];
+        bar.addEventListener('pointermove', ev => showTip(ev.clientX, ev.clientY, `${s[0]} · ${name}`, rows()));
+        bar.addEventListener('pointerleave', hideTip);
+        bar.addEventListener('focus', () => { const b = bar.getBoundingClientRect(); showTip(b.left + b.width / 2, b.top, `${s[0]} · ${name}`, rows()); });
+        bar.addEventListener('blur', hideTip);
+      });
+    });
+    host.replaceChildren(svg);
+  }
+
+  // ---------------- risk table
+  function drawRisk() {
+    const t = document.getElementById('risk');
+    t.replaceChildren();
+    const thead = document.createElement('thead'), hr = document.createElement('tr');
+    ['Plan', 'Typical drop', '1 in 10 seasons', 'Typical worst day', 'Busiest day (bets)', 'Busiest day staked', 'Cash on hand'].forEach(c => { const th = document.createElement('th'); th.textContent = c; th.scope = 'col'; hr.appendChild(th); });
+    thead.appendChild(hr); t.appendChild(thead);
+    const tb = document.createElement('tbody');
+    PLANS.forEach(([k, name]) => {
+      const p = P(k), tr = document.createElement('tr');
+      const td0 = document.createElement('td'); const sp = document.createElement('span'); sp.className = 'k';
+      const key = document.createElement('i'); key.className = 'key-box'; key.style.background = `var(--${k})`; sp.append(key, document.createTextNode(name)); td0.appendChild(sp); tr.appendChild(td0);
+      [[`−${usd(p.dd50 * stake)}`, 'neg'], [`−${usd(p.dd90 * stake)}`, 'neg'], [signed(p.wday * stake), 'neg'], [nf0.format(p.busy), ''], [usd(p.busy * stake), ''], [usd(p.bank * stake), '']]
+        .forEach(([v, cls]) => { const td = document.createElement('td'); td.textContent = v; if (cls) td.className = cls; tr.appendChild(td); });
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+  }
+
+  function drawActual() {
+    const t = document.getElementById('actual');
+    t.replaceChildren();
+    const thead = document.createElement('thead'), hr = document.createElement('tr');
+    ['Season', 'Straight bets', 'Main-line double', '2.5+ card', 'Straight bets + 2.5+ card'].forEach(c => { const th = document.createElement('th'); th.textContent = c; th.scope = 'col'; hr.appendChild(th); });
+    thead.appendChild(hr); t.appendChild(thead);
+    const tb = document.createElement('tbody');
+    D.actual.forEach(s => {
+      const tr = document.createElement('tr');
+      const vals = [s[2], s[6], s[4], s[2] + s[4]].map(u => u * stake);
+      const td0 = document.createElement('td'); td0.textContent = s[0]; tr.appendChild(td0);
+      vals.forEach(v => { const td = document.createElement('td'); td.textContent = signed(v); td.className = v >= 0 ? 'pos' : 'neg'; tr.appendChild(td); });
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+  }
+
+  const drawAll = () => { drawPlans(); drawRanges(); drawBars(); drawActual(); drawRisk(); };
+  const b50 = document.getElementById('b50'), b100 = document.getElementById('b100'), custom = document.getElementById('stake-custom');
+  const setStake = (v, src) => {
+    if (!(v > 0)) return;
+    stake = v;
+    b50.setAttribute('aria-pressed', String(src === 50));
+    b100.setAttribute('aria-pressed', String(src === 100));
+    if (src !== 'custom') custom.value = '';
+    drawAll();
+  };
+  b50.addEventListener('click', () => setStake(50, 50));
+  b100.addEventListener('click', () => setStake(100, 100));
+  custom.addEventListener('input', () => { const v = parseFloat(custom.value); if (v > 0) setStake(v, 'custom'); });
+  drawAll();
+  let rt = null;
+  window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawAll, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
+})();
+</script>
