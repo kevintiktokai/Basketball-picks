@@ -130,3 +130,27 @@ study_4:
   confirmation: "as study_2, on the sealed 2021-26 seasons, run once"
   secondary: "early-season games (a team with < 6 games) reported separately; not part of the rule"
   disclosure: "Season-level medians of cont and xfer were looked at (no outcomes). If study 3 also reaches its confirmation, 2021-26 is used twice; both uses are reported."
+
+# ---------------------------------------------------------------------------------------------
+study_5:
+  name: learn_from_the_closing_line
+  status: pre-registered 2026-10-08, before any fit below (study 3 still running; its result unseen)
+  motivation: >
+    The engine's edge shows up as line movement: its bets see the line move their way 67-80% of
+    the time. The closing line is the market's best estimate of the total, so close - open is a
+    nearly noise-free reading of how wrong the opener was (its spread is about 2-3 points, against
+    about 17 for final total - opener). A model trained to predict the move learns the opener's
+    systematic errors from far less noisy targets than final scores; since the close is close to
+    unbiased, E[total - opener] is about the predicted move plus a constant.
+  candidates:
+    M1_close_target: >
+      mean model (locked features, ridge, season weights) trained on close - open instead of
+      total - open; the variance model and a constant are then fitted on total - open - predicted
+      move; calibrator, eligibility and products as locked.
+    M2_move_feature: >
+      the locked engine plus one mean feature: the predicted move from a ridge model on the locked
+      features, trained on close - open within the same training seasons.
+  selection_seasons: "2011-12 .. 2020-21 (eras dev 2011-18 and holdout 2018-21)"
+  selection_rule: "as study_2 (both eras: lower log loss AND higher matched-volume ROI at -110); the better pooled matched ROI if both qualify"
+  confirmation: "as study_2, on the sealed 2021-26 seasons, run once"
+  disclosure: "Opening and closing lines of all seasons were used before as data; no close-target model was ever fitted."
