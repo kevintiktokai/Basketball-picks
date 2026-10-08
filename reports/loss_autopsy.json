@@ -1,0 +1,842 @@
+{
+ "paired": {
+  "TARGET CARD (locked: ~1.6 legs, >=2.5, max win prob)": {
+   "diff": 0.040812514645859485,
+   "ci": [
+    -0.04079250511107896,
+    0.12290810540193671
+   ],
+   "same": 292,
+   "n": 664,
+   "better_share": 0.8317
+  },
+  "MAIN-LINE DOUBLE (real prices only)": {
+   "diff": 0.04388271183038507,
+   "ci": [
+    -0.05855335732391146,
+    0.1458037685314287
+   ],
+   "same": 304,
+   "n": 652,
+   "better_share": 0.7997
+  }
+ },
+ "decomp": [
+  {
+   "bets": "won",
+   "n": 3166,
+   "margin": 15.349336702463676,
+   "edge": 4.719575207932763,
+   "p": 0.5745371518400365,
+   "3-point shooting": 3.5306573884568837,
+   "2-point shooting": 1.4382580814030594,
+   "Pace": 1.7668091050557129,
+   "Free throws": 0.3087157994779232,
+   "Overtime": 1.9775742261528744
+  },
+  {
+   "bets": "lost",
+   "n": 2397,
+   "margin": -12.250730079265749,
+   "edge": 4.600782962293365,
+   "p": 0.5728693173796009,
+   "3-point shooting": -5.153489356305283,
+   "2-point shooting": -5.3020872351842305,
+   "Pace": -6.103376018572272,
+   "Free throws": -0.8099448865013773,
+   "Overtime": -0.24196912807676263
+  }
+ ],
+ "worst": {
+  "Pace": 0.3566958698372966,
+  "3-point shooting": 0.3087192323738006,
+  "2-point shooting": 0.30287859824780977,
+  "Free throws": 0.020442219440967878,
+  "Overtime": 0.011264080100125156
+ },
+ "eras": {
+  "discovery 2011-18": {
+   "won": 2104,
+   "lost": 1588
+  },
+  "validation 2018-21": {
+   "won": 1062,
+   "lost": 809
+  }
+ },
+ "ot_share_lost": 0.028368794326241134,
+ "ot_share_lost_under": 0.09135802469135802,
+ "ideas": [
+  {
+   "round": 1,
+   "idea": "rematch (2nd+ meeting this season)",
+   "t_disc": -2.7569477489181997,
+   "t_val": -1.3502704650858552,
+   "t_bets_disc": -1.5806712385272494,
+   "t_bets_val": -0.8252862847886321,
+   "lead": false
+  },
+  {
+   "round": 1,
+   "idea": "3rd+ meeting (conference tournament rematches)",
+   "t_disc": -3.882023380416762,
+   "t_val": -1.4418598113149959,
+   "t_bets_disc": -0.3667110620135278,
+   "t_bets_val": 0.1871603347694519,
+   "lead": false
+  },
+  {
+   "round": 1,
+   "idea": "last meeting beat its closing total by more",
+   "t_disc": 1.053640105266066,
+   "t_val": 0.1576777567576329,
+   "t_bets_disc": 2.2093186163235483,
+   "t_bets_val": -0.06570390678755011,
+   "lead": false
+  },
+  {
+   "round": 1,
+   "idea": "both teams' last game beat its closing total by more",
+   "t_disc": 1.7751640887244637,
+   "t_val": 2.276958089165432,
+   "t_bets_disc": 0.429577432666925,
+   "t_bets_val": 0.7188710529336135,
+   "lead": false
+  },
+  {
+   "round": 1,
+   "idea": "early tip on the away team's body clock (< 1 pm)",
+   "t_disc": -0.844762767822184,
+   "t_val": 1.0326902278688834,
+   "t_bets_disc": -0.6955242312475277,
+   "t_bets_val": -0.8361824595224446,
+   "lead": false
+  },
+  {
+   "round": 1,
+   "idea": "late tip on the away team's body clock (9 pm+)",
+   "t_disc": -0.2912411366843069,
+   "t_val": -2.004564312466167,
+   "t_bets_disc": -1.2300978243207428,
+   "t_bets_val": -1.7231833729552135,
+   "lead": false
+  },
+  {
+   "round": 1,
+   "idea": "time zones crossed by the away team",
+   "t_disc": 1.3819125132037142,
+   "t_val": 1.7713772343977285,
+   "t_bets_disc": 0.2593930277665905,
+   "t_bets_val": 0.5153777801779387,
+   "lead": false
+  },
+  {
+   "round": 1,
+   "idea": "high-altitude venue",
+   "t_disc": 3.478385235406311,
+   "t_val": 2.821396229007576,
+   "t_bets_disc": -0.856037404740198,
+   "t_bets_val": 0.7058763664143987,
+   "lead": true
+  },
+  {
+   "round": 1,
+   "idea": "close game expected (spread 3 or less)",
+   "t_disc": -0.35759519477795,
+   "t_val": -2.3264444971951903,
+   "t_bets_disc": 0.2839108891682222,
+   "t_bets_val": 1.0191583859356985,
+   "lead": false
+  },
+  {
+   "round": 1,
+   "idea": "blowout expected (spread 18+)",
+   "t_disc": 0.8502174688701053,
+   "t_val": 0.47879257966632527,
+   "t_bets_disc": -0.3661981293830987,
+   "t_bets_val": 0.9820305968095288,
+   "lead": false
+  },
+  {
+   "round": 1,
+   "idea": "3-point-heavy matchup (style)",
+   "t_disc": -0.7502666827296991,
+   "t_val": -2.125800413069874,
+   "t_bets_disc": 0.6006160388904488,
+   "t_bets_val": -1.941207931519223,
+   "lead": false
+  },
+  {
+   "round": 1,
+   "idea": "opening total (level)",
+   "t_disc": 0.6825593560561812,
+   "t_val": -2.5396017024076656,
+   "t_bets_disc": 0.7061927016388898,
+   "t_bets_val": -2.313691737026569,
+   "lead": false
+  },
+  {
+   "round": 2,
+   "idea": "venue factor (home floor ran over its closes)",
+   "t_disc": 5.499954408815065,
+   "t_val": 4.946725639872734,
+   "t_bets_disc": 3.3983054980421254,
+   "t_bets_val": 2.2297770226653015,
+   "lead": true
+  },
+  {
+   "round": 2,
+   "idea": "venue split (home floor minus the team's road games)",
+   "t_disc": 4.781077973113952,
+   "t_val": 4.230509784310274,
+   "t_bets_disc": 2.6601403524317826,
+   "t_bets_val": 1.4902881775723822,
+   "lead": true
+  },
+  {
+   "round": 2,
+   "idea": "key player out (25+ min, either team)",
+   "t_disc": -1.9101514164951017,
+   "t_val": -2.0837069346595025,
+   "t_bets_disc": -0.34158616044536544,
+   "t_bets_val": -0.04646305998232781,
+   "lead": false
+  },
+  {
+   "round": 2,
+   "idea": "key minutes out (share of 200)",
+   "t_disc": -1.9357164601081698,
+   "t_val": -2.207713267652525,
+   "t_bets_disc": -0.24504881427554553,
+   "t_bets_val": -0.3598903571169162,
+   "lead": false
+  },
+  {
+   "round": 2,
+   "idea": "key player back after missing the last game",
+   "t_disc": -0.829701821256756,
+   "t_val": -1.432753701816398,
+   "t_bets_disc": 0.815089609583232,
+   "t_bets_val": -0.972354635839361,
+   "lead": false
+  },
+  {
+   "round": 2,
+   "idea": "long layoff (both teams 7+ days off)",
+   "t_disc": 0.9005120407305245,
+   "t_val": -0.09856589963259751,
+   "t_bets_disc": 0.9540241643142008,
+   "t_bets_val": 0.6153817684364634,
+   "lead": false
+  },
+  {
+   "round": 2,
+   "idea": "played yesterday (either team)",
+   "t_disc": -0.7695698852807403,
+   "t_val": 0.3854363239751303,
+   "t_bets_disc": -0.9000699550115936,
+   "t_bets_val": 0.4472669852972206,
+   "lead": false
+  },
+  {
+   "round": 2,
+   "idea": "football-stadium venue (30,000+ seats)",
+   "t_disc": -2.2491100878070043,
+   "t_val": -0.7012794317262152,
+   "t_bets_disc": -1.1030423453749016,
+   "t_bets_val": -0.3306144615351189,
+   "lead": false
+  },
+  {
+   "round": 2,
+   "idea": "senior night (home team's last home game)",
+   "t_disc": -0.033221156434722524,
+   "t_val": 1.3897814422019374,
+   "t_bets_disc": -1.481851007565772,
+   "t_bets_val": -0.5679883091492444,
+   "lead": false
+  },
+  {
+   "round": 3,
+   "idea": "key player missed the last game",
+   "t_disc": -1.228046646391025,
+   "t_val": -1.970675465713341,
+   "t_bets_disc": -0.23767397433493564,
+   "t_bets_val": -0.931171979355568,
+   "lead": false
+  },
+  {
+   "round": 3,
+   "idea": "key minutes that missed the last game (share)",
+   "t_disc": -1.3944288133265692,
+   "t_val": -2.2186347966828177,
+   "t_bets_disc": 0.012095627079373252,
+   "t_bets_val": -0.7851954106832008,
+   "lead": false
+  },
+  {
+   "round": 3,
+   "idea": "key player missed the last two games",
+   "t_disc": -1.3440068566757624,
+   "t_val": -0.9333583876357473,
+   "t_bets_disc": 0.09519404541547519,
+   "t_bets_val": -1.197338433820143,
+   "lead": false
+  },
+  {
+   "round": 3,
+   "idea": "key minutes that missed the last two (share)",
+   "t_disc": -1.5597493565448604,
+   "t_val": -0.7164121491265383,
+   "t_bets_disc": 0.06333472336601177,
+   "t_bets_val": -1.5162462231257698,
+   "lead": false
+  }
+ ],
+ "overshoot": [
+  {
+   "era": "discovery 2011-18",
+   "games": 17058,
+   "t slope": 1.137883458136448,
+   "total - close: close fell 3+": 0.2464923469387755,
+   "n: close fell 3+": 1568,
+   "total - close: fell 1-3": 0.4470081135902637,
+   "n: fell 1-3": 3944,
+   "total - close: within 1": 0.7834290401968826,
+   "n: within 1": 4876,
+   "total - close: rose 1-3": 0.9220607661822986,
+   "n: rose 1-3": 4542,
+   "total - close: rose 3+": 0.3031015037593985,
+   "n: rose 3+": 2128
+  },
+  {
+   "era": "validation 2018-21",
+   "games": 12854,
+   "t slope": 2.396247601418518,
+   "total - close: close fell 3+": -0.09776536312849161,
+   "n: close fell 3+": 1253,
+   "total - close: fell 1-3": -0.280511060259344,
+   "n: fell 1-3": 2622,
+   "total - close: within 1": 0.6615792129162462,
+   "n: within 1": 3964,
+   "total - close: rose 1-3": 0.695373872563282,
+   "n: rose 1-3": 3437,
+   "total - close: rose 3+": 1.3006970849176172,
+   "n: rose 3+": 1578
+  }
+ ],
+ "quintiles": [
+  {
+   "era": "discovery 2011-18",
+   "quintile": 1,
+   "factor": -1.8860850429924851,
+   "miss": -1.4158850748609006,
+   "se": 0.3038263676490163,
+   "games": 2967
+  },
+  {
+   "era": "discovery 2011-18",
+   "quintile": 2,
+   "factor": -0.5876103531275882,
+   "miss": -0.40400523853411846,
+   "se": 0.3003335642935892,
+   "games": 2968
+  },
+  {
+   "era": "discovery 2011-18",
+   "quintile": 3,
+   "factor": 0.1721522596393355,
+   "miss": 0.11473567554284331,
+   "se": 0.310744479566014,
+   "games": 2966
+  },
+  {
+   "era": "discovery 2011-18",
+   "quintile": 4,
+   "factor": 0.963776708824263,
+   "miss": 0.5839627957736402,
+   "se": 0.3203376898330825,
+   "games": 2967
+  },
+  {
+   "era": "discovery 2011-18",
+   "quintile": 5,
+   "factor": 2.283013936699965,
+   "miss": 0.4333333014505467,
+   "se": 0.3151445906806995,
+   "games": 2967
+  },
+  {
+   "era": "validation 2018-21",
+   "quintile": 1,
+   "factor": -1.7504103908795194,
+   "miss": -1.5990540885007427,
+   "se": 0.3390968314672481,
+   "games": 2334
+  },
+  {
+   "era": "validation 2018-21",
+   "quintile": 2,
+   "factor": -0.5098308185555385,
+   "miss": -1.2467514975061103,
+   "se": 0.34639583353269504,
+   "games": 2331
+  },
+  {
+   "era": "validation 2018-21",
+   "quintile": 3,
+   "factor": 0.2511807027153247,
+   "miss": -0.9853471262119803,
+   "se": 0.34638049924702685,
+   "games": 2332
+  },
+  {
+   "era": "validation 2018-21",
+   "quintile": 4,
+   "factor": 1.054816660586203,
+   "miss": -0.06247043773800816,
+   "se": 0.3411480108262335,
+   "games": 2332
+  },
+  {
+   "era": "validation 2018-21",
+   "quintile": 5,
+   "factor": 2.459378450502512,
+   "miss": 0.43004595473408264,
+   "se": 0.3537284607240177,
+   "games": 2333
+  }
+ ],
+ "agree": [
+  {
+   "era": "discovery 2011-18",
+   "group": "Strong, agrees with the bet",
+   "bets": 1012,
+   "won": 0.5889328063241107,
+   "roi": 0.12432626661875673
+  },
+  {
+   "era": "discovery 2011-18",
+   "group": "Strong, against the bet",
+   "bets": 1020,
+   "won": 0.5568627450980392,
+   "roi": 0.06310160427807487
+  },
+  {
+   "era": "discovery 2011-18",
+   "group": "Weak (under 1 point)",
+   "bets": 1869,
+   "won": 0.5815944355270198,
+   "roi": 0.11031664964249233
+  },
+  {
+   "era": "validation 2018-21",
+   "group": "Strong, agrees with the bet",
+   "bets": 565,
+   "won": 0.5946902654867257,
+   "roi": 0.13531777956556718
+  },
+  {
+   "era": "validation 2018-21",
+   "group": "Strong, against the bet",
+   "bets": 461,
+   "won": 0.5422993492407809,
+   "roi": 0.03529875764149083
+  },
+  {
+   "era": "validation 2018-21",
+   "group": "Weak (under 1 point)",
+   "bets": 1078,
+   "won": 0.5538033395176253,
+   "roi": 0.05726092089728453
+  }
+ ],
+ "absent": [
+  {
+   "era": "discovery 2011-18",
+   "side": "Over",
+   "flagged": true,
+   "bets": 304,
+   "won": 0.543
+  },
+  {
+   "era": "discovery 2011-18",
+   "side": "Over",
+   "flagged": false,
+   "bets": 2559,
+   "won": 0.567
+  },
+  {
+   "era": "discovery 2011-18",
+   "side": "Under",
+   "flagged": true,
+   "bets": 52,
+   "won": 0.673
+  },
+  {
+   "era": "discovery 2011-18",
+   "side": "Under",
+   "flagged": false,
+   "bets": 747,
+   "won": 0.584
+  },
+  {
+   "era": "validation 2018-21",
+   "side": "Over",
+   "flagged": true,
+   "bets": 198,
+   "won": 0.535
+  },
+  {
+   "era": "validation 2018-21",
+   "side": "Over",
+   "flagged": false,
+   "bets": 1458,
+   "won": 0.563
+  },
+  {
+   "era": "validation 2018-21",
+   "side": "Under",
+   "flagged": true,
+   "bets": 25,
+   "won": 0.64
+  },
+  {
+   "era": "validation 2018-21",
+   "side": "Under",
+   "flagged": false,
+   "bets": 155,
+   "won": 0.632
+  }
+ ],
+ "study6": {
+  "selection": [
+   {
+    "engine": "locked_v3",
+    "era": "dev 2011-18",
+    "games": "16834",
+    "log loss": "0.6881",
+    "matched bets": "4395",
+    "matched win": "0.5780",
+    "matched ROI @-110": "0.1025",
+    "bets P>=55%": "4395",
+    "ROI @-110 at P>=55%": "0.1025"
+   },
+   {
+    "engine": "locked_v3",
+    "era": "holdout 2018-21",
+    "games": "12696",
+    "log loss": "0.6895",
+    "matched bets": "2262",
+    "matched win": "0.5673",
+    "matched ROI @-110": "0.0818",
+    "bets P>=55%": "2262",
+    "ROI @-110 at P>=55%": "0.0818"
+   },
+   {
+    "engine": "locked_v3",
+    "era": "2011-21",
+    "games": "29530",
+    "log loss": "0.6887",
+    "matched bets": "6657",
+    "matched win": "0.5744",
+    "matched ROI @-110": "0.0954",
+    "bets P>=55%": "6657",
+    "ROI @-110 at P>=55%": "0.0954"
+   },
+   {
+    "engine": "V1_venue",
+    "era": "dev 2011-18",
+    "games": "16834",
+    "log loss": "0.6874",
+    "matched bets": "4395",
+    "matched win": "0.5874",
+    "matched ROI @-110": "0.1201",
+    "bets P>=55%": "4630",
+    "ROI @-110 at P>=55%": "0.1201"
+   },
+   {
+    "engine": "V1_venue",
+    "era": "holdout 2018-21",
+    "games": "12696",
+    "log loss": "0.6884",
+    "matched bets": "2262",
+    "matched win": "0.5796",
+    "matched ROI @-110": "0.1050",
+    "bets P>=55%": "2803",
+    "ROI @-110 at P>=55%": "0.0920"
+   },
+   {
+    "engine": "V1_venue",
+    "era": "2011-21",
+    "games": "29530",
+    "log loss": "0.6879",
+    "matched bets": "6657",
+    "matched win": "0.5847",
+    "matched ROI @-110": "0.1149",
+    "bets P>=55%": "7433",
+    "ROI @-110 at P>=55%": "0.1095"
+   },
+   {
+    "engine": "V2_venue_altitude",
+    "era": "dev 2011-18",
+    "games": "16834",
+    "log loss": "0.6873",
+    "matched bets": "4395",
+    "matched win": "0.5860",
+    "matched ROI @-110": "0.1175",
+    "bets P>=55%": "4739",
+    "ROI @-110 at P>=55%": "0.1250"
+   },
+   {
+    "engine": "V2_venue_altitude",
+    "era": "holdout 2018-21",
+    "games": "12696",
+    "log loss": "0.6881",
+    "matched bets": "2262",
+    "matched win": "0.5781",
+    "matched ROI @-110": "0.1024",
+    "bets P>=55%": "2928",
+    "ROI @-110 at P>=55%": "0.1021"
+   },
+   {
+    "engine": "V2_venue_altitude",
+    "era": "2011-21",
+    "games": "29530",
+    "log loss": "0.6876",
+    "matched bets": "6657",
+    "matched win": "0.5833",
+    "matched ROI @-110": "0.1123",
+    "bets P>=55%": "7667",
+    "ROI @-110 at P>=55%": "0.1163"
+   }
+  ],
+  "qualifies": "Qualifies (lower log loss AND higher matched ROI in both eras): V1_venue **True**, V2_venue_altitude **True**. Selected: **V1_venue**.",
+  "selected": "V1_venue",
+  "bets_2011_21": [
+   {
+    "venue factor": "strong, agrees with the bet",
+    "bets": "1577",
+    "won": "0.591",
+    "ROI @-110": "0.128"
+   },
+   {
+    "venue factor": "strong, against the bet",
+    "bets": "1481",
+    "won": "0.552",
+    "ROI @-110": "0.054"
+   },
+   {
+    "venue factor": "weak or neutral site",
+    "bets": "3525",
+    "won": "0.576",
+    "ROI @-110": "0.100"
+   }
+  ],
+  "confirmation": [
+   {
+    "engine": "locked_v3",
+    "games": "25364",
+    "log loss": "0.6910",
+    "matched bets": "3510",
+    "matched win": "0.5677",
+    "matched ROI @-110": "0.0834",
+    "matched ROI real price": "0.1026",
+    "bets P>=55%": "3510",
+    "ROI @-110 at P>=55%": "0.0834"
+   },
+   {
+    "engine": "V1_venue",
+    "games": "25364",
+    "log loss": "0.6908",
+    "matched bets": "3510",
+    "matched win": "0.5652",
+    "matched ROI @-110": "0.0785",
+    "matched ROI real price": "0.0980",
+    "bets P>=55%": "4147",
+    "ROI @-110 at P>=55%": "0.0694"
+   }
+  ],
+  "by_season": [
+   {
+    "engine": "locked_v3",
+    "season": "2021-22",
+    "games": "4872",
+    "log loss": "0.6902",
+    "matched bets": "1380",
+    "matched win": "0.5703",
+    "matched ROI @-110": "0.0883",
+    "matched ROI real price": "0.1037",
+    "bets P>=55%": "1380",
+    "ROI @-110 at P>=55%": "0.0883"
+   },
+   {
+    "engine": "locked_v3",
+    "season": "2022-23",
+    "games": "5026",
+    "log loss": "0.6885",
+    "matched bets": "503",
+    "matched win": "0.6248",
+    "matched ROI @-110": "0.1919",
+    "matched ROI real price": "0.2144",
+    "bets P>=55%": "503",
+    "ROI @-110 at P>=55%": "0.1919"
+   },
+   {
+    "engine": "locked_v3",
+    "season": "2023-24",
+    "games": "5160",
+    "log loss": "0.6927",
+    "matched bets": "1331",
+    "matched win": "0.5450",
+    "matched ROI @-110": "0.0402",
+    "matched ROI real price": "0.0610",
+    "bets P>=55%": "1331",
+    "ROI @-110 at P>=55%": "0.0402"
+   },
+   {
+    "engine": "locked_v3",
+    "season": "2024-25",
+    "games": "5073",
+    "log loss": "0.6932",
+    "matched bets": "208",
+    "matched win": "0.5144",
+    "matched ROI @-110": "-0.0179",
+    "matched ROI real price": "0.0012",
+    "bets P>=55%": "208",
+    "ROI @-110 at P>=55%": "-0.0179"
+   },
+   {
+    "engine": "locked_v3",
+    "season": "2025-26",
+    "games": "5233",
+    "log loss": "0.6906",
+    "matched bets": "88",
+    "matched win": "0.6705",
+    "matched ROI @-110": "0.2800",
+    "matched ROI real price": "0.3131",
+    "bets P>=55%": "88",
+    "ROI @-110 at P>=55%": "0.2800"
+   },
+   {
+    "engine": "V1_venue",
+    "season": "2021-22",
+    "games": "4872",
+    "log loss": "0.6909",
+    "matched bets": "1380",
+    "matched win": "0.5648",
+    "matched ROI @-110": "0.0779",
+    "matched ROI real price": "0.0930",
+    "bets P>=55%": "1564",
+    "ROI @-110 at P>=55%": "0.0585"
+   },
+   {
+    "engine": "V1_venue",
+    "season": "2022-23",
+    "games": "5026",
+    "log loss": "0.6881",
+    "matched bets": "503",
+    "matched win": "0.6108",
+    "matched ROI @-110": "0.1654",
+    "matched ROI real price": "0.1819",
+    "bets P>=55%": "556",
+    "ROI @-110 at P>=55%": "0.1607"
+   },
+   {
+    "engine": "V1_venue",
+    "season": "2023-24",
+    "games": "5160",
+    "log loss": "0.6926",
+    "matched bets": "1331",
+    "matched win": "0.5485",
+    "matched ROI @-110": "0.0467",
+    "matched ROI real price": "0.0681",
+    "bets P>=55%": "1530",
+    "ROI @-110 at P>=55%": "0.0392"
+   },
+   {
+    "engine": "V1_venue",
+    "season": "2024-25",
+    "games": "5073",
+    "log loss": "0.6926",
+    "matched bets": "208",
+    "matched win": "0.5577",
+    "matched ROI @-110": "0.0647",
+    "matched ROI real price": "0.0921",
+    "bets P>=55%": "333",
+    "ROI @-110 at P>=55%": "0.0663"
+   },
+   {
+    "engine": "V1_venue",
+    "season": "2025-26",
+    "games": "5233",
+    "log loss": "0.6899",
+    "matched bets": "88",
+    "matched win": "0.5795",
+    "matched ROI @-110": "0.1064",
+    "matched ROI real price": "0.1619",
+    "bets P>=55%": "164",
+    "ROI @-110 at P>=55%": "0.1524"
+   }
+  ],
+  "cards": [
+   {
+    "engine": "locked_v3",
+    "product": "TARGET CARD",
+    "cards": "664",
+    "hit": "0.468",
+    "leg_win": "0.676",
+    "roi": "0.199",
+    "roi_ci95": "0.104\u20130.295"
+   },
+   {
+    "engine": "locked_v3",
+    "product": "MAIN-LINE DOUBLE",
+    "cards": "652",
+    "hit": "0.356",
+    "leg_win": "0.590",
+    "roi": "0.290",
+    "roi_ci95": "0.163\u20130.426"
+   },
+   {
+    "engine": "V1_venue",
+    "product": "TARGET CARD",
+    "cards": "664",
+    "hit": "0.485",
+    "leg_win": "0.691",
+    "roi": "0.240",
+    "roi_ci95": "0.143\u20130.337"
+   },
+   {
+    "engine": "V1_venue",
+    "product": "MAIN-LINE DOUBLE",
+    "cards": "653",
+    "hit": "0.368",
+    "leg_win": "0.602",
+    "roi": "0.334",
+    "roi_ci95": "0.199\u20130.466"
+   }
+  ],
+  "bets_2021_26": [
+   {
+    "venue factor": "strong, agrees with the bet",
+    "bets": "885",
+    "won": "0.572",
+    "ROI @-110": "0.092"
+   },
+   {
+    "venue factor": "strong, against the bet",
+    "bets": "671",
+    "won": "0.539",
+    "ROI @-110": "0.030"
+   },
+   {
+    "venue factor": "weak or neutral site",
+    "bets": "1935",
+    "won": "0.576",
+    "ROI @-110": "0.099"
+   }
+  ],
+  "passed": false
+ }
+}

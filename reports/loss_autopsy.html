@@ -1,0 +1,515 @@
+<title>NCAAB Loss Autopsy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: one column (max 1080px): verdict tiles, then the story in order: what the losses were made of, the 25 ideas, the venue park factor, the final test, what changes */
+:root {
+  --bg: #f3f5f8; --surface: #ffffff; --ink: #12161c; --ink-2: #465061; --muted: #747e8c;
+  --grid: #e5e9ef; --axis: #c3cad4; --hair: rgba(18, 22, 28, 0.10); --wash: #eef2f7;
+  --won: #2a78d6; --lost: #e34948; --era1: #2a78d6; --era2: #eb6834; --idle: #a9b1bc; --zone: #e7f0fb;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+    --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --wash: #1b2029;
+    --won: #3987e5; --lost: #e66767; --era1: #3987e5; --era2: #d95926; --idle: #5d6672; --zone: #17263a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+  --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --wash: #1b2029;
+  --won: #3987e5; --lost: #e66767; --era1: #3987e5; --era2: #d95926; --idle: #5d6672; --zone: #17263a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--font-body); padding: 0 16px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 24px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; text-wrap: balance; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(2rem, 4.6vw, 3rem); }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.12rem; }
+p { margin: 0; }
+.eyebrow { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--ink-2); max-width: 70ch; font-size: 1.06rem; }
+header { display: grid; gap: 12px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--hair); border-radius: 10px; padding: 14px 16px; display: grid; gap: 3px; min-width: 0; align-content: start; }
+.kpi .label { font-size: 0.84rem; color: var(--ink-2); }
+.kpi .value { font-size: 1.75rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi .sub { font-size: 0.82rem; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 22px 22px 18px; display: grid; gap: 14px; min-width: 0; }
+.panel > p, .panel .copy p { color: var(--ink-2); max-width: 76ch; }
+.copy { display: grid; gap: 10px; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: start; }
+.two > * { min-width: 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.86rem; color: var(--ink-2); align-items: center; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex: none; }
+.sw.dot { border-radius: 50%; width: 11px; height: 11px; }
+.sw.zone { background: var(--zone); border: 1px dashed var(--axis); }
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font-family: var(--font-body); }
+.tick { fill: var(--muted); font-size: 11.5px; }
+.lbl { fill: var(--ink-2); font-size: 12px; font-weight: 600; }
+.val { fill: var(--ink); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.axisname { fill: var(--muted); font-size: 12px; }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--axis); stroke-width: 1; }
+.verdict { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.86rem; letter-spacing: 0.03em; text-transform: uppercase;
+  padding: 3px 12px; border-radius: 999px; width: fit-content; }
+.verdict.fail { background: color-mix(in oklab, var(--lost) 14%, var(--surface)); border: 1px solid color-mix(in oklab, var(--lost) 50%, var(--surface)); color: var(--ink); }
+.verdict.pass { background: color-mix(in oklab, var(--won) 14%, var(--surface)); border: 1px solid color-mix(in oklab, var(--won) 50%, var(--surface)); color: var(--ink); }
+.verdict svg { width: 14px; height: 14px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.step { border: 1px solid var(--hair); border-radius: 10px; padding: 12px 14px; display: grid; gap: 6px; background: var(--wash); min-width: 0; align-content: start; }
+.step .k { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.step .r { font-weight: 600; }
+.step p { font-size: 0.92rem; color: var(--ink-2); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--hair); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { padding: 8px 10px; text-align: right; font-variant-numeric: tabular-nums; }
+td { white-space: nowrap; border-bottom: 1px solid var(--grid); }
+th { font-weight: 600; color: var(--ink-2); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--axis); vertical-align: bottom; }
+tr:last-child td { border-bottom: 0; }
+th:first-child, td:first-child { text-align: left; }
+td.wrapcell { white-space: normal; min-width: 200px; }
+tr.hl td { background: var(--wash); font-weight: 600; }
+.pos { color: var(--won); font-weight: 600; }
+.neg { color: var(--lost); font-weight: 600; }
+.muted { color: var(--muted); }
+details { border-top: 1px solid var(--grid); padding-top: 10px; }
+summary { cursor: pointer; font-weight: 600; color: var(--ink-2); }
+summary:focus-visible { outline: 2px solid var(--won); outline-offset: 2px; border-radius: 4px; }
+details[open] summary { margin-bottom: 10px; }
+.tip { position: fixed; z-index: 10; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--hair);
+  border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16); padding: 10px 12px; font-size: 0.86rem; line-height: 1.4; min-width: 190px; max-width: 290px; }
+.tip .t-head { color: var(--muted); font-size: 0.8rem; margin-bottom: 4px; }
+.tip .t-row { display: flex; gap: 10px; justify-content: space-between; }
+.tip .t-row b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.tip .t-name { color: var(--ink-2); }
+ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; color: var(--ink-2); max-width: 78ch; }
+ul.plain b { color: var(--ink); }
+.foot { font-size: 0.84rem; color: var(--muted); max-width: 90ch; }
+@media (max-width: 560px) { .panel { padding: 16px 14px 14px; } .kpi .value { font-size: 1.5rem; } }
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">NCAA men's basketball · game totals · straight bets 2011-21, final check on 2021-26</p>
+    <h1>What our losses were made of</h1>
+    <p class="lede" id="lede"></p>
+  </header>
+
+  <section class="kpis" id="kpis" aria-label="Summary"></section>
+
+  <section class="panel" aria-labelledby="h-points">
+    <div class="copy">
+      <h2 id="h-points">Where the points went</h2>
+      <p>After each game we split the total into what pushed it toward or away from our side: shooting against that season's league
+        averages, and pace against the engine's own forecast of possessions. A bet that won or lost by a wide margin usually did so
+        through these, not through the pick itself.</p>
+    </div>
+    <div class="legend" aria-hidden="true"><span><i class="sw" style="background:var(--won)"></i>Won bets</span><span><i class="sw" style="background:var(--lost)"></i>Lost bets</span></div>
+    <div class="chart" id="c-points" role="img" aria-label="Average points each factor added or cost, won and lost bets"></div>
+    <div class="two">
+      <div class="copy">
+        <h3>What did the most damage in each lost bet</h3>
+        <p id="worst-copy"></p>
+      </div>
+      <div class="chart" id="c-worst" role="img" aria-label="Share of lost bets by the factor that hurt most"></div>
+    </div>
+    <details>
+      <summary>Table view</summary>
+      <div class="tablewrap" id="t-points"></div>
+    </details>
+  </section>
+
+  <section class="panel" aria-labelledby="h-ideas">
+    <div class="copy">
+      <h2 id="h-ideas">25 ideas, one rule</h2>
+      <p>Each dot is something knowable before tip-off that might explain why a total beat our forecast. Across: how strongly it
+        predicted the engine's miss in 2011-18 (a t-value; ±2 is the usual bar). Up: the same test in 2018-21. To count, an idea
+        needed |t| of at least 2 in 2011-18 and the same direction at 1.5 or more in 2018-21. The rule was fixed before any idea was scored,
+        and the 2021-26 seasons were not looked at.</p>
+    </div>
+    <div class="legend" aria-hidden="true"><span><i class="sw dot" style="background:var(--won)"></i>Passed</span><span><i class="sw dot" style="background:var(--idle)"></i>Did not pass</span><span><i class="sw zone"></i>Pass zone</span></div>
+    <div class="chart" id="c-ideas" role="img" aria-label="Scatter of 25 ideas by t-value in two periods"></div>
+    <details>
+      <summary>All 25 ideas</summary>
+      <div class="tablewrap" id="t-ideas"></div>
+    </details>
+  </section>
+
+  <section class="panel" aria-labelledby="h-venue">
+    <div class="copy">
+      <h2 id="h-venue">The home floor's park factor</h2>
+      <p>Some floors keep producing totals above or below their closing lines, season after season. The reasons could be thin air in the Mountain West,
+        rims and sight lines, or how a team plays at home. Team ratings average home and road games, and the opener is built from team
+        numbers, so part of a floor's effect is left over. We scored each floor from its earlier home games only: the total minus the closing
+        line, averaged over the last three seasons and shrunk toward zero (sum ÷ (games + 40)).</p>
+      <p id="venue-copy"></p>
+    </div>
+    <div class="legend" aria-hidden="true"><span><i class="sw" style="background:var(--era1)"></i>2011-18</span><span><i class="sw" style="background:var(--era2)"></i>2018-21</span></div>
+    <div class="chart" id="c-venue" role="img" aria-label="Engine's miss by venue park factor fifth, two periods"></div>
+    <h3>The locked engine's bets, by what the floor said</h3>
+    <div class="tablewrap" id="t-agree"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-test">
+    <div class="copy">
+      <h2 id="h-test">The final test</h2>
+      <p>We wrote the test down before fitting anything (study 6): add the park factor, alone or with a high-altitude flag, to the locked
+        engine; keep it only if it improves both probabilities and bets in both 2011-18 and 2018-21; then check the chosen version
+        once on the sealed 2021-26 seasons, where it had to match or beat the locked engine's straight bets at the same volume.</p>
+    </div>
+    <div id="verdict"></div>
+    <div class="steps" id="steps"></div>
+    <h3>Straight bets at the same volume</h3>
+    <div class="tablewrap" id="t-select"></div>
+    <h3>Two-leg cards, 2021-26, real prices</h3>
+    <p class="foot" id="cards-copy"></p>
+    <div class="tablewrap" id="t-cards"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-else">
+    <div class="copy">
+      <h2 id="h-else">Other things the losses showed</h2>
+    </div>
+    <ul class="plain" id="else"></ul>
+  </section>
+
+  <section class="panel" aria-labelledby="h-next">
+    <div class="copy">
+      <h2 id="h-next">What changes</h2>
+    </div>
+    <ul class="plain" id="next"></ul>
+  </section>
+
+  <p class="foot">Locked v3 NCAAB engine, straight bets at calibrated P ≥ 55% at the opener. Loss split: box scores for 5,563 of the decided
+    2011-21 bets. Screens: every eligible game 2011-21 (about 30,000), the engine's miss = final total − opener − forecast. Study 6 and its
+    one-time 2021-26 check: config/improvements.yaml (study_6), reports/study6_venue.md. Paired card comparison done after the check, for sizing only.</p>
+</main>
+
+<div class="tip" id="tip" hidden></div>
+<script type="application/json" id="data">{"paired":{"TARGET CARD (locked: ~1.6 legs, >=2.5, max win prob)":{"diff":0.040812514645859485,"ci":[-0.04079250511107896,0.12290810540193671],"same":292,"n":664,"better_share":0.8317},"MAIN-LINE DOUBLE (real prices only)":{"diff":0.04388271183038507,"ci":[-0.05855335732391146,0.1458037685314287],"same":304,"n":652,"better_share":0.7997}},"decomp":[{"bets":"won","n":3166,"margin":15.349336702463676,"edge":4.719575207932763,"p":0.5745371518400365,"3-point shooting":3.5306573884568837,"2-point shooting":1.4382580814030594,"Pace":1.7668091050557129,"Free throws":0.3087157994779232,"Overtime":1.9775742261528744},{"bets":"lost","n":2397,"margin":-12.250730079265749,"edge":4.600782962293365,"p":0.5728693173796009,"3-point shooting":-5.153489356305283,"2-point shooting":-5.3020872351842305,"Pace":-6.103376018572272,"Free throws":-0.8099448865013773,"Overtime":-0.24196912807676263}],"worst":{"Pace":0.3566958698372966,"3-point shooting":0.3087192323738006,"2-point shooting":0.30287859824780977,"Free throws":0.020442219440967878,"Overtime":0.011264080100125156},"eras":{"discovery 2011-18":{"won":2104,"lost":1588},"validation 2018-21":{"won":1062,"lost":809}},"ot_share_lost":0.028368794326241134,"ot_share_lost_under":0.09135802469135802,"ideas":[{"round":1,"idea":"rematch (2nd+ meeting this season)","t_disc":-2.7569477489181997,"t_val":-1.3502704650858552,"t_bets_disc":-1.5806712385272494,"t_bets_val":-0.8252862847886321,"lead":false},{"round":1,"idea":"3rd+ meeting (conference tournament rematches)","t_disc":-3.882023380416762,"t_val":-1.4418598113149959,"t_bets_disc":-0.3667110620135278,"t_bets_val":0.1871603347694519,"lead":false},{"round":1,"idea":"last meeting beat its closing total by more","t_disc":1.053640105266066,"t_val":0.1576777567576329,"t_bets_disc":2.2093186163235483,"t_bets_val":-0.06570390678755011,"lead":false},{"round":1,"idea":"both teams' last game beat its closing total by more","t_disc":1.7751640887244637,"t_val":2.276958089165432,"t_bets_disc":0.429577432666925,"t_bets_val":0.7188710529336135,"lead":false},{"round":1,"idea":"early tip on the away team's body clock (< 1 pm)","t_disc":-0.844762767822184,"t_val":1.0326902278688834,"t_bets_disc":-0.6955242312475277,"t_bets_val":-0.8361824595224446,"lead":false},{"round":1,"idea":"late tip on the away team's body clock (9 pm+)","t_disc":-0.2912411366843069,"t_val":-2.004564312466167,"t_bets_disc":-1.2300978243207428,"t_bets_val":-1.7231833729552135,"lead":false},{"round":1,"idea":"time zones crossed by the away team","t_disc":1.3819125132037142,"t_val":1.7713772343977285,"t_bets_disc":0.2593930277665905,"t_bets_val":0.5153777801779387,"lead":false},{"round":1,"idea":"high-altitude venue","t_disc":3.478385235406311,"t_val":2.821396229007576,"t_bets_disc":-0.856037404740198,"t_bets_val":0.7058763664143987,"lead":true},{"round":1,"idea":"close game expected (spread 3 or less)","t_disc":-0.35759519477795,"t_val":-2.3264444971951903,"t_bets_disc":0.2839108891682222,"t_bets_val":1.0191583859356985,"lead":false},{"round":1,"idea":"blowout expected (spread 18+)","t_disc":0.8502174688701053,"t_val":0.47879257966632527,"t_bets_disc":-0.3661981293830987,"t_bets_val":0.9820305968095288,"lead":false},{"round":1,"idea":"3-point-heavy matchup (style)","t_disc":-0.7502666827296991,"t_val":-2.125800413069874,"t_bets_disc":0.6006160388904488,"t_bets_val":-1.941207931519223,"lead":false},{"round":1,"idea":"opening total (level)","t_disc":0.6825593560561812,"t_val":-2.5396017024076656,"t_bets_disc":0.7061927016388898,"t_bets_val":-2.313691737026569,"lead":false},{"round":2,"idea":"venue factor (home floor ran over its closes)","t_disc":5.499954408815065,"t_val":4.946725639872734,"t_bets_disc":3.3983054980421254,"t_bets_val":2.2297770226653015,"lead":true},{"round":2,"idea":"venue split (home floor minus the team's road games)","t_disc":4.781077973113952,"t_val":4.230509784310274,"t_bets_disc":2.6601403524317826,"t_bets_val":1.4902881775723822,"lead":true},{"round":2,"idea":"key player out (25+ min, either team)","t_disc":-1.9101514164951017,"t_val":-2.0837069346595025,"t_bets_disc":-0.34158616044536544,"t_bets_val":-0.04646305998232781,"lead":false},{"round":2,"idea":"key minutes out (share of 200)","t_disc":-1.9357164601081698,"t_val":-2.207713267652525,"t_bets_disc":-0.24504881427554553,"t_bets_val":-0.3598903571169162,"lead":false},{"round":2,"idea":"key player back after missing the last game","t_disc":-0.829701821256756,"t_val":-1.432753701816398,"t_bets_disc":0.815089609583232,"t_bets_val":-0.972354635839361,"lead":false},{"round":2,"idea":"long layoff (both teams 7+ days off)","t_disc":0.9005120407305245,"t_val":-0.09856589963259751,"t_bets_disc":0.9540241643142008,"t_bets_val":0.6153817684364634,"lead":false},{"round":2,"idea":"played yesterday (either team)","t_disc":-0.7695698852807403,"t_val":0.3854363239751303,"t_bets_disc":-0.9000699550115936,"t_bets_val":0.4472669852972206,"lead":false},{"round":2,"idea":"football-stadium venue (30,000+ seats)","t_disc":-2.2491100878070043,"t_val":-0.7012794317262152,"t_bets_disc":-1.1030423453749016,"t_bets_val":-0.3306144615351189,"lead":false},{"round":2,"idea":"senior night (home team's last home game)","t_disc":-0.033221156434722524,"t_val":1.3897814422019374,"t_bets_disc":-1.481851007565772,"t_bets_val":-0.5679883091492444,"lead":false},{"round":3,"idea":"key player missed the last game","t_disc":-1.228046646391025,"t_val":-1.970675465713341,"t_bets_disc":-0.23767397433493564,"t_bets_val":-0.931171979355568,"lead":false},{"round":3,"idea":"key minutes that missed the last game (share)","t_disc":-1.3944288133265692,"t_val":-2.2186347966828177,"t_bets_disc":0.012095627079373252,"t_bets_val":-0.7851954106832008,"lead":false},{"round":3,"idea":"key player missed the last two games","t_disc":-1.3440068566757624,"t_val":-0.9333583876357473,"t_bets_disc":0.09519404541547519,"t_bets_val":-1.197338433820143,"lead":false},{"round":3,"idea":"key minutes that missed the last two (share)","t_disc":-1.5597493565448604,"t_val":-0.7164121491265383,"t_bets_disc":0.06333472336601177,"t_bets_val":-1.5162462231257698,"lead":false}],"overshoot":[{"era":"discovery 2011-18","games":17058,"t slope":1.137883458136448,"total - close: close fell 3+":0.2464923469387755,"n: close fell 3+":1568,"total - close: fell 1-3":0.4470081135902637,"n: fell 1-3":3944,"total - close: within 1":0.7834290401968826,"n: within 1":4876,"total - close: rose 1-3":0.9220607661822986,"n: rose 1-3":4542,"total - close: rose 3+":0.3031015037593985,"n: rose 3+":2128},{"era":"validation 2018-21","games":12854,"t slope":2.396247601418518,"total - close: close fell 3+":-0.09776536312849161,"n: close fell 3+":1253,"total - close: fell 1-3":-0.280511060259344,"n: fell 1-3":2622,"total - close: within 1":0.6615792129162462,"n: within 1":3964,"total - close: rose 1-3":0.695373872563282,"n: rose 1-3":3437,"total - close: rose 3+":1.3006970849176172,"n: rose 3+":1578}],"quintiles":[{"era":"discovery 2011-18","quintile":1,"factor":-1.8860850429924851,"miss":-1.4158850748609006,"se":0.3038263676490163,"games":2967},{"era":"discovery 2011-18","quintile":2,"factor":-0.5876103531275882,"miss":-0.40400523853411846,"se":0.3003335642935892,"games":2968},{"era":"discovery 2011-18","quintile":3,"factor":0.1721522596393355,"miss":0.11473567554284331,"se":0.310744479566014,"games":2966},{"era":"discovery 2011-18","quintile":4,"factor":0.963776708824263,"miss":0.5839627957736402,"se":0.3203376898330825,"games":2967},{"era":"discovery 2011-18","quintile":5,"factor":2.283013936699965,"miss":0.4333333014505467,"se":0.3151445906806995,"games":2967},{"era":"validation 2018-21","quintile":1,"factor":-1.7504103908795194,"miss":-1.5990540885007427,"se":0.3390968314672481,"games":2334},{"era":"validation 2018-21","quintile":2,"factor":-0.5098308185555385,"miss":-1.2467514975061103,"se":0.34639583353269504,"games":2331},{"era":"validation 2018-21","quintile":3,"factor":0.2511807027153247,"miss":-0.9853471262119803,"se":0.34638049924702685,"games":2332},{"era":"validation 2018-21","quintile":4,"factor":1.054816660586203,"miss":-0.06247043773800816,"se":0.3411480108262335,"games":2332},{"era":"validation 2018-21","quintile":5,"factor":2.459378450502512,"miss":0.43004595473408264,"se":0.3537284607240177,"games":2333}],"agree":[{"era":"discovery 2011-18","group":"Strong, agrees with the bet","bets":1012,"won":0.5889328063241107,"roi":0.12432626661875673},{"era":"discovery 2011-18","group":"Strong, against the bet","bets":1020,"won":0.5568627450980392,"roi":0.06310160427807487},{"era":"discovery 2011-18","group":"Weak (under 1 point)","bets":1869,"won":0.5815944355270198,"roi":0.11031664964249233},{"era":"validation 2018-21","group":"Strong, agrees with the bet","bets":565,"won":0.5946902654867257,"roi":0.13531777956556718},{"era":"validation 2018-21","group":"Strong, against the bet","bets":461,"won":0.5422993492407809,"roi":0.03529875764149083},{"era":"validation 2018-21","group":"Weak (under 1 point)","bets":1078,"won":0.5538033395176253,"roi":0.05726092089728453}],"absent":[{"era":"discovery 2011-18","side":"Over","flagged":true,"bets":304,"won":0.543},{"era":"discovery 2011-18","side":"Over","flagged":false,"bets":2559,"won":0.567},{"era":"discovery 2011-18","side":"Under","flagged":true,"bets":52,"won":0.673},{"era":"discovery 2011-18","side":"Under","flagged":false,"bets":747,"won":0.584},{"era":"validation 2018-21","side":"Over","flagged":true,"bets":198,"won":0.535},{"era":"validation 2018-21","side":"Over","flagged":false,"bets":1458,"won":0.563},{"era":"validation 2018-21","side":"Under","flagged":true,"bets":25,"won":0.64},{"era":"validation 2018-21","side":"Under","flagged":false,"bets":155,"won":0.632}],"study6":{"selection":[{"engine":"locked_v3","era":"dev 2011-18","games":"16834","log loss":"0.6881","matched bets":"4395","matched win":"0.5780","matched ROI @-110":"0.1025","bets P>=55%":"4395","ROI @-110 at P>=55%":"0.1025"},{"engine":"locked_v3","era":"holdout 2018-21","games":"12696","log loss":"0.6895","matched bets":"2262","matched win":"0.5673","matched ROI @-110":"0.0818","bets P>=55%":"2262","ROI @-110 at P>=55%":"0.0818"},{"engine":"locked_v3","era":"2011-21","games":"29530","log loss":"0.6887","matched bets":"6657","matched win":"0.5744","matched ROI @-110":"0.0954","bets P>=55%":"6657","ROI @-110 at P>=55%":"0.0954"},{"engine":"V1_venue","era":"dev 2011-18","games":"16834","log loss":"0.6874","matched bets":"4395","matched win":"0.5874","matched ROI @-110":"0.1201","bets P>=55%":"4630","ROI @-110 at P>=55%":"0.1201"},{"engine":"V1_venue","era":"holdout 2018-21","games":"12696","log loss":"0.6884","matched bets":"2262","matched win":"0.5796","matched ROI @-110":"0.1050","bets P>=55%":"2803","ROI @-110 at P>=55%":"0.0920"},{"engine":"V1_venue","era":"2011-21","games":"29530","log loss":"0.6879","matched bets":"6657","matched win":"0.5847","matched ROI @-110":"0.1149","bets P>=55%":"7433","ROI @-110 at P>=55%":"0.1095"},{"engine":"V2_venue_altitude","era":"dev 2011-18","games":"16834","log loss":"0.6873","matched bets":"4395","matched win":"0.5860","matched ROI @-110":"0.1175","bets P>=55%":"4739","ROI @-110 at P>=55%":"0.1250"},{"engine":"V2_venue_altitude","era":"holdout 2018-21","games":"12696","log loss":"0.6881","matched bets":"2262","matched win":"0.5781","matched ROI @-110":"0.1024","bets P>=55%":"2928","ROI @-110 at P>=55%":"0.1021"},{"engine":"V2_venue_altitude","era":"2011-21","games":"29530","log loss":"0.6876","matched bets":"6657","matched win":"0.5833","matched ROI @-110":"0.1123","bets P>=55%":"7667","ROI @-110 at P>=55%":"0.1163"}],"qualifies":"Qualifies (lower log loss AND higher matched ROI in both eras): V1_venue **True**, V2_venue_altitude **True**. Selected: **V1_venue**.","selected":"V1_venue","bets_2011_21":[{"venue factor":"strong, agrees with the bet","bets":"1577","won":"0.591","ROI @-110":"0.128"},{"venue factor":"strong, against the bet","bets":"1481","won":"0.552","ROI @-110":"0.054"},{"venue factor":"weak or neutral site","bets":"3525","won":"0.576","ROI @-110":"0.100"}],"confirmation":[{"engine":"locked_v3","games":"25364","log loss":"0.6910","matched bets":"3510","matched win":"0.5677","matched ROI @-110":"0.0834","matched ROI real price":"0.1026","bets P>=55%":"3510","ROI @-110 at P>=55%":"0.0834"},{"engine":"V1_venue","games":"25364","log loss":"0.6908","matched bets":"3510","matched win":"0.5652","matched ROI @-110":"0.0785","matched ROI real price":"0.0980","bets P>=55%":"4147","ROI @-110 at P>=55%":"0.0694"}],"by_season":[{"engine":"locked_v3","season":"2021-22","games":"4872","log loss":"0.6902","matched bets":"1380","matched win":"0.5703","matched ROI @-110":"0.0883","matched ROI real price":"0.1037","bets P>=55%":"1380","ROI @-110 at P>=55%":"0.0883"},{"engine":"locked_v3","season":"2022-23","games":"5026","log loss":"0.6885","matched bets":"503","matched win":"0.6248","matched ROI @-110":"0.1919","matched ROI real price":"0.2144","bets P>=55%":"503","ROI @-110 at P>=55%":"0.1919"},{"engine":"locked_v3","season":"2023-24","games":"5160","log loss":"0.6927","matched bets":"1331","matched win":"0.5450","matched ROI @-110":"0.0402","matched ROI real price":"0.0610","bets P>=55%":"1331","ROI @-110 at P>=55%":"0.0402"},{"engine":"locked_v3","season":"2024-25","games":"5073","log loss":"0.6932","matched bets":"208","matched win":"0.5144","matched ROI @-110":"-0.0179","matched ROI real price":"0.0012","bets P>=55%":"208","ROI @-110 at P>=55%":"-0.0179"},{"engine":"locked_v3","season":"2025-26","games":"5233","log loss":"0.6906","matched bets":"88","matched win":"0.6705","matched ROI @-110":"0.2800","matched ROI real price":"0.3131","bets P>=55%":"88","ROI @-110 at P>=55%":"0.2800"},{"engine":"V1_venue","season":"2021-22","games":"4872","log loss":"0.6909","matched bets":"1380","matched win":"0.5648","matched ROI @-110":"0.0779","matched ROI real price":"0.0930","bets P>=55%":"1564","ROI @-110 at P>=55%":"0.0585"},{"engine":"V1_venue","season":"2022-23","games":"5026","log loss":"0.6881","matched bets":"503","matched win":"0.6108","matched ROI @-110":"0.1654","matched ROI real price":"0.1819","bets P>=55%":"556","ROI @-110 at P>=55%":"0.1607"},{"engine":"V1_venue","season":"2023-24","games":"5160","log loss":"0.6926","matched bets":"1331","matched win":"0.5485","matched ROI @-110":"0.0467","matched ROI real price":"0.0681","bets P>=55%":"1530","ROI @-110 at P>=55%":"0.0392"},{"engine":"V1_venue","season":"2024-25","games":"5073","log loss":"0.6926","matched bets":"208","matched win":"0.5577","matched ROI @-110":"0.0647","matched ROI real price":"0.0921","bets P>=55%":"333","ROI @-110 at P>=55%":"0.0663"},{"engine":"V1_venue","season":"2025-26","games":"5233","log loss":"0.6899","matched bets":"88","matched win":"0.5795","matched ROI @-110":"0.1064","matched ROI real price":"0.1619","bets P>=55%":"164","ROI @-110 at P>=55%":"0.1524"}],"cards":[{"engine":"locked_v3","product":"TARGET CARD","cards":"664","hit":"0.468","leg_win":"0.676","roi":"0.199","roi_ci95":"0.104\u20130.295"},{"engine":"locked_v3","product":"MAIN-LINE DOUBLE","cards":"652","hit":"0.356","leg_win":"0.590","roi":"0.290","roi_ci95":"0.163\u20130.426"},{"engine":"V1_venue","product":"TARGET CARD","cards":"664","hit":"0.485","leg_win":"0.691","roi":"0.240","roi_ci95":"0.143\u20130.337"},{"engine":"V1_venue","product":"MAIN-LINE DOUBLE","cards":"653","hit":"0.368","leg_win":"0.602","roi":"0.334","roi_ci95":"0.199\u20130.466"}],"bets_2021_26":[{"venue factor":"strong, agrees with the bet","bets":"885","won":"0.572","ROI @-110":"0.092"},{"venue factor":"strong, against the bet","bets":"671","won":"0.539","ROI @-110":"0.030"},{"venue factor":"weak or neutral site","bets":"1935","won":"0.576","ROI @-110":"0.099"}],"passed":false}}</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const NS = 'http://www.w3.org/2000/svg';
+  const tip = document.getElementById('tip');
+  const pct = (v, d = 1) => (v * 100).toFixed(d) + '%';
+  const sgn = (v, d = 1) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d);
+  const spct = (v, d = 1) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v * 100).toFixed(d) + '%';
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  const text = (parent, x, y, s, cls, anchor) => { const t = el('text', { x, y, class: cls, 'text-anchor': anchor || 'start' }, parent); t.textContent = s; return t; };
+  const h = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; };
+  function showTip(x, y, head, rows) {
+    tip.replaceChildren();
+    tip.appendChild(h('div', 't-head', head));
+    for (const [name, value] of rows) { const r = h('div', 't-row'); r.append(h('span', 't-name', name), h('b', null, value)); tip.appendChild(r); }
+    tip.hidden = false;
+    const w = tip.offsetWidth, hg = tip.offsetHeight;
+    let left = x + 14, top = y - hg - 12;
+    if (left + w > window.innerWidth - 8) left = x - w - 14;
+    if (left < 8) left = 8;
+    if (top < 8) top = y + 16;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  const hideTip = () => { tip.hidden = true; };
+  const hover = (node, head, rows) => {
+    node.addEventListener('pointermove', ev => showTip(ev.clientX, ev.clientY, head, rows));
+    node.addEventListener('pointerleave', hideTip);
+  };
+  function table(host, cols, rows, opts = {}) {
+    const t = h('table'), th = h('thead'), tr = h('tr');
+    cols.forEach(c => tr.appendChild(h('th', null, c)));
+    th.appendChild(tr); t.appendChild(th);
+    const tb = h('tbody');
+    rows.forEach((r, i) => {
+      const row = h('tr', opts.hl && opts.hl(i) ? 'hl' : null);
+      r.forEach((c, j) => {
+        const td = h('td', (opts.wrap && j === 0 ? 'wrapcell ' : '') + (typeof c === 'object' && c !== null ? c.cls || '' : ''));
+        td.textContent = typeof c === 'object' && c !== null ? c.v : c;
+        row.appendChild(td);
+      });
+      tb.appendChild(row);
+    });
+    t.appendChild(tb);
+    host.replaceChildren(t);
+  }
+  const num = s => parseFloat(String(s));
+
+  // ---------------------------------------------------------------- numbers used in the copy
+  const won = D.decomp.find(r => r.bets === 'won'), lost = D.decomp.find(r => r.bets === 'lost');
+  const S6 = D.study6, sel = S6.selection, conf = S6.confirmation;
+  const getSel = (eng, era) => sel.find(r => r.engine === eng && r.era === era);
+  const shooting = (D.worst['3-point shooting'] || 0) + (D.worst['2-point shooting'] || 0) + (D.worst['Pace'] || 0);
+  const nDec = won.n + lost.n;
+  const lc = conf.find(r => r.engine === 'locked_v3'), vc = conf.find(r => r.engine !== 'locked_v3');
+
+  document.getElementById('lede').textContent =
+    `We took apart ${nDec.toLocaleString('en-US')} decided straight bets from 2011 to 2021 to see what beat us. When they were placed, the losers looked ` +
+    `just like the winners. What separated them happened after tip-off, mostly shooting and pace. Then we screened 25 ideas for anything the engine ` +
+    `could have known before the game. One stood out, the home floor's park factor. It passed every screen on 2011-21 and then failed its one-time ` +
+    `check on 2021-26 for straight bets, while making the cards better. The locked engine stays.`;
+
+  // ---------------------------------------------------------------- KPI tiles
+  (function kpis() {
+    const host = document.getElementById('kpis');
+    const tiles = [
+      ['Edge when the bet was placed', `${sgn(won.edge)} vs ${sgn(lost.edge)}`, `points, won vs lost bets (P ${pct(won.p)} vs ${pct(lost.p)}): no difference before tip-off`],
+      ['The average lost bet', `missed by ${Math.abs(lost.margin).toFixed(1)}`, `points; the average winner cleared the line by ${won.margin.toFixed(1)}`],
+      ['Losses driven mainly by shooting or pace', pct(shooting, 0), `overtime was the main cause in ${pct(D.worst['Overtime'], 1)}`],
+      ['Ideas screened', '25', '3 passed the screen, 1 reached the final test, 0 confirmed'],
+    ];
+    tiles.forEach(([l, v, s]) => { const k = h('div', 'kpi'); k.append(h('div', 'label', l), h('div', 'value', v), h('div', 'sub', s)); host.appendChild(k); });
+  })();
+
+  // ---------------------------------------------------------------- where the points went (diverging bars)
+  const FACT = ['3-point shooting', '2-point shooting', 'Pace', 'Free throws', 'Overtime'];
+  function drawPoints() {
+    const host = document.getElementById('c-points');
+    const W = Math.max(320, host.clientWidth), narrow = W < 560;
+    const L = narrow ? 112 : 150, R = 44, T = 8, rowH = 46, bh = 14, H = T + FACT.length * rowH + 30;
+    const lo = -7, hi = 5, x = v => L + (v - lo) / (hi - lo) * (W - L - R);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
+    for (let v = lo; v <= hi; v += 1) {
+      if (v % 2 !== 0 && narrow) continue;
+      el('line', { x1: x(v), x2: x(v), y1: T, y2: H - 26, class: v === 0 ? 'baseline' : 'gridline' }, svg);
+      text(svg, x(v), H - 10, v === 0 ? '0' : sgn(v, 0), 'tick', 'middle');
+    }
+    text(svg, x(lo), H - 10, '', 'tick');
+    FACT.forEach((f, i) => {
+      const y0 = T + i * rowH + 6;
+      text(svg, 0, y0 + bh + 4, f, 'lbl');
+      [[won, 'var(--won)', 'Won bets'], [lost, 'var(--lost)', 'Lost bets']].forEach(([r, col, name], j) => {
+        const v = r[f], y = y0 + j * (bh + 3), xa = x(Math.min(0, v)), xb = x(Math.max(0, v));
+        const wdt = Math.max(1, xb - xa), rad = Math.min(4, wdt / 2);
+        // rounded at the data end only, square at the zero line
+        const p = v >= 0
+          ? `M${xa},${y}H${xb - rad}Q${xb},${y} ${xb},${y + rad}V${y + bh - rad}Q${xb},${y + bh} ${xb - rad},${y + bh}H${xa}Z`
+          : `M${xb},${y}H${xa + rad}Q${xa},${y} ${xa},${y + rad}V${y + bh - rad}Q${xa},${y + bh} ${xa + rad},${y + bh}H${xb}Z`;
+        const bar = el('path', { d: p, fill: col }, svg);
+        const t = text(svg, v >= 0 ? xb + 5 : xa - 5, y + bh - 2.5, sgn(v), 'val', v >= 0 ? 'start' : 'end');
+        const hit = el('rect', { x: L, y: y - 1, width: W - L - R, height: bh + 2, fill: 'transparent' }, svg);
+        hover(hit, f, [[name, `${sgn(v)} points`], ['Bets', r.n.toLocaleString('en-US')]]);
+        void bar; void t;
+      });
+    });
+    host.replaceChildren(svg);
+  }
+  function drawWorst() {
+    const host = document.getElementById('c-worst');
+    const W = Math.max(280, host.clientWidth);
+    const L = 118, R = 48, T = 4, rowH = 30, bh = 16, H = T + FACT.length * rowH + 4;
+    const x = v => L + v / 0.4 * (W - L - R);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
+    el('line', { x1: x(0), x2: x(0), y1: T, y2: H - 4, class: 'baseline' }, svg);
+    FACT.forEach((f, i) => {
+      const v = D.worst[f] || 0, y = T + i * rowH + 6, xb = x(v), rad = Math.min(4, (xb - x(0)) / 2);
+      text(svg, 0, y + bh - 3, f, 'lbl');
+      el('path', { d: `M${x(0)},${y}H${xb - rad}Q${xb},${y} ${xb},${y + rad}V${y + bh - rad}Q${xb},${y + bh} ${xb - rad},${y + bh}H${x(0)}Z`, fill: 'var(--lost)' }, svg);
+      text(svg, xb + 5, y + bh - 3, pct(v, 1), 'val');
+      const hit = el('rect', { x: 0, y: y - 4, width: W, height: bh + 8, fill: 'transparent' }, svg);
+      hover(hit, f, [['Share of lost bets', pct(v, 1)]]);
+    });
+    host.replaceChildren(svg);
+  }
+  document.getElementById('worst-copy').textContent =
+    `In ${pct(shooting, 0)} of lost bets the biggest hit came from pace, 3-point shooting or 2-point shooting. Overtime, the usual suspect for ` +
+    `Unders, was the main cause in ${pct(D.worst['Overtime'], 1)} of losses, though ${pct(D.ot_share_lost_under, 0)} of lost Unders did go to overtime.`;
+  table(document.getElementById('t-points'), ['Factor', 'Won bets (points)', 'Lost bets (points)', 'Main cause of a loss'],
+    FACT.map(f => [f, sgn(won[f]), sgn(lost[f]), pct(D.worst[f] || 0)]).concat([['Margin against the line', sgn(won.margin), sgn(lost.margin), ''],
+      ['Expected edge when placed', sgn(won.edge), sgn(lost.edge), '']]));
+
+  // ---------------------------------------------------------------- 25 ideas scatter
+  const SHORT = {
+    'rematch (2nd+ meeting this season)': 'Rematch (2nd+ meeting)', '3rd+ meeting (conference tournament rematches)': '3rd+ meeting',
+    'last meeting beat its closing total by more': 'Last meeting went over its close', "both teams' last game beat its closing total by more": "Both teams' last game went over",
+    "early tip on the away team's body clock (< 1 pm)": 'Early tip for the visitor', "late tip on the away team's body clock (9 pm+)": 'Late tip for the visitor',
+    'time zones crossed by the away team': 'Time zones crossed', 'high-altitude venue': 'High-altitude venue', 'close game expected (spread 3 or less)': 'Close game expected',
+    'blowout expected (spread 18+)': 'Blowout expected', '3-point-heavy matchup (style)': '3-point-heavy matchup', 'opening total (level)': 'Opening total (level)',
+    'venue factor (home floor ran over its closes)': 'Venue park factor', "venue split (home floor minus the team's road games)": 'Venue split (home minus road)',
+    'key player out (25+ min, either team)': 'Key player out (same game)', 'key minutes out (share of 200)': 'Key minutes out (same game)',
+    'key player back after missing the last game': 'Key player back', 'long layoff (both teams 7+ days off)': 'Long layoff (both 7+ days)',
+    'played yesterday (either team)': 'Played yesterday', 'football-stadium venue (30,000+ seats)': 'Football-stadium venue',
+    "senior night (home team's last home game)": 'Senior night', 'key player missed the last game': 'Key player sat last game',
+    'key minutes that missed the last game (share)': 'Key minutes sat last game', 'key player missed the last two games': 'Key player sat last two',
+    'key minutes that missed the last two (share)': 'Key minutes sat last two'
+  };
+  const nm = i => SHORT[i.idea] || i.idea;
+  const LABEL = new Set(['Venue park factor', 'Venue split (home minus road)', 'High-altitude venue', 'Key player out (same game)', '3rd+ meeting', 'Rematch (2nd+ meeting)']);
+  function drawIdeas() {
+    const host = document.getElementById('c-ideas');
+    const W = Math.max(320, host.clientWidth), narrow = W < 560;
+    const L = 40, R = 16, T = 12, B = 40, H = narrow ? 360 : 430;
+    const xlo = -4.5, xhi = 6.5, ylo = -3, yhi = 5.5;
+    const x = v => L + (v - xlo) / (xhi - xlo) * (W - L - R), y = v => T + (yhi - v) / (yhi - ylo) * (H - T - B);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
+    el('rect', { x: x(2), y: y(yhi), width: x(xhi) - x(2), height: y(1.5) - y(yhi), fill: 'var(--zone)' }, svg);
+    el('rect', { x: x(xlo), y: y(-1.5), width: x(-2) - x(xlo), height: y(ylo) - y(-1.5), fill: 'var(--zone)' }, svg);
+    for (let v = -4; v <= 6; v += 2) { el('line', { x1: x(v), x2: x(v), y1: T, y2: H - B, class: v === 0 ? 'baseline' : 'gridline' }, svg); text(svg, x(v), H - B + 16, sgn(v, 0) === '' ? '0' : (v === 0 ? '0' : sgn(v, 0)), 'tick', 'middle'); }
+    for (let v = -2; v <= 5; v += 1) { if (narrow && v % 2) continue; el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), class: v === 0 ? 'baseline' : 'gridline' }, svg); text(svg, L - 6, y(v) + 4, v === 0 ? '0' : sgn(v, 0), 'tick', 'end'); }
+    text(svg, (L + W - R) / 2, H - 6, 't-value, 2011-18 (what the screen found)', 'axisname', 'middle');
+    const yl = text(svg, 0, 0, 't-value, 2018-21 (the check)', 'axisname', 'middle');
+    yl.setAttribute('transform', `translate(11 ${(T + H - B) / 2}) rotate(-90)`);
+    const pts = D.ideas.slice().sort((a, b) => a.lead - b.lead);
+    pts.forEach(i => {
+      const cx = x(Math.max(xlo + 0.1, Math.min(xhi - 0.1, i.t_disc))), cy = y(Math.max(ylo + 0.1, Math.min(yhi - 0.1, i.t_val)));
+      el('circle', { cx, cy, r: i.lead ? 6 : 5, fill: i.lead ? 'var(--won)' : 'var(--idle)', stroke: 'var(--surface)', 'stroke-width': 2 }, svg);
+      const hit = el('circle', { cx, cy, r: 12, fill: 'transparent' }, svg);
+      hover(hit, nm(i), [['t, 2011-18', sgn(i.t_disc, 2)], ['t, 2018-21', sgn(i.t_val, 2)], ['Screen', i.lead ? 'passed' : 'did not pass']]);
+    });
+    // direct labels: the passers always; on wide screens also the nearest misses, kept clear of the dot cluster
+    const placed = [];
+    pts.filter(i => LABEL.has(nm(i)) && (i.lead || !narrow)).forEach(i => {
+      const cx = x(i.t_disc), cy = y(i.t_val), left = i.t_disc > 3.2;
+      if (nm(i) === 'Key player out (same game)') {
+        const ly = y(-2.8);
+        el('line', { x1: cx, x2: cx, y1: cy + 6, y2: ly - 11, stroke: 'var(--muted)', 'stroke-width': 1 }, svg);
+        text(svg, cx, ly, nm(i), 'lbl', 'middle');
+        return;
+      }
+      let ty = cy + 4;
+      for (const p of placed) if (Math.abs(p.y - ty) < 14 && Math.abs(p.x - cx) < 150) ty = p.y + (ty >= p.y ? 14 : -14);
+      placed.push({ x: cx, y: ty });
+      text(svg, left ? cx - 10 : cx + 10, ty, nm(i), 'lbl', left ? 'end' : 'start');
+    });
+    host.replaceChildren(svg);
+  }
+  table(document.getElementById('t-ideas'), ['Idea', 'Round', 't 2011-18', 't 2018-21', 'Our bets 2011-18', 'Our bets 2018-21', 'Screen'],
+    D.ideas.map(i => [nm(i), String(i.round), sgn(i.t_disc, 2), sgn(i.t_val, 2), i.t_bets_disc == null ? '' : sgn(i.t_bets_disc, 2),
+      i.t_bets_val == null ? '' : sgn(i.t_bets_val, 2), i.lead ? { v: 'passed', cls: 'pos' } : 'no']), { wrap: true, hl: k => D.ideas[k].lead });
+
+  // ---------------------------------------------------------------- venue quintiles
+  const Q = D.quintiles, ERAS = ['discovery 2011-18', 'validation 2018-21'];
+  const qOf = (era, q) => Q.find(r => r.era === era && r.quintile === q);
+  const top = e => qOf(e, 5).miss - qOf(e, 1).miss;
+  document.getElementById('venue-copy').textContent =
+    `Sorted into five equal groups by that score, the engine's miss climbed steadily from the "under" floors to the "over" floors: ` +
+    `${sgn(top(ERAS[0]))} points from bottom to top fifth in 2011-18 and ${sgn(top(ERAS[1]))} in 2018-21, about half a point of total per point of factor. ` +
+    `Altitude added about 1.7 points on top of that at 17 floors from Laramie to Reno.`;
+  function drawVenue() {
+    const host = document.getElementById('c-venue');
+    const W = Math.max(320, host.clientWidth), narrow = W < 560;
+    const L = 44, R = 12, T = 10, B = 52, H = narrow ? 260 : 300;
+    const lo = -2.5, hi = 1.5, y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+    const gw = (W - L - R) / 5, bw = Math.min(34, gw * 0.3), gap = 2;
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
+    for (let v = -2.5; v <= 1.5 + 1e-9; v += 0.5) {
+      if (narrow && Math.abs(v % 1) > 1e-9) continue;
+      el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), class: Math.abs(v) < 1e-9 ? 'baseline' : 'gridline' }, svg);
+      text(svg, L - 6, y(v) + 4, Math.abs(v) < 1e-9 ? '0' : sgn(v, 1), 'tick', 'end');
+    }
+    const names = narrow ? ['Under', '2nd', '3rd', '4th', 'Over'] : ['Most "under"', '2nd', '3rd', '4th', 'Most "over"'];
+    for (let q = 1; q <= 5; q++) {
+      const cx = L + (q - 0.5) * gw;
+      text(svg, cx, H - B + 18, names[q - 1], 'tick', 'middle');
+      const f = (qOf(ERAS[0], q).factor + qOf(ERAS[1], q).factor) / 2;
+      text(svg, cx, H - B + 33, narrow ? sgn(f) : `factor ${sgn(f)}`, 'tick', 'middle');
+      ERAS.forEach((e, j) => {
+        const r = qOf(e, q), x0 = cx + (j === 0 ? -bw - gap / 2 : gap / 2), v = r.miss;
+        const ya = y(Math.max(0, v)), yb = y(Math.min(0, v)), hh = Math.max(1, yb - ya), rad = Math.min(4, hh / 2);
+        const p = v >= 0
+          ? `M${x0},${yb}V${ya + rad}Q${x0},${ya} ${x0 + rad},${ya}H${x0 + bw - rad}Q${x0 + bw},${ya} ${x0 + bw},${ya + rad}V${yb}Z`
+          : `M${x0},${ya}V${yb - rad}Q${x0},${yb} ${x0 + rad},${yb}H${x0 + bw - rad}Q${x0 + bw},${yb} ${x0 + bw},${yb - rad}V${ya}Z`;
+        el('path', { d: p, fill: j === 0 ? 'var(--era1)' : 'var(--era2)' }, svg);
+        const ex = x0 + bw / 2;
+        el('line', { x1: ex, x2: ex, y1: y(v + r.se), y2: y(v - r.se), stroke: 'var(--ink-2)', 'stroke-width': 1 }, svg);
+        const hit = el('rect', { x: x0 - 1, y: T, width: bw + 2, height: H - T - B, fill: 'transparent' }, svg);
+        hover(hit, `${['Most "under"', '2nd', '3rd', '4th', 'Most "over"'][q - 1]} floors · ${e.replace('discovery ', '').replace('validation ', '')}`,
+          [['Engine miss', `${sgn(v, 2)} pts`], ['± 1 standard error', r.se.toFixed(2)], ['Average factor', sgn(r.factor, 2)], ['Games', r.games.toLocaleString('en-US')]]);
+      });
+    }
+    text(svg, L - 38, T + 2, 'pts', 'axisname');
+    text(svg, (L + W - R) / 2, H - 4, 'Home floors in five groups by park factor (earlier games only)', 'axisname', 'middle');
+    host.replaceChildren(svg);
+  }
+  const A21 = S6.bets_2011_21, A26 = S6.bets_2021_26;
+  const g = (rows, lab) => rows.find(r => r['venue factor'].startsWith(lab));
+  table(document.getElementById('t-agree'), ['Park factor of 1+ point', 'Bets 2011-21', 'Won', 'ROI @ −110', 'Bets 2021-26', 'Won', 'ROI @ −110'],
+    [['Points the same way as the bet', 'strong, agrees'], ['Points against the bet', 'strong, against'], ['Weak (under 1 point) or neutral site', 'weak']].map(([lab, key]) => {
+      const a = g(A21, key), b = g(A26, key);
+      return [lab, Number(a.bets).toLocaleString('en-US'), pct(num(a.won)), spct(num(a['ROI @-110'])),
+        Number(b.bets).toLocaleString('en-US'), pct(num(b.won)), spct(num(b['ROI @-110']))];
+    }), { hl: k => k === 1, wrap: true });
+
+  // ---------------------------------------------------------------- the final test
+  (function test() {
+    const v = document.getElementById('verdict');
+    const pill = h('div', 'verdict ' + (S6.passed ? 'pass' : 'fail'));
+    pill.innerHTML = S6.passed
+      ? '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2"/></svg>'
+      : '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+    pill.append(document.createTextNode(S6.passed ? 'Confirmed on 2021-26' : 'Did not pass the 2021-26 check'));
+    v.replaceChildren(pill);
+    const l1 = getSel('locked_v3', 'dev 2011-18'), l2 = getSel('locked_v3', 'holdout 2018-21');
+    const v1 = getSel('V1_venue', 'dev 2011-18'), v2 = getSel('V1_venue', 'holdout 2018-21');
+    const steps = [
+      ['1 · Screen, 2011-21', 'Passed', 'Park factor t +5.50 and +4.95; it also predicted our own bets\' margins (t +3.40, +2.23).'],
+      ['2 · Selection, 2011-21', 'Passed', `Matched-volume ROI ${pct(num(v1['matched ROI @-110']))} vs ${pct(num(l1['matched ROI @-110']))} (2011-18) and ` +
+        `${pct(num(v2['matched ROI @-110']))} vs ${pct(num(l2['matched ROI @-110']))} (2018-21); log loss lower in both.`],
+      ['3 · One-time check, 2021-26', 'Failed', `Log loss slightly lower (${num(vc['log loss']).toFixed(4)} vs ${num(lc['log loss']).toFixed(4)}), but straight bets earned ` +
+        `${pct(num(vc['matched ROI @-110']))} vs ${pct(num(lc['matched ROI @-110']))} at −110 and ${pct(num(vc['matched ROI real price']))} vs ${pct(num(lc['matched ROI real price']))} at real prices.`],
+    ];
+    const host = document.getElementById('steps');
+    steps.forEach(([k, r, p]) => { const s = h('div', 'step'); s.append(h('div', 'k', k), h('div', 'r ' + (r === 'Passed' ? 'pos' : 'neg'), r), h('p', null, p)); host.appendChild(s); });
+    const NAME = { locked_v3: 'Locked engine', V1_venue: '+ park factor', V2_venue_altitude: '+ park factor + altitude' };
+    const ERA = { 'dev 2011-18': '2011-18', 'holdout 2018-21': '2018-21' };
+    const rows = [];
+    ['dev 2011-18', 'holdout 2018-21'].forEach(e => ['locked_v3', 'V1_venue', 'V2_venue_altitude'].forEach(n => {
+      const r = getSel(n, e);
+      rows.push([`${ERA[e]} · ${NAME[n]}`, Number(r['matched bets']).toLocaleString('en-US'), pct(num(r['matched win'])), pct(num(r['matched ROI @-110'])), '', num(r['log loss']).toFixed(4)]);
+    }));
+    [lc, vc].forEach(r => rows.push([`2021-26 · ${NAME[r.engine]}`, Number(r['matched bets']).toLocaleString('en-US'), pct(num(r['matched win'])),
+      pct(num(r['matched ROI @-110'])), pct(num(r['matched ROI real price'])), num(r['log loss']).toFixed(4)]));
+    table(document.getElementById('t-select'), ['Period · engine', 'Bets', 'Won', 'ROI @ −110', 'ROI real price', 'Log loss'], rows,
+      { hl: k => k >= rows.length - 2 });
+    const C = S6.cards, P = D.paired || {};
+    const cname = p => p === 'TARGET CARD' ? '2.5+ card' : 'Main-line double';
+    table(document.getElementById('t-cards'), ['Card · engine', 'Cards', 'Won', 'Legs won', 'ROI', '95% range'],
+      C.map(r => [`${cname(r.product)} · ${NAME[r.engine]}`, r.cards, pct(num(r.hit)), pct(num(r.leg_win)), pct(num(r.roi)),
+        r.roi_ci95.split('–').map(x => pct(num(x), 0)).join(' to ')]));
+    const pc = Object.keys(P).length ? Object.entries(P).map(([k, v]) =>
+      `${cname(k.split(' (')[0])}: ${spct(v.diff)} (95% range ${spct(v.ci[0])} to ${spct(v.ci[1])}; ${v.same} of ${v.n} cards identical)`).join('; ') : '';
+    document.getElementById('cards-copy').textContent =
+      'The cards did better with the park factor, but cards were not part of the pass rule, and the gap sits inside the noise.' +
+      (pc ? ` Paired by day, the venue version's edge over the locked engine was ${pc}.` : '');
+  })();
+
+  // ---------------------------------------------------------------- other findings + what changes
+  const ab = D.absent;
+  const abOf = (era, side, flag) => ab.find(r => r.era === era && r.side === side && r.flagged === flag);
+  const ELSE = [
+    ['Missing players.', `Overs placed right after a 25+ minute player sat out won ${pct(abOf(ERAS[0], 'Over', true).won)} and ${pct(abOf(ERAS[1], 'Over', true).won)} ` +
+      `(2011-18, 2018-21), against ${pct(abOf(ERAS[0], 'Over', false).won)} and ${pct(abOf(ERAS[1], 'Over', false).won)} for the rest. The direction held in both periods but missed the bar. ` +
+      'The engine cannot see injuries, and only about half of the players who sat once sat again.'],
+    ['Altitude looks like a venue effect, not fatigue.', 'Totals at high-altitude floors ran about 1.6 to 1.9 points over the forecast, the same in both halves and the same ' +
+      'for visitors who live at altitude. It is real but touches only about 24 bets a season.'],
+    ['Closing lines do not overshoot.', 'After big moves the final total did not swing back past the close, so buying the other side late to set up a "middle" ' +
+      'would just pay the margin twice.'],
+    ['Overtime is rarely the reason.', `It was the main cause of ${pct(D.worst['Overtime'], 1)} of losses. Unders feel it most: ${pct(D.ot_share_lost_under, 0)} of lost Unders went to overtime.`],
+    ['Rematches came in lower.', 'Second and third meetings ran under the forecast in 2011-18 (t −2.8, −3.9) but only weakly in 2018-21 (−1.4), so they did not pass.'],
+  ];
+  const ul = document.getElementById('else');
+  ELSE.forEach(([b, t]) => { const li = h('li'); li.append(h('b', null, b + ' '), document.createTextNode(t)); ul.appendChild(li); });
+  const NEXT = [
+    ['The locked engine stays,', 'for straight bets and for the 2.5+ card. Nothing in this round beat it on seasons it had not seen.'],
+    ['Losses are not mistakes to fix.', 'Won and lost bets carried the same edge when placed. A losing week is shooting and pace, and the plan is sized for that.'],
+    ['Next season decides the park factor.', 'It is the best candidate yet for the cards. The fair test is to record its cards next to the locked engine\'s through 2026-27, with no money on them, and switch only if it wins there.'],
+    ['Before an Over, check who is out.', 'A missing starter is the one thing the engine is blind to. Our data says such Overs do a little worse, though that is not proven.'],
+    ['Execution is still the biggest lever.', 'Bet the opener early and take the best of several books. That added about 1.5 points of ROI in 2021-26, more than any model change tested here.'],
+  ];
+  const nx = document.getElementById('next');
+  NEXT.forEach(([b, t]) => { const li = h('li'); li.append(h('b', null, b + ' '), document.createTextNode(t)); nx.appendChild(li); });
+
+  // ---------------------------------------------------------------- draw + redraw on resize
+  const drawAll = () => { drawPoints(); drawWorst(); drawIdeas(); drawVenue(); };
+  drawAll();
+  let rt = null, lastW = window.innerWidth;
+  window.addEventListener('resize', () => { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 120); });
+})();
+</script>

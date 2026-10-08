@@ -89,14 +89,21 @@ def main():
     if rep6.exists():
         t6 = rep6.read_text()
         study = {"selection": md_table(t6, "## Selection (2011-21)"),
-                 "qualifies": re.search(r"Qualifies.*", t6).group(0), "selected": re.search(r"Selected: \*\*(.+?)\*\*", t6).group(1)}
+                 "qualifies": re.search(r"Qualifies.*", t6).group(0), "selected": re.search(r"Selected: \*\*(.+?)\*\*", t6).group(1),
+                 "bets_2011_21": md_table(t6, "Locked engine's bets by venue factor (secondary, 2011-21)")}
         if "## Confirmation" in t6:
             study["confirmation"] = md_table(t6, "## Confirmation on the sealed")
             study["by_season"] = md_table(t6, "Season by season:")
             study["cards"] = md_table(t6, "2.5+ target cards and main-line doubles")
             study["bets_2021_26"] = md_table(t6, "Locked engine's 2021-26 bets by venue factor")
             study["passed"] = "Confirmation passed: True" in t6
-    out = {"decomp": decomp, "worst": {k: float(v) for k, v in worst.items()}, "eras": eras,
+    paired = {}
+    pc = REP / "study6_paired_cards.json"
+    if pc.exists():
+        for k, v in json.loads(pc.read_text()).items():
+            paired[k] = {"diff": v["diff"], "ci": v["diff ci95"], "same": v["identical cards"], "n": v["cards locked"],
+                         "better_share": v["share of resamples venue better"]}
+    out = {"paired": paired, "decomp": decomp, "worst": {k: float(v) for k, v in worst.items()}, "eras": eras,
            "ot_share_lost": float((lost.ot_pts > 0).mean()), "ot_share_lost_under": float((lost[lost.best_side == -1].ot_pts > 0).mean()),
            "ideas": ideas, "overshoot": over, "quintiles": quint, "agree": agree, "absent": absent, "study6": study}
     (REP / "loss_autopsy.json").write_text(json.dumps(out, indent=1, default=float))
