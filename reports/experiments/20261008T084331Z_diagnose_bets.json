@@ -1,0 +1,13 @@
+{
+  "experiment": "diagnose_bets",
+  "timestamp_utc": "20261008T084331Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "bf0e48b",
+  "params": {
+    "p_min": 0.55
+  },
+  "params_hash": "a51220af2a96",
+  "results": {
+    "bets": 10074
+  }
+}
