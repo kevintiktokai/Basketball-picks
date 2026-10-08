@@ -1,0 +1,31 @@
+{
+  "experiment": "season_ledger",
+  "timestamp_utc": "20261008T125453Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "bd4aa8e",
+  "params": {
+    "season": "2023-24",
+    "start": 10000.0,
+    "frac": 0.01
+  },
+  "params_hash": "8aa0f6eb907e",
+  "results": {
+    "summary": {
+      "season": "2023-24",
+      "start": 10000.0,
+      "end": 29604.067068477903,
+      "max_drawdown": 0.2011336912983307,
+      "straight": 1331,
+      "straight_won": 738,
+      "straight_lost": 586,
+      "straight_push": 7,
+      "straight_pnl": 13438.332792418523,
+      "cards": 136,
+      "cards_won": 68,
+      "card_pnl": 6165.734276059369,
+      "days": 136,
+      "avg_card_odds": 2.5371758944031666,
+      "alt_leg_share": 0.9522058823529411
+    }
+  }
+}
