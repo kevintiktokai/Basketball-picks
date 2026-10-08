@@ -47,3 +47,37 @@ not_candidates_now:
   books_at_open: "6+ books at the open did better in 2021-26 (57.8% vs 55.6%), but no earlier data has book counts; logged in the forward ledger instead"
   extreme_shrink: "P >= 62% looked overconfident in the later eras on only 55-70 bets; too few to act on"
   neutral_site: "neutral-site bets beat their predictions but are mostly Unders; re-checked after the side term, not tested separately"
+
+# ---------------------------------------------------------------------------------------------
+study_2:
+  name: stage_and_matchup_features
+  status: pre-registered 2026-10-08, before any candidate below was fitted
+  motivation: >
+    reports/ncaab_stage_map.md (2011-21 only; 2021-26 sealed): against the locked v3 engine's own
+    forecast, conference-tournament totals came in 0.9 and 2.0 points lower (dev, holdout; t -2.0,
+    -2.9) and NIT/CBI/CIT totals 2.9 and 1.6 points higher; the engine knows only "March", not the
+    event. reports/improve_explore.md: fast-vs-slow tempo matchups and efficiency mismatches went
+    under in every era. Tournament games are often on consecutive days (fatigue).
+  engine: locked v3 (config/stage3_v3_locked.yaml); the mean model gets extra features; the variance
+    model, calibrator, decays, eligibility and products are unchanged.
+  stage_labels: data/ncaab_stages.py (ESPN schedule; known before tip-off)
+  candidates:
+    S1_stage: "+ indicators for nonconf_home, nonconf_neutral, conf_tournament, ncaa_tournament, other_postseason (conf_regular = baseline)"
+    S2_stage_matchup: "S1 + tempo gap |tempo_home - tempo_away| + efficiency mismatch (pre-game ratings)"
+    S3_stage_matchup_fatigue: "S2 + games each team played in the previous 3 days (ESPN schedule), summed"
+  selection_seasons: "2011-12 .. 2020-21 (eras dev 2011-18 and holdout 2018-21)"
+  selection_rule: >
+    A candidate qualifies if, against the locked engine, it has (a) lower log loss of the two-sided
+    P(over) at the opener in BOTH eras and (b) higher ROI at -110 at matched volume in BOTH eras
+    (matched volume: in each season, each engine's N most confident games, N = the locked engine's
+    number of P >= 55% bets that season). Among qualifiers, the highest pooled 2011-21 matched-volume
+    ROI is selected. If none qualifies, the study stops and 2021-26 stays sealed.
+  confirmation: >
+    ONE run on the sealed 2021-22 .. 2025-26 seasons for the selected candidate only (the script
+    refuses to run twice). It passes if its log loss is lower AND its matched-volume ROI is not lower
+    at -110 and at the best book's real price. Pass = it is recorded next to the locked engine in the
+    2026-27 forward ledger; the forward season decides any switch.
+  disclosure: >
+    The 2021-26 seasons were used before (stage-2b test, stage-3 re-analysis) and the bet diagnostics
+    showed the locked engine's 2021-26 bets split by month and by neutral site; stage-by-stage
+    results for 2021-26 have not been computed.
