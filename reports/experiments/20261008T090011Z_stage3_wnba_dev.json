@@ -1,0 +1,78 @@
+{
+  "experiment": "stage3_wnba_dev",
+  "timestamp_utc": "20261008T090011Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "cfb04a0",
+  "params": {
+    "variants": [
+      "W1_same_as_ncaab",
+      "W3_no_style"
+    ],
+    "ratings": {
+      "half_life_days": 45,
+      "prev_season_weight": 0.15,
+      "ridge": 3.0,
+      "venue_tempo": true
+    }
+  },
+  "params_hash": "df0f6778f299",
+  "results": {
+    "table": [
+      {
+        "variant": "W1_same_as_ncaab",
+        "season": "2021",
+        "games": "188",
+        "ll_gain_x1e4": "-16.348638542634795",
+        "bets_p>=55%": "83",
+        "win_p>=55%": "0.5180722891566265",
+        "ci95": "(np.float64(0.4121756969766282), np.float64(0.6223699585617313))"
+      },
+      {
+        "variant": "W1_same_as_ncaab",
+        "season": "2022",
+        "games": "216",
+        "ll_gain_x1e4": "-257.87711041014296",
+        "bets_p>=55%": "131",
+        "win_p>=55%": "0.46564885496183206",
+        "ci95": "(np.float64(0.3824267321981887), np.float64(0.5508282870243657))"
+      },
+      {
+        "variant": "W1_same_as_ncaab",
+        "season": "DEV POOLED",
+        "games": "404",
+        "ll_gain_x1e4": "-145.48267300645068",
+        "bets_p>=55%": "214",
+        "win_p>=55%": "0.48598130841121495",
+        "ci95": "(np.float64(0.41985606578721063), np.float64(0.5526009855748799))"
+      },
+      {
+        "variant": "W3_no_style",
+        "season": "2021",
+        "games": "188",
+        "ll_gain_x1e4": "-121.70172970287108",
+        "bets_p>=55%": "108",
+        "win_p>=55%": "0.4722222222222222",
+        "ci95": "(np.float64(0.38064769707967805), np.float64(0.56570500173722))"
+      },
+      {
+        "variant": "W3_no_style",
+        "season": "2022",
+        "games": "216",
+        "ll_gain_x1e4": "-188.8933333424503",
+        "bets_p>=55%": "98",
+        "win_p>=55%": "0.45918367346938777",
+        "ci95": "(np.float64(0.36392528815047387), np.float64(0.5575213505511963))"
+      },
+      {
+        "variant": "W3_no_style",
+        "season": "DEV POOLED",
+        "games": "404",
+        "ll_gain_x1e4": "-157.62595343096208",
+        "bets_p>=55%": "206",
+        "win_p>=55%": "0.46601941747572817",
+        "ci95": "(np.float64(0.399143107521422), np.float64(0.5341399021391982))"
+      }
+    ],
+    "best": "W1_same_as_ncaab"
+  }
+}

@@ -1,0 +1,58 @@
+comment: LOCKED WNBA opener engine, chosen by the pre-stated rule (best pooled development
+  log-loss gain at the real opener, 2021-22) and committed BEFORE the 2023-26 WNBA
+  test is evaluated.
+variant: W1_same_as_ncaab
+model:
+  mean_feats:
+  - x_pts
+  - x_eff
+  - early
+  - log_games
+  - abs_spread
+  - neutral_i
+  - line_rel
+  - x_poss
+  - vol_sum
+  - mkt_bias_sum
+  - open_bias_sum
+  - move_hist_sum
+  - rest_min
+  - weekend
+  - march
+  - log_slate
+  - lg_drift
+  - m_efg
+  - m_tpar
+  - m_ftr
+  - m_orb
+  - m_tovr
+  - m_pace
+  var_feats:
+  - line_rel
+  - x_poss
+  - vol_sum
+  - abs_spread
+  - early
+  - log_games
+  - neutral_i
+  - log_slate
+  - m_tpar
+  - m_pace
+  - m_ftr
+  kind: ridge
+  shape: normal
+  alpha: 50.0
+  min_games: 3
+  train_decay: 0.6
+  calib_decay: 0.6
+ratings:
+  half_life_days: 45
+  prev_season_weight: 0.15
+  ridge: 3.0
+  venue_tempo: true
+dev_evidence:
+  ll_gain_x1e4:
+    W1_same_as_ncaab: -145.5
+    W3_no_style: -157.6
+products: config/stage3_locked.yaml (same as NCAAB and NBA)
+locked_at_revision: cfb04a0
