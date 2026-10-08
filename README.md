@@ -8,6 +8,7 @@ time **on seasons it has never seen**.
 |---|---|---|
 | 1 | NBA, Overs only, main line | **No.** Each leg needs ~77%; the NBA close tops out near 60%. 0 cards in 2,896 slates. [`RESEARCH_SUMMARY.md`](reports/RESEARCH_SUMMARY.md) |
 | 2 | NCAA men's basketball, Over **or** Under, opening line, **buffered (alternate) lines** | **Yes:** 63.9% 2/2 over 664 never-seen cards, 2021-26 (95% CI 60.1–67.4%). 60.9% on the 2018-21 holdout. [`STAGE2_SUMMARY.md`](reports/STAGE2_SUMMARY.md) |
+| 3 | Odds-targeted cards: combined odds ≥ 2.5 (legs ≈ 1.6), NCAAB + NBA openers, real prices | **NCAAB: 46.8% of cards won at 2.57 avg (break-even 39%), ROI ≈ +20%** (2021-26 re-analysis; +16–17% in development). NBA: no reliable edge. [`STAGE3_SUMMARY.md`](reports/STAGE3_SUMMARY.md) |
 
 The 60% is bought with price. Each leg is an alternate total about 10 points better than
 the opener (~80% win, ~1.25 odds), so the double pays ~1.65. Whether it makes money depends
@@ -22,13 +23,15 @@ python -m data.ncaab_ingest                       # archive odds + ESPN box scor
 python -m data.sbr_live fetch && python -m data.sbr_live parse   # 2021-26 odds (cached, ~1 req/s)
 
 # a day's card: refresh this season's results/odds, then build the card
-python scripts/predict_cards.py --date 2026-11-20 --update --record
+python scripts/predict_cards.py --date 2026-11-20 --update --record                 # target card (>=2.5, legs ~1.6)
+python scripts/predict_cards.py --date 2026-11-20 --product main --record         # main-line double, real prices
+python scripts/predict_cards.py --date 2026-11-20 --product sixty                 # stage-2 60% buffered card
 python scripts/predict_cards.py --date 2026-11-20 --slate my_slate.csv   # manual openers
 python scripts/grade_ledger.py                     # forward-test record of recorded cards
 ```
 
-`my_slate.csv` columns: `home, away, line` (opening total) and optionally `home_spread`
-and `neutral`. The default engine is `v3`; `--engine v2` uses the pre-registered primary
+`my_slate.csv` columns: `home, away, line` (opening total) and optionally `home_spread`,
+`neutral`, and `over_odds` / `under_odds` (decimal) so the main-line legs use your real prices. The default engine is `v3`; `--engine v2` uses the pre-registered primary
 engine. Output for each leg: side, alternate line to bet, model probability, conservative
 probability and fair odds, plus the card's break-even double odds and the unbuffered
 main-line view for every game.

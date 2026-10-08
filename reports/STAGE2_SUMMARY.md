@@ -36,6 +36,8 @@ Other checks on the 2021-26 test:
   on average). This is closing-line value: sharper money later agreed with the engine.
 * **The engine bets both sides:** both-Under cards won 72.6%, both-Over 65.2%, mixed 56.4%.
 
+> **Erratum (stage 3):** best-book figures now ignore any book whose opener is more than 3 points from the cross-book median (stale/erroneous numbers). The 55–60% best-book singles ROI moves from +10.5% to +10.2%; the line-shopping card variants are unchanged (65.5%, 66.9%). See [`stage3_corrected.md`](stage3_corrected.md).
+
 ## Money: what a hit rate does not tell you
 
 The 60% card is not free. A leg at ~80% is priced around 1.25 (−400). A 1-unit double

@@ -70,8 +70,9 @@ def update_history(date: str):
 
 TRACK = {
     "target": ["NCAAB development 2018-21: 46.3% of cards won at avg 2.55 (ROI +17%)",
-               "NCAAB 2021-26 re-analysis: 47.0% won at avg 2.58 (ROI +21%; +10% if alternates priced off the close)"],
-    "main": ["NCAAB 2021-26 re-analysis: 38.3% won at avg 3.64, real prices (ROI +39%)"],
+               "NCAAB 2021-26 re-analysis (book-outlier guard): 46.8% won at avg 2.57 (ROI +20%; "
+               "+9% if alternates are priced off the closing line)"],
+    "main": ["NCAAB 2021-26 re-analysis (book-outlier guard): 35.6% won at avg 3.64, real prices (ROI +29%)"],
 }
 
 
