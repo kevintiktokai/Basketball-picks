@@ -1,0 +1,90 @@
+{
+  "experiment": "loss_autopsy_round3",
+  "timestamp_utc": "20261008T170335Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "0cb849b",
+  "params": {
+    "key_min": 25.0,
+    "prev_games": 5,
+    "rule": "|t|>=2 disc and |t|>=1.5 same sign val"
+  },
+  "params_hash": "62a87a83fabe",
+  "results": {
+    "ideas": [
+      {
+        "idea": "key player missed the last game",
+        "expected": "-",
+        "t all games (disc)": -1.228046646391025,
+        "games (disc)": 14356,
+        "t our bets (disc)": -0.23767397433493564,
+        "flagged (disc)": 1286.0,
+        "miss when flagged (disc)": -0.7586131926649581,
+        "t all games (val)": -1.970675465713341,
+        "games (val)": 10606,
+        "t our bets (val)": -0.931171979355568,
+        "flagged (val)": 1396.0,
+        "miss when flagged (val)": -1.3626572790800748,
+        "lead?": false,
+        "direction as expected?": null
+      },
+      {
+        "idea": "key minutes that missed the last game (share)",
+        "expected": "-",
+        "t all games (disc)": -1.3944288133265692,
+        "games (disc)": 14356,
+        "t our bets (disc)": 0.012095627079373252,
+        "flagged (disc)": NaN,
+        "miss when flagged (disc)": NaN,
+        "t all games (val)": -2.2186347966828177,
+        "games (val)": 10606,
+        "t our bets (val)": -0.7851954106832008,
+        "flagged (val)": NaN,
+        "miss when flagged (val)": NaN,
+        "lead?": false,
+        "direction as expected?": null
+      },
+      {
+        "idea": "key player missed the last two games",
+        "expected": "-",
+        "t all games (disc)": -1.3440068566757624,
+        "games (disc)": 14125,
+        "t our bets (disc)": 0.09519404541547519,
+        "flagged (disc)": 694.0,
+        "miss when flagged (disc)": -1.0515634490744457,
+        "t all games (val)": -0.9333583876357473,
+        "games (val)": 10216,
+        "t our bets (val)": -1.197338433820143,
+        "flagged (val)": 758.0,
+        "miss when flagged (val)": -1.1089000589622329,
+        "lead?": false,
+        "direction as expected?": null
+      },
+      {
+        "idea": "key minutes that missed the last two (share)",
+        "expected": "-",
+        "t all games (disc)": -1.5597493565448604,
+        "games (disc)": 14125,
+        "t our bets (disc)": 0.06333472336601177,
+        "flagged (disc)": NaN,
+        "miss when flagged (disc)": NaN,
+        "t all games (val)": -0.7164121491265383,
+        "games (val)": 10216,
+        "t our bets (val)": -1.5162462231257698,
+        "flagged (val)": NaN,
+        "miss when flagged (val)": NaN,
+        "lead?": false,
+        "direction as expected?": null
+      }
+    ],
+    "persistence": {
+      "missed the last game": [
+        6061,
+        0.5289556178848375
+      ],
+      "missed the last two": [
+        3096,
+        0.6770025839793282
+      ]
+    }
+  }
+}
