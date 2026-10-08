@@ -1,0 +1,93 @@
+{
+  "experiment": "improve_calibration",
+  "timestamp_utc": "20261008T090017Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "cfb04a0",
+  "params": {
+    "pre_registration": {
+      "study": "side_aware_calibration",
+      "status": "pre-registered",
+      "motivation": "reports/bet_diagnostics.md: among bets with calibrated P >= 55%, Unders won more often than predicted in every era (+2.3, +7.8, +7.4 points in 2011-18, 2018-21, 2021-26) and Overs slightly less (-0.3, -1.3, -1.0). A mechanism check (exploration on 2011-21, where half scores exist): overtime happens in 6-7% of games and adds about 24 points when it does (+1.4 to +1.6 to the mean total), so totals are right-skewed. The mean residual against the opener is +0.7 to +0.85 points but the median is 0 to +0.5; Overs hit 50.0-50.8% while the normal model's average P(over) is 52.4-53.0%. The locked calibrator is symmetric (P(win) depends only on side*mu/sd and the buffer), so it cannot remove an Over/Under asymmetry.\n",
+      "data": "The cached walk-forward predictions of the locked v3 engine (data/processed cache, fingerprinted). Calibrators are refitted walk-forward exactly as locked: for season s, fitted on the out-of-sample predictions of earlier seasons only, with the same season weights (calib_decay 0.6) and pseudo-bets.\n",
+      "candidates": {
+        "C0_locked": "locked calibrator: b0 + b1*s_model + b2*s_buf + b3*s_buf^2 + b4*s_model*s_buf",
+        "C1_side": "C0 + b5*side (Over +1, Under -1); one extra parameter",
+        "C2_side_buffer": "C1 + b6*side*s_buf + b7*side*s_buf^2; the alternate-line curve may differ by side (skewed tails)"
+      },
+      "eras": {
+        "dev": [
+          "2011-12",
+          "2012-13",
+          "2013-14",
+          "2014-15",
+          "2015-16",
+          "2016-17",
+          "2017-18"
+        ],
+        "holdout": [
+          "2018-19",
+          "2019-20",
+          "2020-21"
+        ],
+        "reanalysis": [
+          "2021-22",
+          "2022-23",
+          "2023-24",
+          "2024-25",
+          "2025-26"
+        ]
+      },
+      "metrics": {
+        "primary": "log loss of the two-sided P(over) at the opening line, every calibrated eligible non-push game, per era",
+        "secondary": [
+          "P >= 55% singles at the opener: bets, win rate, win minus predicted by side, ROI at -110 (all eras), ROI at the best book's real price (2021-26)",
+          "pseudo-bet log loss over the alternate-line buffers (pricing of card legs), per era",
+          "2.5+ target cards with real prices, 2021-26, locked stage-3 products (re-analysis)"
+        ]
+      },
+      "adoption_rule": "A candidate is adopted only if its primary log loss is lower than C0's in EACH of the three eras AND its pooled P >= 55% ROI at -110 (2011-26) is not lower than C0's. If both candidates qualify, C1 is chosen unless C2 has a lower primary log loss than C1 in each era (fewer parameters win ties). Adopted means: the live engine records the adopted calibrator's picks next to C0's in the 2026-27 forward ledger, and the forward season decides which one is used after it.\n",
+      "not_candidates_now": {
+        "books_at_open": "6+ books at the open did better in 2021-26 (57.8% vs 55.6%), but no earlier data has book counts; logged in the forward ledger instead",
+        "extreme_shrink": "P >= 62% looked overconfident in the later eras on only 55-70 bets; too few to act on",
+        "neutral_site": "neutral-site bets beat their predictions but are mostly Unders; re-checked after the side term, not tested separately"
+      }
+    }
+  },
+  "params_hash": "7e62340a6d93",
+  "results": {
+    "primary": [
+      {
+        "calibrator": "C0_locked",
+        "dev": 0.6881112066598433,
+        "holdout": 0.6895360920286506,
+        "reanalysis": 0.6910405289682444,
+        "pooled": 0.6897942626527143,
+        "mean P(over)": 0.5193095211682225,
+        "over rate": 0.5060844536743542
+      },
+      {
+        "calibrator": "C1_side",
+        "dev": 0.6881009617790098,
+        "holdout": 0.6888409064421388,
+        "reanalysis": 0.6908322949252453,
+        "pooled": 0.6895341215298789,
+        "mean P(over)": 0.5071710739714923,
+        "over rate": 0.5060844536743542
+      },
+      {
+        "calibrator": "C2_side_buffer",
+        "dev": 0.6880884775334932,
+        "holdout": 0.6888836096613132,
+        "reanalysis": 0.6908637387072468,
+        "pooled": 0.6895546982845022,
+        "mean P(over)": 0.5041706118825822,
+        "over rate": 0.5060844536743542
+      }
+    ],
+    "qualifies": {
+      "C1_side": false,
+      "C2_side_buffer": false
+    },
+    "adopted": null
+  }
+}

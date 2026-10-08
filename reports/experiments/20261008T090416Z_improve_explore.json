@@ -1,0 +1,218 @@
+{
+  "experiment": "improve_explore",
+  "timestamp_utc": "20261008T090416Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "754f16f",
+  "params": {
+    "after": "improve_calibration"
+  },
+  "params_hash": "a47afea3d81b",
+  "results": {
+    "matched_volume_roi": [
+      {
+        "calibrator": "C0_locked",
+        "dev": 0.10343963410813861,
+        "holdout": 0.0829596412556054,
+        "reanalysis": 0.0838780240097915,
+        "POOLED": 0.09212734852996918
+      },
+      {
+        "calibrator": "C1_side",
+        "dev": 0.1012467890483052,
+        "holdout": 0.06669384427231961,
+        "reanalysis": 0.07075336579776581,
+        "POOLED": 0.0830310249607451
+      },
+      {
+        "calibrator": "C2_side_buffer",
+        "dev": 0.10826389323977192,
+        "holdout": 0.06840603342845486,
+        "reanalysis": 0.07895627718028164,
+        "POOLED": 0.0892847474145867
+      }
+    ],
+    "units": {
+      "C0_locked": 928.0909090909091,
+      "C1_side": 981.8181818181818,
+      "C2_side_buffer": 1044.5454545454545
+    },
+    "scan": [
+      {
+        "signal": "mu (model's own edge)",
+        "t dev": -4.304209135857457,
+        "t holdout": -2.0173256820973995,
+        "t reanalysis": -5.532491555306813,
+        "same sign in all eras": true,
+        "weakest |t|": 2.0173256820973995
+      },
+      {
+        "signal": "tempo gap |tempo_home - tempo_away|",
+        "t dev": -1.3344176644713985,
+        "t holdout": -2.0308292764369464,
+        "t reanalysis": -2.944445004960294,
+        "same sign in all eras": true,
+        "weakest |t|": 1.3344176644713985
+      },
+      {
+        "signal": "efficiency mismatch",
+        "t dev": -2.311726246243882,
+        "t holdout": -1.1934296975578342,
+        "t reanalysis": -1.350118996450199,
+        "same sign in all eras": true,
+        "weakest |t|": 1.1934296975578342
+      },
+      {
+        "signal": "December",
+        "t dev": 0.8787968612316983,
+        "t holdout": 0.31009781850809376,
+        "t reanalysis": 0.5371783748182289,
+        "same sign in all eras": true,
+        "weakest |t|": 0.31009781850809376
+      },
+      {
+        "signal": "away team-total gap vs spread",
+        "t dev": -0.7599566063447966,
+        "t holdout": -0.14587861006139016,
+        "t reanalysis": -0.4300132249540753,
+        "same sign in all eras": true,
+        "weakest |t|": 0.14587861006139016
+      },
+      {
+        "signal": "games-played gap",
+        "t dev": 2.1702568367601374,
+        "t holdout": 1.7423201825662398,
+        "t reanalysis": -3.064604445595094,
+        "same sign in all eras": false,
+        "weakest |t|": 1.7423201825662398
+      },
+      {
+        "signal": "home team-total gap vs spread",
+        "t dev": -2.0334954256973568,
+        "t holdout": 1.6392427155638867,
+        "t reanalysis": -1.2848798199519693,
+        "same sign in all eras": false,
+        "weakest |t|": 1.2848798199519693
+      },
+      {
+        "signal": "neutral site",
+        "t dev": -0.9068420166558351,
+        "t holdout": 1.6329755493964475,
+        "t reanalysis": 0.8673191580827304,
+        "same sign in all eras": false,
+        "weakest |t|": 0.8673191580827304
+      },
+      {
+        "signal": "Monday",
+        "t dev": -0.7848683418833595,
+        "t holdout": -2.784414431836041,
+        "t reanalysis": 1.3350972483734926,
+        "same sign in all eras": false,
+        "weakest |t|": 0.7848683418833595
+      },
+      {
+        "signal": "model SD",
+        "t dev": 1.1341626086384715,
+        "t holdout": -2.6216259064345504,
+        "t reanalysis": -0.7375690574977948,
+        "same sign in all eras": false,
+        "weakest |t|": 0.7375690574977948
+      },
+      {
+        "signal": "March",
+        "t dev": -1.0151857644484945,
+        "t holdout": -0.6977507745744,
+        "t reanalysis": 0.9432352697844355,
+        "same sign in all eras": false,
+        "weakest |t|": 0.6977507745744
+      },
+      {
+        "signal": "opening total (level)",
+        "t dev": 0.6825593560561816,
+        "t holdout": -2.539601702407666,
+        "t reanalysis": 1.1079182373776697,
+        "same sign in all eras": false,
+        "weakest |t|": 0.6825593560561816
+      },
+      {
+        "signal": "late season (both 25+ games)",
+        "t dev": -0.6316766916773363,
+        "t holdout": -0.819374122635132,
+        "t reanalysis": 1.9133998714558513,
+        "same sign in all eras": false,
+        "weakest |t|": 0.6316766916773363
+      },
+      {
+        "signal": "February",
+        "t dev": 0.6462022561334838,
+        "t holdout": -0.8106760932695002,
+        "t reanalysis": 0.5685399455441862,
+        "same sign in all eras": false,
+        "weakest |t|": 0.5685399455441862
+      },
+      {
+        "signal": "January",
+        "t dev": -0.5321728507497001,
+        "t holdout": 0.38197649574818043,
+        "t reanalysis": -1.5339633606937029,
+        "same sign in all eras": false,
+        "weakest |t|": 0.38197649574818043
+      },
+      {
+        "signal": "Friday",
+        "t dev": 0.15351524257281873,
+        "t holdout": 0.6445729006295287,
+        "t reanalysis": -2.2348599981751076,
+        "same sign in all eras": false,
+        "weakest |t|": 0.15351524257281873
+      },
+      {
+        "signal": "Sunday",
+        "t dev": -0.2349265135995569,
+        "t holdout": 1.5408322959804075,
+        "t reanalysis": -0.12511249443925357,
+        "same sign in all eras": false,
+        "weakest |t|": 0.12511249443925357
+      },
+      {
+        "signal": "November",
+        "t dev": -0.1015437573421551,
+        "t holdout": 1.1694534056514498,
+        "t reanalysis": -0.3590037040885083,
+        "same sign in all eras": false,
+        "weakest |t|": 0.1015437573421551
+      },
+      {
+        "signal": "rest difference (home - away)",
+        "t dev": -0.7997471344261878,
+        "t holdout": 1.0745681390472515,
+        "t reanalysis": 0.05198402244709696,
+        "same sign in all eras": false,
+        "weakest |t|": 0.05198402244709696
+      },
+      {
+        "signal": "longest rest",
+        "t dev": 1.6452876836831352,
+        "t holdout": -0.047486467619786865,
+        "t reanalysis": 0.15191235626914967,
+        "same sign in all eras": false,
+        "weakest |t|": 0.047486467619786865
+      },
+      {
+        "signal": "slate size",
+        "t dev": 0.7479680973575942,
+        "t holdout": -0.04474985722576708,
+        "t reanalysis": -0.46955475929858,
+        "same sign in all eras": false,
+        "weakest |t|": 0.04474985722576708
+      },
+      {
+        "signal": "|spread|",
+        "t dev": -0.042287923946097136,
+        "t holdout": 1.3086480228405015,
+        "t reanalysis": 0.9853292470682303,
+        "same sign in all eras": false,
+        "weakest |t|": 0.042287923946097136
+      }
+    ]
+  }
+}

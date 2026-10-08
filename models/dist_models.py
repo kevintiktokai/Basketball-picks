@@ -195,15 +195,33 @@ class LatentCalibrator:
         s_buf   = side * (line - t') / sd   (standardized buffer bought; t' on the half-point grid)
     Fitted on pseudo-bets at many buffers over EARLIER seasons' out-of-sample predictions.
     Conservative probability: one-sided lower bound of the linear predictor using a
-    date-clustered (sandwich) covariance — widens automatically when extrapolating."""
+    date-clustered (sandwich) covariance — widens automatically when extrapolating.
+
+    terms: "base" (the locked form above), "side" (+ b5*side, side = +1 Over / -1 Under) or
+    "side_buffer" (+ b5*side + b6*side*s_buf + b7*side*s_buf^2); config/improvements.yaml.
+    The side terms let Over and Under differ (totals are right-skewed by overtime)."""
 
     BUFFERS = np.array([-6, -3, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18], float)
+    TERMS = ("base", "side", "side_buffer")
+    terms = "base"                    # class default: calibrators pickled before `terms` existed
 
-    @staticmethod
-    def design(s_model, s_buf):
+    def __init__(self, terms: str = "base"):
+        if terms not in self.TERMS:
+            raise ValueError(f"unknown calibrator terms {terms!r}")
+        self.terms = terms
+
+    def design(self, s_model, s_buf, side=None):
         s_model = np.asarray(s_model, float)
         s_buf = np.asarray(s_buf, float)
-        return np.column_stack([np.ones_like(s_model), s_model, s_buf, s_buf ** 2, s_model * s_buf])
+        cols = [np.ones_like(s_model), s_model, s_buf, s_buf ** 2, s_model * s_buf]
+        if self.terms != "base":
+            if side is None:
+                raise ValueError("this calibrator needs the side (+1 Over, -1 Under)")
+            sd = np.broadcast_to(np.asarray(side, float), s_model.shape)
+            cols.append(sd)
+            if self.terms == "side_buffer":
+                cols += [sd * s_buf, sd * s_buf ** 2]
+        return np.column_stack(cols)
 
     @classmethod
     def pseudo_bets(cls, hist: pd.DataFrame) -> pd.DataFrame:
@@ -216,6 +234,7 @@ class LatentCalibrator:
                 win = (hist.outcome.values > thr) if side == 1 else (hist.outcome.values < thr)
                 rows.append(pd.DataFrame({
                     "date": hist.date.values,
+                    "side": side,
                     "s_model": side * hist.mu.values / hist.sd.values,
                     "s_buf": side * (hist.line.values - thr) / hist.sd.values,
                     "win": win.astype(int)}))
@@ -223,7 +242,7 @@ class LatentCalibrator:
 
     def fit(self, hist: pd.DataFrame, weights: np.ndarray | None = None) -> "LatentCalibrator":
         pb = self.pseudo_bets(hist)
-        X = self.design(pb.s_model, pb.s_buf)
+        X = self.design(pb.s_model, pb.s_buf, pb.side)
         y = pb.win.values.astype(float)
         sw = np.ones(len(pb)) if weights is None else np.tile(np.asarray(weights, float),
                                                              len(pb) // len(hist))
@@ -248,8 +267,8 @@ class LatentCalibrator:
         self.n_pseudo = len(pb)
         return self
 
-    def prob(self, s_model, s_buf, z: float | None = None):
-        X = self.design(s_model, s_buf)
+    def prob(self, s_model, s_buf, z: float | None = None, side=None):
+        X = self.design(s_model, s_buf, side)
         eta = X @ self.beta
         p = 1 / (1 + np.exp(-eta))
         if z is None:

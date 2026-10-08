@@ -28,7 +28,7 @@ def _season_weights(season_col: pd.Series, current: str, seasons: list, decay: f
 def walk_forward_market(df: pd.DataFrame, mean_feats, var_feats, kind="ridge", shape="normal",
                         alpha=50.0, seasons=None, min_train=2, min_games=3,
                         calib_seed_seasons=2, train_decay: float | None = None,
-                        calib_decay: float | None = None):
+                        calib_decay: float | None = None, calib_terms: str = "base"):
     seasons = seasons or sorted(df.season.unique())
     data = df[df.season.isin(seasons)].copy()
     elig = data.rt_min_games.fillna(0) >= min_games
@@ -54,7 +54,7 @@ def walk_forward_market(df: pd.DataFrame, mean_feats, var_feats, kind="ridge", s
         if j < calib_seed_seasons:
             continue
         hist = P[P.season.isin(pseasons[:j]) & P.eligible]
-        cals[s] = LatentCalibrator().fit(hist, weights=_season_weights(hist.season, s, pseasons, calib_decay))
+        cals[s] = LatentCalibrator(calib_terms).fit(hist, weights=_season_weights(hist.season, s, pseasons, calib_decay))
         cals_mkt[s] = LatentCalibrator().fit(hist.assign(mu=hist.mu_mkt, sd=hist.sd_mkt))
     P["calibrated"] = P.season.isin(list(cals))
     return P, cals, cals_mkt
@@ -89,7 +89,7 @@ def leg_table(P: pd.DataFrame, cals: dict, cals_mkt: dict, k_grid=K_GRID) -> dic
                 thr = out["thr"][idx, s_i, k_i]
                 sm = side * P.mu.values[idx] / P.sd.values[idx]
                 sb = side * (line[idx] - thr) / P.sd.values[idx]
-                p, lo = cal.prob(sm, sb, z=Z95)
+                p, lo = cal.prob(sm, sb, z=Z95, side=side)
                 out["p"][idx, s_i, k_i] = p
                 out["p_cons"][idx, s_i, k_i] = lo
                 smm = side * P.mu_mkt.values[idx] / P.sd_mkt.values[idx]
@@ -117,7 +117,7 @@ def main_line_probs(P: pd.DataFrame, cals: dict) -> pd.DataFrame:
             ii = P.index.get_indexer(idx)
             sm = side * P.mu.values[ii] / P.sd.values[ii]
             sb = side * (L[ii] - thr[ii]) / P.sd.values[ii]
-            p[ii], lo[ii] = cals[season].prob(sm, sb, z=Z95)
+            p[ii], lo[ii] = cals[season].prob(sm, sb, z=Z95, side=side)
         P[f"p_{name}"] = p
         P[f"p_{name}_cons"] = lo
     P["p_push"] = np.clip(1 - P.p_over - P.p_under, 0, None)

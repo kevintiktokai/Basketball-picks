@@ -124,7 +124,7 @@ def build_legs(P: pd.DataFrame, cals: dict, calm: dict, books: pd.Series | None 
                 t_eff = np.where(t == np.floor(t), t + 0.5 * side, t)
                 sm = side * P.mu.values[idx] / P.sd.values[idx]
                 sb = side * (line[idx] - t_eff) / P.sd.values[idx]
-                pp, lo = cal.prob(sm, sb, z=Z95)
+                pp, lo = cal.prob(sm, sb, z=Z95, side=side)
                 p[idx, s_i, k], pc[idx, s_i, k] = pp, lo
                 smm = side * P.mu_mkt.values[idx] / P.sd_mkt.values[idx]
                 sbm = side * (ref[idx, s_i] - t_eff) / P.sd_mkt.values[idx]   # book prices around its line
