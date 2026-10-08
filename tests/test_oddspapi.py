@@ -117,21 +117,21 @@ def test_markets_parsing(api):
 
 
 def test_update_fetches_finished_games_once_newest_first(api, tmp_path):
-    got = op.update(names=("euroleague",))
+    got = op.update(names=("euroleague",), first="2024-09-20")
     hist = [c[1]["fixtureId"] for c in api if c[0] == "/historical-odds"]
-    assert got == {"euroleague": 2} and hist == ["idB", "idA"]                    # newest first; no future/cancelled
+    assert got == {"euroleague": 2} and hist == ["idA", "idB"]                    # oldest first; no future/cancelled
     assert all(c[1]["bookmakers"] == op.BOOKS for c in api if c[0] == "/historical-odds")
     cached = json.loads((tmp_path / "raw" / "138" / "hist" / "idA.json").read_text())
     kept = set(cached["bookmakers"]["pinnacle"]["markets"])
     assert {"1110", "1130", "111"} <= kept and not kept & {"1150", "77777"}      # props / unknown dropped
     assert cached["_fixture"]["participant1Name"] == "Real Madrid"
     n = len(api)
-    assert op.update(names=("euroleague",)) == {"euroleague": 0}                   # cached: nothing refetched
+    assert op.update(names=("euroleague",), first="2024-09-20") == {"euroleague": 0}   # cached: nothing refetched
     assert not [c for c in api[n:] if c[0] == "/historical-odds"]
 
 
 def test_ladder_main_lines_and_matching(api):
-    op.update(names=("euroleague",))
+    op.update(names=("euroleague",), first="2024-09-20")
     G = pd.DataFrame({"game_key": ["E2024_1", "E2024_2", "E2024_3"],
                       "date": pd.to_datetime(["2024-10-03", "2024-10-03", "2024-10-03"]),
                       "home_name": ["REAL MADRID", "EA7 EMPORIO ARMANI MILAN", "PANATHINAIKOS AKTOR ATHENS"],
@@ -178,13 +178,13 @@ def test_budget_ledger_and_key_handling(tmp_path, monkeypatch):
     monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
     monkeypatch.setenv("ODDSPAPI_KEY", "secret-test-key")
     monkeypatch.setenv("ODDSPAPI_MONTHLY_BUDGET", "3")       # markets + fixtures + one history call
-    got = op.update(names=("euroleague",))
+    got = op.update(names=("euroleague",), first="2024-09-20")
     assert got == {"euroleague": 1} and op.used() == 3
     assert all(q["apiKey"] == "secret-test-key" for q in seen)                     # v4: key in the query
     stored = "".join(p.read_text() for p in (tmp_path / "raw").rglob("*.json"))
     assert "secret-test-key" not in stored                                         # never written to disk
     monkeypatch.setenv("ODDSPAPI_MONTHLY_BUDGET", "5")
-    assert op.update(names=("euroleague",)) == {"euroleague": 1} and op.used() == 4  # cached calls are free
+    assert op.update(names=("euroleague",), first="2024-09-20") == {"euroleague": 1} and op.used() == 4  # cached calls are free
     monkeypatch.delenv("ODDSPAPI_KEY")
     with pytest.raises(SystemExit):
         op._get_json("/markets", {"sportId": 11})

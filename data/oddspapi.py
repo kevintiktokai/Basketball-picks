@@ -13,7 +13,7 @@ ever requested twice. The key is read from the environment and never written any
 
 usage: python -m data.oddspapi probe       # ~8 requests: key, market catalogue, how far back odds go
        python -m data.oddspapi plan        # requests the backfill needs, months at this budget
-       python -m data.oddspapi update      # spend this month's budget, newest games first
+       python -m data.oddspapi update      # spend this month's budget, oldest games first
        python -m data.oddspapi parse       # -> data/processed/odds_euro.parquet (+ _ladder)
 """
 from __future__ import annotations
@@ -38,7 +38,9 @@ RAW = ROOT / "data" / "raw" / "oddspapi"
 PROC = ROOT / "data" / "processed"
 BASKETBALL = 11
 TOURNAMENTS = {"euroleague": 138}          # documented id; EuroCup is looked up by slug
-FIRST_SEASON_START = "2024-09-01"          # OddsPapi was founded in 2024; `probe` checks the depth
+FIRST_SEASON_START = "2025-09-20"
+HISTORY_START = "2026-01-20"               # measured 2026-10-08: none on 15 Jan 2026, present from 20 Jan
+MAX_MISSES = 5                             # consecutive games without history -> stop that season
 BOOKS = "pinnacle,bet365,unibet"           # a sharp reference + two big European books (max 3)
 MIN_INTERVAL = 1.0                         # free tier: ~0.9 s cooldown per endpoint
 _last_call = [0.0]
@@ -208,11 +210,30 @@ def _finished(f: dict, now: pd.Timestamp) -> bool:
     return _start(f) < now - pd.Timedelta(hours=4) and f.get("statusId") != 3
 
 
-def _slim(data: dict, keep: set) -> dict:
-    """Keep full-game totals/spread/moneyline markets only (the full feed is far larger)."""
+def _cutoff(f: dict) -> pd.Timestamp:
+    """End of the pre-game market: one minute before the scheduled start. (Books begin in-game
+    pricing on the same market ids from the scheduled time, before the recorded actual start.)"""
+    return _start(f) - pd.Timedelta(minutes=1)
+
+
+def _slim(data: dict, keep: set, cutoff: pd.Timestamp | None = None) -> dict:
+    """Keep full-game totals/spread/moneyline markets and pre-game snapshots only: in-game
+    prices are ~95% of the feed and the engine never uses them."""
     books = {}
     for slug, bd in (data.get("bookmakers") or {}).items():
-        mk = {mid: md for mid, md in (bd.get("markets") or {}).items() if not keep or int(mid) in keep}
+        mk = {}
+        for mid, md in (bd.get("markets") or {}).items():
+            if keep and int(mid) not in keep:
+                continue
+            outs = {}
+            for oid, od in (md.get("outcomes") or {}).items():
+                snaps = (od.get("players") or {}).get("0") or []
+                if cutoff is not None:
+                    snaps = [x for x in snaps if pd.Timestamp(x["createdAt"]) < cutoff]
+                if snaps:
+                    outs[oid] = {"players": {"0": snaps}}
+            if outs:
+                mk[mid] = {"outcomes": outs}
         if mk:
             books[slug] = {"markets": mk}
     return {"fixtureId": data.get("fixtureId"), "bookmakers": books}
@@ -224,8 +245,9 @@ def history(f: dict, tid: int, keep: set, books: str = BOOKS):
     if path.exists():
         return json.loads(path.read_text())
     data = _get_json("/historical-odds", {"fixtureId": f["fixtureId"], "bookmakers": books})
-    slim = {**_slim(data or {}, keep), "_fixture": {k: f.get(k) for k in (
-        "fixtureId", "startTime", "participant1Name", "participant2Name", "statusId")}, "_tid": tid}
+    slim = {**_slim(data or {}, keep, _cutoff(f)), "_fixture": {k: f.get(k) for k in (
+        "fixtureId", "startTime", "trueStartTime", "participant1Name", "participant2Name", "statusId")},
+        "_tid": tid}
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(slim))
     return slim
@@ -248,22 +270,32 @@ def seasons_to_cover(first: str = FIRST_SEASON_START):
     return out
 
 
-def update(names=("euroleague", "eurocup"), first: str = FIRST_SEASON_START, books: str = BOOKS) -> dict:
-    """Spend the remaining monthly budget: per season (newest first), list the fixtures, then pull
-    the history of finished games, newest first. Resumable; stops cleanly at the budget."""
+def update(names=("euroleague", "eurocup"), first: str = HISTORY_START, books: str = BOOKS) -> dict:
+    """Spend the remaining monthly budget, OLDEST games first: the free archive may be a rolling
+    window, so the oldest games are the ones about to disappear. Season by season (oldest
+    first), EuroLeague before EuroCup; a season stops after MAX_MISSES consecutive games without
+    history. Resumable; stops cleanly at the budget."""
     M = markets()
     keep = _keep_ids(M)
     now = pd.Timestamp.now(tz="UTC")
     got = {n: 0 for n in names}
     try:
-        for start, end in seasons_to_cover(first):
+        for start, end in reversed(seasons_to_cover(FIRST_SEASON_START)):
+            start = max(start, first)
+            if start > end:
+                continue
             for n in names:
                 tid = tournament_id(n)
-                fx = [f for f in fixtures(tid, start, end) if _finished(f, now)]
-                for f in sorted(fx, key=_start, reverse=True):
-                    if not (RAW / str(tid) / "hist" / f"{f['fixtureId']}.json").exists():
-                        history(f, tid, keep, books)
+                misses = 0
+                for f in sorted((f for f in fixtures(tid, start, end) if _finished(f, now)), key=_start):
+                    path = RAW / str(tid) / "hist" / f"{f['fixtureId']}.json"
+                    h = json.loads(path.read_text()) if path.exists() else None
+                    if h is None:
+                        h = history(f, tid, keep, books)
                         got[n] += 1
+                    misses = 0 if h["bookmakers"] else misses + 1
+                    if misses >= MAX_MISSES:
+                        break
     except BudgetExhausted as e:
         print(f"stopped: {e}")
     return got
@@ -283,7 +315,7 @@ def ladder() -> pd.DataFrame:
     for p in sorted(RAW.glob("*/hist/*.json")):
         d = json.loads(p.read_text())
         f = d.get("_fixture") or {}
-        start = _start(f)
+        start = _cutoff(f)
         meta = {"fixture_id": f.get("fixtureId"), "tid": d.get("_tid"), "start": start,
                 "home_name": f.get("participant1Name"), "away_name": f.get("participant2Name")}
         for book, bd in (d.get("bookmakers") or {}).items():
@@ -297,15 +329,22 @@ def ladder() -> pd.DataFrame:
                     live = [s for s in pre if s.get("active", True) is not False]
                     if not live:
                         continue
-                    o, c = live[0], pre[-1]
+                    o, c = live[0], live[-1]
                     m = tot.loc[int(oid)]
                     rows.append({**meta, "book": book, "incl_ot": bool(m.incl_ot), "line": m.line, "side": m.side,
                                  "open_price": o["price"], "open_ms": _ms(o["createdAt"]),
                                  "close_price": c["price"], "close_ms": _ms(c["createdAt"]),
-                                 "close_active": c.get("active", True) is not False})
+                                 "last_ms": _ms(pre[-1]["createdAt"]),
+                                 "last_active": pre[-1].get("active", True) is not False})
     L = pd.DataFrame(rows)
     if L.empty:
         return L
+    # the feed records changes only, so a line's last active price is its price at the close;
+    # a line that went inactive within 30 minutes of the book's last pre-game update was still
+    # offered (books suspend everything just before tip-off); earlier means it was withdrawn
+    end = L.groupby(["fixture_id", "book"]).last_ms.transform("max")
+    L["close_active"] = L.last_active | (end - L.last_ms <= 30 * 60 * 1000)
+    L = L.drop(columns=["last_ms", "last_active"])
     # totals including overtime where the book prices them; regulation-only lines otherwise
     has_ot = L[L.incl_ot].groupby(["fixture_id", "book"]).size()
     key = pd.MultiIndex.from_frame(L[["fixture_id", "book"]])

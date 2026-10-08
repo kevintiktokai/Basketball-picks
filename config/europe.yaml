@@ -1,0 +1,51 @@
+# ============================================================================
+# EUROPE — EuroLeague + EuroCup totals with real bookmaker timelines
+# Pre-registered BEFORE any odds outcome was analysed. Before this file was written,
+# only these odds requests had been made: response-format checks, a search for the
+# start of the free archive (single games, Pinnacle-only, existence checked), and the
+# full timeline of ONE game (Paris v ASVEL, 2026-10-07) used to build the parser. Its
+# opening and closing lines were looked at; no result was compared with any line.
+# ============================================================================
+
+sources:
+  odds: "OddsPapi free tier, v4 /historical-odds: full pre-game price timeline per book"
+  books: [pinnacle, bet365, unibet]      # Pinnacle = sharp reference; two large European books
+  pre_game_cutoff: "scheduled start - 1 minute (in-game pricing starts on the same market ids)"
+  results_and_features: "official EuroLeague API (data/euroleague.py), ratings with venue_tempo=True"
+  tournaments: {euroleague: 138, eurocup: 141}
+
+archive:
+  measured_2026_10_08: "EuroLeague history absent on 2025-11-05, 2025-12-04, 2026-01-06, 2026-01-15;
+    present on 2026-01-20, 2026-02-03, 2026-05-24, 2026-10-07"
+  start_used: "2026-01-20"
+  note: "may be a rolling ~9-month window; games are fetched OLDEST FIRST so none expire unfetched"
+  budget: "~200 requests/month on the free tier, one request per game"
+
+splits:
+  development: "2025-26 games with history (from 2026-01-20), EuroLeague and EuroCup"
+  test: "2026-27 season, all games; joined to results and evaluated ONCE, after the engine
+    is locked in config/europe_locked.yaml (committed first)"
+  forward: "games after the lock date also go to the live ledger"
+
+questions:                               # in this order; development data only until locked
+  Q1_soft_vs_sharp_opener: >
+    How far do bet365/Unibet opening totals sit from Pinnacle's no-vig line, and does the
+    close move toward Pinnacle's opener (closing-line value of 'take the soft book when its
+    opener is >= k points off Pinnacle's fair line')?
+  Q2_value_vs_fair: >
+    Legs offered at bet365/Unibet (main or ladder line) whose price beats Pinnacle's no-vig
+    probability for the same line, at the opener and at fixed times before tip-off:
+    frequency, size, and result.
+  Q3_model: "Does the rating model add information to Pinnacle's opening line (log-loss gain)?"
+  Q4_cards: >
+    The stage-3 card rule (two legs, combined >= 2.5, legs 1.40-1.90) using REAL ladder
+    prices from the three books, with Pinnacle-derived and model-derived probabilities.
+
+metrics: [hit rate vs break-even, ROI at real prices with date-bootstrap 95% CI,
+          CLV vs Pinnacle's close, longest losing run]
+
+rules:
+  - development may iterate on development data only; every configuration is logged
+  - the engine is locked and committed before any 2026-27 result is compared with a line
+  - with ~250 development games, outcome-based ROI is noisy; CLV (Q1/Q2) is the primary
+    development signal
