@@ -1,0 +1,46 @@
+comment: "LOCKED NBA opener engine \u2014 committed BEFORE the 2023-26 NBA test is\
+  \ evaluated (and before its seasons finished downloading). Chosen by the pre-stated\
+  \ rule (best pooled development log-loss gain at the real opener, 2021-23)."
+variant: N3_no_style
+model:
+  mean_feats:
+  - x_pts
+  - x_eff
+  - early
+  - log_games
+  - abs_spread
+  - neutral_i
+  - line_rel
+  - x_poss
+  - vol_sum
+  - mkt_bias_sum
+  - open_bias_sum
+  - move_hist_sum
+  - rest_min
+  - weekend
+  - march
+  - log_slate
+  - lg_drift
+  var_feats:
+  - line_rel
+  - x_poss
+  - vol_sum
+  - abs_spread
+  - early
+  - log_games
+  - neutral_i
+  - log_slate
+  kind: ridge
+  shape: normal
+  alpha: 50.0
+  min_games: 3
+  train_decay: 0.6
+  calib_decay: 0.6
+dev_evidence:
+  ll_gain_x1e4:
+    N1_same_as_ncaab: -8.1
+    N2_plus_real_open_interactions: -10.3
+    N3_no_style: 7.3
+  note: gains are small and season-to-season unstable; NBA openers are sharp
+products: config/stage3_locked.yaml (same as NCAAB)
+locked_at_revision: 5325f74

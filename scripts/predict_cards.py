@@ -68,6 +68,71 @@ def update_history(date: str):
             print(f"  could not refresh {kind} {year}: {e}")
 
 
+TRACK = {
+    "target": ["NCAAB development 2018-21: 46.3% of cards won at avg 2.55 (ROI +17%)",
+               "NCAAB 2021-26 re-analysis: 47.0% won at avg 2.58 (ROI +21%; +10% if alternates priced off the close)"],
+    "main": ["NCAAB 2021-26 re-analysis: 38.3% won at avg 3.64, real prices (ROI +39%)"],
+}
+
+
+def print_odds_card(R, a):
+    from backtest.odds_cards import best_main
+    C = R["target_card"] if a.product == "target" else R["main_double"]
+    F = R["legs"].frame.set_index("game_key")
+    title = ("TARGET CARD — combined odds >= 2.5, highest chance both win" if a.product == "target"
+             else "MAIN-LINE DOUBLE — opening numbers at real prices")
+    print(BAR + f"\n{title}\nNCAA men's basketball — {a.date} — engine {a.engine}\n" + BAR)
+    print(f"\nGames screened: {R['n_screened']}   eligible: {R['n_eligible']}")
+    if C.empty:
+        print("\nNO CARD\n\nReason: no pair reaches combined odds >= 2.5 with a positive conservative "
+              "expected value.\n" + BAR)
+        return
+    c = C.iloc[0]
+    for i, leg in enumerate(("a", "b"), 1):
+        g = F.loc[c[f"game_{leg}"]]
+        side = int(c[f"side_{leg}"])
+        line = c[f"thr_{leg}"]
+        name = f"{g.get('away_name', g.away)} @ {g.get('home_name', g.home)}"
+        moved = side * (g.line - line)
+        print(f"\nPick {i}: {name}")
+        print(f"  BET:   {side_txt(side)} {line:.1f}   (market opener {g.line:.1f}; "
+              f"{moved:+.1f} pts in our favour)")
+        if c[f"main_{leg}"]:
+            bl, bp, book = best_main(g.get("books_json"), side)
+            src = f"real price at {book}" if book else "assumed -110"
+            print(f"  Price: {c[f'odds_{leg}']:.2f}   ({src})")
+        else:
+            print(f"  Price: ~{c[f'odds_{leg}']:.2f}   (alternate line: estimated book price — check yours)")
+        p, pc = c[f"p_{leg}"], c[f"pc_{leg}"]
+        other = c["odds_b"] if leg == "a" else c["odds_a"]
+        p_other = c["p_b"] if leg == "a" else c["p_a"]
+        print(f"  Model probability: {p:.1%}  (conservative {pc:.1%})   fair odds {1 / p:.2f}")
+        print(f"  Minimum price for this leg (card stays +EV with the other leg at {other:.2f}): "
+              f"{1 / (p * p_other * other):.2f}")
+    print("\n" + SUB)
+    print(f"Combined odds:            {c.combined_odds:.2f}")
+    print(f"Chance both win (model):  {c.joint_model:.1%}   (conservative {c.joint_cons:.1%})")
+    print(f"Break-even at these odds: {1 / c.combined_odds:.1%}")
+    print(f"Expected return per unit: {c.ev_model:+.1%}   (conservative {c.ev_cons:+.1%})")
+    print("\nTrack record of this locked product:")
+    for t in TRACK[a.product]:
+        print("  " + t)
+    print("\nExpect to LOSE more cards than you win: at ~2.5 the edge is winning ~47% when 40% breaks even.")
+    print(f"\nFINAL: TAKE BOTH — only at or above the minimum prices, and as close to the opening line as possible.\n{BAR}")
+    if a.record:
+        rec = {"date": a.date, "engine": a.engine, "product": a.product,
+               "recorded_at": pd.Timestamp.utcnow().isoformat()}
+        for leg in ("a", "b"):
+            g = F.loc[c[f"game_{leg}"]]
+            rec.update({f"{leg}_away": g.get("away_name", g.away), f"{leg}_home": g.get("home_name", g.home),
+                        f"{leg}_side": side_txt(int(c[f"side_{leg}"])), f"{leg}_line": c[f"thr_{leg}"],
+                        f"{leg}_odds": c[f"odds_{leg}"], f"{leg}_p": c[f"p_{leg}"], f"{leg}_p_cons": c[f"pc_{leg}"]})
+        rec.update({"combined_odds": c.combined_odds, "joint_model": c.joint_model})
+        ledger = Path(__file__).resolve().parents[1] / "reports" / "live_ledger.csv"
+        pd.DataFrame([rec]).to_csv(ledger, mode="a", header=not ledger.exists(), index=False)
+        print(f"recorded to {ledger}")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--date", required=True)
@@ -75,6 +140,9 @@ def main():
     ap.add_argument("--update", action="store_true")
     ap.add_argument("--record", action="store_true",
                     help="append the released card to reports/live_ledger.csv for forward testing")
+    ap.add_argument("--product", choices=["target", "main", "sixty"], default="target",
+                    help="target: combined >=2.5, legs ~1.6, highest win chance (default); "
+                         "main: main-line double at real prices; sixty: stage-2 60%% buffered card")
     ap.add_argument("--engine", choices=["v3", "v2"], default="v3",
                     help="v3 (default, recency-adapted, J=0.65) or v2 (stage-2 locked, J=0.625)")
     a = ap.parse_args()
@@ -96,6 +164,9 @@ def main():
         print(f"\nNO BET\n\nReason: {R['error']}\n")
         return
     lock, T, C, M, F = R["lock"], R["T"], R["card"], R["main"], R["frame"]
+    if a.product in ("target", "main"):
+        print_odds_card(R, a)
+        return
     cp = lock["card_policy"]
     unresolved = R["slate"][(R["slate"].match_home != "exact") | (R["slate"].match_away != "exact")]
 

@@ -55,13 +55,21 @@ def main():
             L.at[i, f"{leg}_win"] = int(win)
         if not (np.isnan(L.at[i, "a_win"]) or np.isnan(L.at[i, "b_win"])):
             L.at[i, "card_2of2"] = int(L.at[i, "a_win"] == 1 and L.at[i, "b_win"] == 1)
+            if "combined_odds" in L and not pd.isna(L.at[i, "combined_odds"]):
+                L.at[i, "profit"] = (L.at[i, "combined_odds"] - 1) if L.at[i, "card_2of2"] == 1 else -1.0
     L.to_csv(LEDGER, index=False)
     g = L[L.card_2of2.notna()]
-    k, n = int(g.card_2of2.sum()), len(g)
-    if n:
+    groups = g.groupby(g["product"].fillna("sixty")) if "product" in g else [("sixty", g)]
+    for prod, gg in groups:
+        k, n = int(gg.card_2of2.sum()), len(gg)
+        if not n:
+            continue
         lo, hi = wilson(k, n)
-        print(f"Graded cards: {n}   2/2: {k} ({k / n:.1%}, 95% CI {lo:.1%}-{hi:.1%})   "
-              f"model expected {g.joint_model.mean():.1%}")
+        line = (f"[{prod}] graded cards: {n}   both won: {k} ({k / n:.1%}, 95% CI {lo:.1%}-{hi:.1%})   "
+                f"model expected {gg.joint_model.mean():.1%}")
+        if "profit" in gg and gg.profit.notna().any():
+            line += f"   ROI {gg.profit.mean():+.1%} over {int(gg.profit.notna().sum())} priced cards"
+        print(line)
     print(f"Ungraded cards: {int(L.card_2of2.isna().sum())}")
 
 

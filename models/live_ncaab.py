@@ -131,6 +131,13 @@ def run_card(date: str, slate: pd.DataFrame | None = None, engine: str = "v3") -
         slate = pending_from_sbr(date)
     else:
         slate = slate.rename(columns={"home": "home_name", "away": "away_name", "line": "line_open"})
+        if {"over_odds", "under_odds"} <= set(slate.columns):
+            def amer(dec):
+                dec = float(dec)
+                return round((dec - 1) * 100) if dec >= 2 else round(-100 / (dec - 1))
+            slate["books_json"] = [json.dumps({"user": {"open": float(r.line_open), "open_over": amer(r.over_odds),
+                                                        "open_under": amer(r.under_odds)}})
+                                   for r in slate.itertuples()]
     if slate.empty:
         return {"date": date, "error": "no games with opening totals found for this date"}
     slate = slate.copy()
@@ -167,10 +174,21 @@ def run_card(date: str, slate: pd.DataFrame | None = None, engine: str = "v3") -
     today = P[P.date == D].copy()
     if today.empty or season not in cals:
         return {"date": date, "error": "slate games not eligible (too few games played this season)"}
+    # stage-3 odds-targeted products (config/stage3_locked.yaml)
+    from backtest.odds_cards import build_legs, odds_cards
+    lock3 = yaml.safe_load((ROOT / "config" / "stage3_locked.yaml").read_text())["products"]
+    tc = lock3["target_card"]
+    books = today.set_index("game_key").books_json if "books_json" in today else None
+    legs = build_legs(today, cals, calm, books=books, alt_ref="median")
+    target = odds_cards(legs, floor=tc["min_combined_odds"], objective=tc["objective"],
+                        leg_band=tuple(tc["leg_odds_band"]), margin=tc["alt_price_margin"])
+    main_double = odds_cards(legs, floor=lock3["main_line_double"]["min_combined_odds"],
+                             objective="ev", main_only=True)
     T = leg_table(today, cals, calm)
     C = buffered_cards(T, joint_target=cp["joint_target"], max_buffer=cp["max_buffer_points"],
                        top_legs=cp["top_legs"], rho_lo=cp["rho_lo"])
     M = main_line_probs(today, cals)
     lock = dict(lock, card_policy=cp, engine=engine)
     return {"date": date, "lock": lock, "slate": slate, "frame": T["frame"], "T": T, "card": C,
+            "target_card": target, "main_double": main_double, "legs": legs,
             "main": M, "n_screened": int(len(today)), "n_eligible": int(today.eligible.sum())}
