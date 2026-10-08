@@ -1,0 +1,120 @@
+{
+  "experiment": "staking_study",
+  "timestamp_utc": "20261008T092250Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "1543fea",
+  "params": {
+    "tiers": [
+      [
+        0.55,
+        1.0
+      ],
+      [
+        0.57,
+        1.5
+      ],
+      [
+        0.59,
+        2.0
+      ],
+      [
+        0.62,
+        2.5
+      ]
+    ],
+    "day_cap": 0.25
+  },
+  "params_hash": "15628a0e7a73",
+  "results": {
+    "rows": [
+      {
+        "period": "2011-21 (choose here)",
+        "scheme": "flat 1u",
+        "bets": "6657",
+        "avg stake (units)": "1.0",
+        "staked": "6657.0",
+        "profit (units)": "635.2727272727277",
+        "ROI per unit staked": "0.09542928154915543",
+        "max drawdown (units)": "29.090909090909236",
+        "profit / max drawdown": "21.837499999999906"
+      },
+      {
+        "period": "2011-21 (choose here)",
+        "scheme": "tiered 1-2.5u",
+        "bets": "6657",
+        "avg stake (units)": "1.3445996695208051",
+        "staked": "8951.0",
+        "profit (units)": "969.0000000000005",
+        "ROI per unit staked": "0.10825606077533241",
+        "max drawdown (units)": "39.590909090909236",
+        "profit / max drawdown": "24.475315729046994"
+      },
+      {
+        "period": "2011-21 (choose here)",
+        "scheme": "Kelly 1/8",
+        "bets": "6657",
+        "avg stake (units)": "1.0847600787410725",
+        "staked": "7221.247844179319",
+        "profit (units)": "843.2593669609435",
+        "ROI per unit staked": "0.11677474380562246",
+        "max drawdown (units)": "27.639846125200506",
+        "profit / max drawdown": "30.50883001089161"
+      },
+      {
+        "period": "2011-21 (choose here)",
+        "scheme": "Kelly 1/4",
+        "bets": "6657",
+        "avg stake (units)": "1.748855903040194",
+        "staked": "11642.133746538571",
+        "profit (units)": "1446.3337949052668",
+        "ROI per unit staked": "0.12423270737078497",
+        "max drawdown (units)": "39.27242452776079",
+        "profit / max drawdown": "36.828227752602494"
+      },
+      {
+        "period": "2021-26 (check, real prices)",
+        "scheme": "flat 1u",
+        "bets": "3510",
+        "avg stake (units)": "1.0",
+        "staked": "3510.0",
+        "profit (units)": "359.9660742203266",
+        "ROI per unit staked": "0.10255443709980816",
+        "max drawdown (units)": "29.915248155766335",
+        "profit / max drawdown": "12.032862717568369"
+      },
+      {
+        "period": "2021-26 (check, real prices)",
+        "scheme": "tiered 1-2.5u",
+        "bets": "3510",
+        "avg stake (units)": "1.2695156695156695",
+        "staked": "4456.0",
+        "profit (units)": "475.9445704169857",
+        "ROI per unit staked": "0.10680982280453001",
+        "max drawdown (units)": "32.72445428166475",
+        "profit / max drawdown": "14.544003280251909"
+      },
+      {
+        "period": "2021-26 (check, real prices)",
+        "scheme": "Kelly 1/8",
+        "bets": "3510",
+        "avg stake (units)": "0.9792712838066936",
+        "staked": "3437.2422061614943",
+        "profit (units)": "393.96277416409856",
+        "ROI per unit staked": "0.11461594805797888",
+        "max drawdown (units)": "28.891191937101325",
+        "profit / max drawdown": "13.636085870800702"
+      },
+      {
+        "period": "2021-26 (check, real prices)",
+        "scheme": "Kelly 1/4",
+        "bets": "3510",
+        "avg stake (units)": "1.4883314064107085",
+        "staked": "5224.043236501587",
+        "profit (units)": "617.210213020782",
+        "ROI per unit staked": "0.11814799094850381",
+        "max drawdown (units)": "70.3993005780784",
+        "profit / max drawdown": "8.767277628507786"
+      }
+    ]
+  }
+}

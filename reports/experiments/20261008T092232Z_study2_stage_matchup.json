@@ -1,0 +1,196 @@
+{
+  "experiment": "study2_stage_matchup",
+  "timestamp_utc": "20261008T092232Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "1543fea",
+  "params": {
+    "pre_registration": {
+      "name": "stage_and_matchup_features",
+      "status": "pre-registered 2026-10-08, before any candidate below was fitted",
+      "motivation": "reports/ncaab_stage_map.md (2011-21 only; 2021-26 sealed): against the locked v3 engine's own forecast, conference-tournament totals came in 0.9 and 2.0 points lower (dev, holdout; t -2.0, -2.9) and NIT/CBI/CIT totals 2.9 and 1.6 points higher; the engine knows only \"March\", not the event. reports/improve_explore.md: fast-vs-slow tempo matchups and efficiency mismatches went under in every era. Tournament games are often on consecutive days (fatigue).\n",
+      "engine": "locked v3 (config/stage3_v3_locked.yaml); the mean model gets extra features; the variance model, calibrator, decays, eligibility and products are unchanged.",
+      "stage_labels": "data/ncaab_stages.py (ESPN schedule; known before tip-off)",
+      "candidates": {
+        "S1_stage": "+ indicators for nonconf_home, nonconf_neutral, conf_tournament, ncaa_tournament, other_postseason (conf_regular = baseline)",
+        "S2_stage_matchup": "S1 + tempo gap |tempo_home - tempo_away| + efficiency mismatch (pre-game ratings)",
+        "S3_stage_matchup_fatigue": "S2 + games each team played in the previous 3 days (ESPN schedule), summed"
+      },
+      "selection_seasons": "2011-12 .. 2020-21 (eras dev 2011-18 and holdout 2018-21)",
+      "selection_rule": "A candidate qualifies if, against the locked engine, it has (a) lower log loss of the two-sided P(over) at the opener in BOTH eras and (b) higher ROI at -110 at matched volume in BOTH eras (matched volume: in each season, each engine's N most confident games, N = the locked engine's number of P >= 55% bets that season). Among qualifiers, the highest pooled 2011-21 matched-volume ROI is selected. If none qualifies, the study stops and 2021-26 stays sealed.\n",
+      "confirmation": "ONE run on the sealed 2021-22 .. 2025-26 seasons for the selected candidate only (the script refuses to run twice). It passes if its log loss is lower AND its matched-volume ROI is not lower at -110 and at the best book's real price. Pass = it is recorded next to the locked engine in the 2026-27 forward ledger; the forward season decides any switch.\n",
+      "disclosure": "The 2021-26 seasons were used before (stage-2b test, stage-3 re-analysis) and the bet diagnostics showed the locked engine's 2021-26 bets split by month and by neutral site; stage-by-stage results for 2021-26 have not been computed.\n"
+    },
+    "extra": {
+      "S1_stage": [
+        "st_nonconf_home",
+        "st_nonconf_neutral",
+        "st_conf_tournament",
+        "st_ncaa_tournament",
+        "st_other_postseason"
+      ],
+      "S2_stage_matchup": [
+        "st_nonconf_home",
+        "st_nonconf_neutral",
+        "st_conf_tournament",
+        "st_ncaa_tournament",
+        "st_other_postseason",
+        "tempo_gap",
+        "eff_gap"
+      ],
+      "S3_stage_matchup_fatigue": [
+        "st_nonconf_home",
+        "st_nonconf_neutral",
+        "st_conf_tournament",
+        "st_ncaa_tournament",
+        "st_other_postseason",
+        "tempo_gap",
+        "eff_gap",
+        "fatigue3"
+      ]
+    }
+  },
+  "params_hash": "71683228eb1f",
+  "results": {
+    "selection": [
+      {
+        "engine": "locked_v3",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6881112066598433,
+        "matched bets": 4395,
+        "matched win": 0.5779921892947393,
+        "matched ROI @-110": 0.10245113248526218,
+        "bets P>=55%": 4395,
+        "ROI @-110 at P>=55%": 0.10245113248526218
+      },
+      {
+        "engine": "locked_v3",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6895360920286506,
+        "matched bets": 2262,
+        "matched win": 0.5672645739910314,
+        "matched ROI @-110": 0.08178603006189213,
+        "bets P>=55%": 2262,
+        "ROI @-110 at P>=55%": 0.08178603006189213
+      },
+      {
+        "engine": "locked_v3",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6887238156893853,
+        "matched bets": 6657,
+        "matched win": 0.5743581953516633,
+        "matched ROI @-110": 0.09542928154915536,
+        "bets P>=55%": 6657,
+        "ROI @-110 at P>=55%": 0.09542928154915536
+      },
+      {
+        "engine": "S1_stage",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.687614970748067,
+        "matched bets": 4395,
+        "matched win": 0.5818014705882353,
+        "matched ROI @-110": 0.10962871031130417,
+        "bets P>=55%": 4740,
+        "ROI @-110 at P>=55%": 0.1076524741081703
+      },
+      {
+        "engine": "S1_stage",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6895944676827201,
+        "matched bets": 2262,
+        "matched win": 0.5530676220331393,
+        "matched ROI @-110": 0.05514026203681375,
+        "bets P>=55%": 2301,
+        "ROI @-110 at P>=55%": 0.06131721385958673
+      },
+      {
+        "engine": "S1_stage",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6884660270664672,
+        "matched bets": 6657,
+        "matched win": 0.5720577069096431,
+        "matched ROI @-110": 0.09111393338522676,
+        "bets P>=55%": 7041,
+        "ROI @-110 at P>=55%": 0.0925101031619992
+      },
+      {
+        "engine": "S2_stage_matchup",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6877505507779373,
+        "matched bets": 4395,
+        "matched win": 0.5837353549276361,
+        "matched ROI @-110": 0.11331058020477816,
+        "bets P>=55%": 4540,
+        "ROI @-110 at P>=55%": 0.11688025630756908
+      },
+      {
+        "engine": "S2_stage_matchup",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.689584752669876,
+        "matched bets": 2262,
+        "matched win": 0.5510295434198746,
+        "matched ROI @-110": 0.05132224097741339,
+        "bets P>=55%": 2279,
+        "ROI @-110 at P>=55%": 0.052694563006103166
+      },
+      {
+        "engine": "S2_stage_matchup",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.6885391395764492,
+        "matched bets": 6657,
+        "matched win": 0.5726430848641263,
+        "matched ROI @-110": 0.0922473950865118,
+        "bets P>=55%": 6819,
+        "ROI @-110 at P>=55%": 0.0954285485741711
+      },
+      {
+        "engine": "S3_stage_matchup_fatigue",
+        "era": "dev 2011-18",
+        "games": 16834,
+        "log loss": 0.6878381608889788,
+        "matched bets": 4395,
+        "matched win": 0.5815342214056041,
+        "matched ROI @-110": 0.10917364774020065,
+        "bets P>=55%": 4501,
+        "ROI @-110 at P>=55%": 0.11280321544707238
+      },
+      {
+        "engine": "S3_stage_matchup_fatigue",
+        "era": "holdout 2018-21",
+        "games": 12696,
+        "log loss": 0.6895882466655505,
+        "matched bets": 2262,
+        "matched win": 0.5518783542039356,
+        "matched ROI @-110": 0.052970018487259865,
+        "bets P>=55%": 2266,
+        "ROI @-110 at P>=55%": 0.05279627697986039
+      },
+      {
+        "engine": "S3_stage_matchup_fatigue",
+        "era": "2011-21",
+        "games": 29530,
+        "log loss": 0.688590585170027,
+        "matched bets": 6657,
+        "matched win": 0.5714719271623673,
+        "matched ROI @-110": 0.09007606483947178,
+        "bets P>=55%": 6767,
+        "ROI @-110 at P>=55%": 0.09270927092709269
+      }
+    ],
+    "qualifies": {
+      "S1_stage": false,
+      "S2_stage_matchup": false,
+      "S3_stage_matchup_fatigue": false
+    },
+    "selected": null,
+    "confirmed": null
+  }
+}
