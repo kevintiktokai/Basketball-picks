@@ -43,7 +43,7 @@ that this loses only a little.
 | EuroLeague box scores, referees, attendance | `api-live.euroleague.net/v2/.../games/{n}` + `v3/.../stats` (legacy `live.euroleague.net/api/Boxscore` as fallback) | ✅ free; loaded |
 | domestic league results/box (ACB, LNB, BBL, LBA, BSL, GBL, ABA…) | league sites / aggregators | per league; to be built |
 | **historical odds with opening + closing ladders** | OddsPortal / BetExplorer | pages load, but odds are loaded dynamically; automated collection may breach their terms |
-| | **OddsPapi** (opening + closing price per book per outcome, Pinnacle included) | free key; adapter ready (`data/oddspapi.py`), history depth unknown until a key is used |
+| | **OddsPapi** (full price timeline per book per game, Pinnacle included) | free key, ~200 requests/month (one per game); adapter ready (`data/oddspapi.py`); history probably from 2024 |
 | | The Odds API (historical snapshots since 2020, includes EuroLeague) | needs a paid key |
 | | sportsbookreview.com (used for NCAAB/NBA) | ❌ no European leagues |
 

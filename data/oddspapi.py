@@ -1,26 +1,30 @@
-"""OddsPapi adapter: historical opening/closing totals for EuroLeague and EuroCup.
+"""OddsPapi adapter (free key): historical EuroLeague / EuroCup totals within a monthly budget.
 
-Historical odds are the one input the European engine still lacks (the official
-EuroLeague API in data/euroleague.py gives games, box scores and referees, but no
-prices). OddsPapi's free tier serves, for each finished fixture, the first and last
-price it recorded for every outcome at every bookmaker (GET /fixtures/odds/clv),
-including Pinnacle and whole alternate-total ladders. This module fetches those
-politely, caches them, and builds the market frame the engine uses elsewhere:
-opening and closing main line + prices per book, plus every alternate line.
+Historical odds are the one input the European engine still lacks (data/euroleague.py gives
+games, box scores and referees, but no prices). OddsPapi's free tier serves the v4 API: the key
+is the `apiKey` query parameter, about 200 requests a month are allowed, and one
+/historical-odds call returns up to three bookmakers' full price timelines for every market of
+one game. That single call holds the opening line, the closing line and the alternate ladder,
+so the budget goes one game per request.
 
-The key comes from the environment variable ODDSPAPI_KEY (or is injected by the network
-proxy) and is sent as a header, so it never appears in URLs, cache files or logs.
+Every network request is counted in data/raw/oddspapi/usage.json and refused once the month's
+budget is spent (ODDSPAPI_MONTHLY_BUDGET, default 200). Every response is cached, so nothing is
+ever requested twice. The key is read from the environment and never written anywhere.
 
-usage: python -m data.oddspapi probe                      # key works? how far back do odds go?
-       python -m data.oddspapi fetch euroleague 2021-09-01 2026-06-30
-       python -m data.oddspapi parse euroleague           # -> data/processed/odds_euroleague*.parquet
+usage: python -m data.oddspapi probe       # ~8 requests: key, market catalogue, how far back odds go
+       python -m data.oddspapi plan        # requests the backfill needs, months at this budget
+       python -m data.oddspapi update      # spend this month's budget, newest games first
+       python -m data.oddspapi parse       # -> data/processed/odds_euro.parquet (+ _ladder)
 """
 from __future__ import annotations
 
+import difflib
 import json
 import os
+import re
 import sys
 import time
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -29,51 +33,75 @@ import pandas as pd
 
 from config_loader import ROOT
 
-BASE = "https://v5.oddspapi.io/en"
+BASE = "https://api.oddspapi.io/v4"
 RAW = ROOT / "data" / "raw" / "oddspapi"
 PROC = ROOT / "data" / "processed"
 BASKETBALL = 11
-TOURNAMENTS = {"euroleague": 138}        # documented id; others are looked up by slug
-BOOKS = ["pinnacle", "bet365", "unibet", "williamhill", "betway", "bwin", "1xbet", "marathonbet"]
-MIN_INTERVAL = 0.7                       # history/fixture endpoints allow 100 requests/minute
-FINISHED = 2
+TOURNAMENTS = {"euroleague": 138}          # documented id; EuroCup is looked up by slug
+FIRST_SEASON_START = "2024-09-01"          # OddsPapi was founded in 2024; `probe` checks the depth
+BOOKS = "pinnacle,bet365,unibet"           # a sharp reference + two big European books (max 3)
+MIN_INTERVAL = 1.0                         # free tier: ~0.9 s cooldown per endpoint
 _last_call = [0.0]
 
 
-def _headers() -> dict:
-    """The key comes from ODDSPAPI_KEY; when it is absent the request goes out without it, so a
-    key injected by a network proxy (environment 'network secret') also works."""
-    h = {"Accept": "application/json", "User-Agent": "basketball-totals-research"}
-    k = os.environ.get("ODDSPAPI_KEY", "").strip()
-    if k:
-        h["X-API-Key"] = k
-    return h
+class BudgetExhausted(RuntimeError):
+    pass
+
+
+def budget() -> int:
+    return int(os.environ.get("ODDSPAPI_MONTHLY_BUDGET", "200"))
+
+
+def _month() -> str:
+    return pd.Timestamp.now(tz="UTC").strftime("%Y-%m")
+
+
+def used(month: str | None = None) -> int:
+    p = RAW / "usage.json"
+    return json.loads(p.read_text()).get(month or _month(), 0) if p.exists() else 0
+
+
+def _spend() -> None:
+    p = RAW / "usage.json"
+    u = json.loads(p.read_text()) if p.exists() else {}
+    m = _month()
+    if u.get(m, 0) >= budget():
+        raise BudgetExhausted(f"monthly budget of {budget()} requests spent for {m}")
+    u[m] = u.get(m, 0) + 1
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(u, indent=1))
 
 
 def _get_json(path: str, params: dict):
-    """One polite GET; retries on 429 / transient errors. Returns parsed JSON."""
-    url = f"{BASE}{path}?{urllib.parse.urlencode({k: v for k, v in params.items() if v is not None})}"
-    for attempt in range(5):
+    """One counted GET. The key goes in the query string (the free API requires it there), so
+    errors never echo the URL. Returns parsed JSON, or None on 404."""
+    key = os.environ.get("ODDSPAPI_KEY", "").strip()
+    if not key:
+        raise SystemExit("Set ODDSPAPI_KEY (free key from oddspapi.io) in the environment, then start a new session.")
+    url = f"{BASE}{path}?{urllib.parse.urlencode({**params, 'apiKey': key})}"
+    for attempt in range(3):
         wait = MIN_INTERVAL - (time.time() - _last_call[0])
         if wait > 0:
             time.sleep(wait)
+        _spend()
         _last_call[0] = time.time()
-        req = urllib.request.Request(url, headers=_headers())
+        req = urllib.request.Request(url, headers={"Accept": "application/json",
+                                                   "User-Agent": "basketball-totals-research"})
         try:
-            with urllib.request.urlopen(req, timeout=60) as r:
+            with urllib.request.urlopen(req, timeout=180) as r:
                 return json.loads(r.read())
         except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return None
             if e.code == 429:
-                time.sleep(float(e.headers.get("Retry-After") or 2 ** attempt))
+                time.sleep(5 * (attempt + 1))
                 continue
-            if e.code in (500, 502, 503, 504):
+            if e.code in (401, 403):
+                raise SystemExit(f"OddsPapi refused the key on {path} (HTTP {e.code}).") from None
+            if e.code >= 500:
                 time.sleep(2 ** attempt)
                 continue
-            body = e.read()[:300].decode("utf-8", "ignore")
-            if e.code == 401:
-                raise SystemExit("OddsPapi rejected the request (no or invalid key). Add a free key from "
-                                 "oddspapi.io to the environment as ODDSPAPI_KEY, then start a new session.")
-            raise RuntimeError(f"OddsPapi {path} -> HTTP {e.code}: {body}") from None
+            raise RuntimeError(f"OddsPapi {path}: HTTP {e.code}") from None
         except urllib.error.URLError:
             time.sleep(2 ** attempt)
     raise RuntimeError(f"OddsPapi {path}: gave up after retries")
@@ -83,115 +111,205 @@ def _cached(path, fetch):
     if path.exists():
         return json.loads(path.read_text())
     data = fetch()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data))
+    if data is not None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data))
     return data
 
 
-# ---------------------------------------------------------------- metadata
+# ---------------------------------------------------------------- catalogue
+_NUM = re.compile(r"(\d+(?:\.\d+)?)")
+_PART = ("half", "quarter", "period", "1st", "2nd", "3rd", "4th", "team", "player", "race", "odd", "even")
+
+
 def markets() -> pd.DataFrame:
-    """outcomeId -> market (type, period, line, side) for basketball. Cached."""
-    data = _cached(RAW / f"markets_{BASKETBALL}.json", lambda: _get_json("/markets", {"sportId": BASKETBALL}))
-    rows = [{"outcome_id": o["outcomeId"], "market_id": m["marketId"], "market_type": m.get("marketType"),
-             "period": m.get("period"), "line": m.get("handicap"), "side": str(o.get("outcomeName", "")).lower(),
-             "player_prop": bool(m.get("playerProp"))}
-            for m in data for o in m.get("outcomes", [])]
-    return pd.DataFrame(rows)
+    """outcomeId -> (market id, kind, full game?, line, side) for basketball. Cached.
+    Uses explicit fields when the catalogue has them, the market name otherwise."""
+    data = _cached(RAW / f"markets_{BASKETBALL}.json", lambda: _get_json("/markets", {"sportId": BASKETBALL})) or []
+    rows = []
+    for m in data:
+        name = str(m.get("marketName", "")).lower()
+        mtype = str(m.get("marketType") or "").lower()
+        period = str(m.get("period") or "").lower()
+        line = m.get("handicap")
+        if line is None:
+            nums = _NUM.findall(name)
+            line = float(nums[-1]) if nums else None
+        if mtype:
+            kind = "totals" if mtype == "totals" else "spreads" if mtype.startswith("spreads") else mtype
+        else:
+            kind = "totals" if ("over" in name and "under" in name) or "total" in name else \
+                "spreads" if "handicap" in name or "spread" in name else "other"
+        partial = any(k in name for k in _PART) or (period not in ("", "result", "fulltime"))
+        for o in m.get("outcomes", []):
+            rows.append({"outcome_id": int(o["outcomeId"]), "market_id": int(m["marketId"]), "kind": kind,
+                         "full_game": not partial and not m.get("playerProp", False),
+                         "incl_ot": period == "result" or "overtime" in name,
+                         "line": None if line is None else float(line),
+                         "side": str(o.get("outcomeName", "")).strip().lower()})
+    return pd.DataFrame(rows, columns=["outcome_id", "market_id", "kind", "full_game", "incl_ot", "line", "side"])
 
 
 def tournament_id(name: str) -> int:
     if name in TOURNAMENTS:
         return TOURNAMENTS[name]
-    data = _cached(RAW / f"tournaments_{BASKETBALL}.json", lambda: _get_json("/tournaments", {"sportId": BASKETBALL}))
-    hits = [t for t in data if name.replace("-", "") in str(t.get("tournamentSlug", "")).replace("-", "")]
+    data = _cached(RAW / f"tournaments_{BASKETBALL}.json",
+                   lambda: _get_json("/tournaments", {"sportId": BASKETBALL})) or []
+    hits = sorted((t for t in data if name in str(t.get("tournamentSlug", "")).replace("-", "")),
+                  key=lambda t: len(str(t["tournamentSlug"])))       # 'eurocup' before 'eurocup-women'
     if not hits:
-        raise SystemExit(f"no basketball tournament matching {name!r}; run `probe` to list them")
-    return int(sorted(hits, key=lambda t: len(t["tournamentSlug"]))[0]["tournamentId"])
+        raise SystemExit(f"no basketball tournament matching {name!r}")
+    return int(hits[0]["tournamentId"])
 
 
 # ---------------------------------------------------------------- fetching
-def fixtures(tid: int, start: str, end: str, window_days: int = 14) -> list[dict]:
-    """All fixtures of a tournament between two dates. Windows that are fully in the past are
-    cached (their schedule can no longer change); the current window is always refreshed."""
-    out, t0, t1 = [], pd.Timestamp(start, tz="UTC"), pd.Timestamp(end, tz="UTC")
-    now = pd.Timestamp.now(tz="UTC")
-    while t0 < t1:
-        w1 = min(t0 + pd.Timedelta(days=window_days), t1)
-        params = {"tournamentId": tid, "startTimeFrom": int(t0.timestamp()), "startTimeTo": int(w1.timestamp())}
-        path = RAW / str(tid) / "fixtures" / f"{t0:%Y%m%d}_{w1:%Y%m%d}.json"
-        if w1 < now - pd.Timedelta(days=2):
-            out += _cached(path, lambda p=params: _get_json("/fixtures", p))
-        else:
-            out += _get_json("/fixtures", params)
-        t0 = w1
+def _start(f: dict) -> pd.Timestamp:
+    return pd.Timestamp(f["startTime"]).tz_convert("UTC") if pd.Timestamp(f["startTime"]).tzinfo \
+        else pd.Timestamp(f["startTime"], tz="UTC")
+
+
+def _blocks(start: pd.Timestamp, end: pd.Timestamp, days: int = 30):
+    """Fixed 30-day blocks anchored on 20 September of each season, so any date range maps to
+    the same cache files (a probe's lists are reused by the backfill)."""
+    y = start.year if start.month >= 7 else start.year - 1
+    b0 = pd.Timestamp(f"{y}-09-20")
+    if start < b0:                                       # July-September: previous season's tail
+        b0 = pd.Timestamp(f"{y - 1}-09-20")
+    b0 += pd.Timedelta(days=days * ((start - b0).days // days))
+    while b0 <= end:
+        yield b0, b0 + pd.Timedelta(days=days - 1)
+        b0 += pd.Timedelta(days=days)
+
+
+def fixtures(tid: int, start: str, end: str) -> list[dict]:
+    """A tournament's fixtures between two dates (tournamentId lifts the 10-day range cap).
+    Blocks that ended more than two days ago are cached; the current one is re-read."""
+    t0, t1 = pd.Timestamp(start), pd.Timestamp(end)
+    today = pd.Timestamp.now(tz="UTC").tz_localize(None).normalize()
+    out = []
+    for b0, b1 in _blocks(t0, t1):
+        params = {"tournamentId": tid, "from": f"{b0:%Y-%m-%d}", "to": f"{b1:%Y-%m-%d}"}
+        path = RAW / str(tid) / "fixtures" / f"{b0:%Y%m%d}_{b1:%Y%m%d}.json"
+        if b1 < today - pd.Timedelta(days=2):
+            out += _cached(path, lambda p=params: _get_json("/fixtures", p)) or []
+        elif b0 <= today:
+            out += _get_json("/fixtures", params) or []
     seen, uniq = set(), []
     for f in out:
-        if f["fixtureId"] not in seen:
+        d = _start(f).tz_convert(None).normalize() if f.get("startTime") else None
+        if f.get("fixtureId") and f["fixtureId"] not in seen and d is not None and t0 <= d <= t1:
             seen.add(f["fixtureId"])
             uniq.append(f)
     return uniq
 
 
-def _slim_clv(data: dict, totals_ids: set) -> dict:
-    """Keep fixture meta + full-game totals/spread outcomes only (the full feed is ~100x larger)."""
-    keep = {}
-    for book, odds in (data.get("odds") or {}).items():
-        sel = {k: v for k, v in odds.items() if int(k.split(":")[2]) in totals_ids}
-        if sel:
-            keep[book] = sel
-    return {**{k: v for k, v in data.items() if k != "odds"}, "odds": keep}
+def _finished(f: dict, now: pd.Timestamp) -> bool:
+    """Started more than 4 hours ago and not cancelled (statusId 3)."""
+    return _start(f) < now - pd.Timedelta(hours=4) and f.get("statusId") != 3
 
 
-def fetch(name: str, start: str, end: str, books=None) -> int:
-    """Opening/closing prices (OLV/CLV) for every finished fixture in [start, end]. Resumable."""
-    tid = tournament_id(name)
+def _slim(data: dict, keep: set) -> dict:
+    """Keep full-game totals/spread/moneyline markets only (the full feed is far larger)."""
+    books = {}
+    for slug, bd in (data.get("bookmakers") or {}).items():
+        mk = {mid: md for mid, md in (bd.get("markets") or {}).items() if not keep or int(mid) in keep}
+        if mk:
+            books[slug] = {"markets": mk}
+    return {"fixtureId": data.get("fixtureId"), "bookmakers": books}
+
+
+def history(f: dict, tid: int, keep: set, books: str = BOOKS):
+    """Full price timelines for one finished fixture (one request), cached with its fixture meta."""
+    path = RAW / str(tid) / "hist" / f"{f['fixtureId']}.json"
+    if path.exists():
+        return json.loads(path.read_text())
+    data = _get_json("/historical-odds", {"fixtureId": f["fixtureId"], "bookmakers": books})
+    slim = {**_slim(data or {}, keep), "_fixture": {k: f.get(k) for k in (
+        "fixtureId", "startTime", "participant1Name", "participant2Name", "statusId")}, "_tid": tid}
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(slim))
+    return slim
+
+
+def _keep_ids(M: pd.DataFrame) -> set:
+    return set(M[M.full_game & M.kind.isin(["totals", "spreads", "moneyline"])].market_id)
+
+
+def seasons_to_cover(first: str = FIRST_SEASON_START):
+    """(start, end) of each season (20 Sep - 5 Jun: 9 fixture-list windows), newest first."""
+    now = pd.Timestamp.now(tz="UTC").tz_localize(None).normalize()
+    y = now.year if now.month >= 7 else now.year - 1
+    out = []
+    while pd.Timestamp(f"{y}-09-20") >= pd.Timestamp(first):
+        end = min(pd.Timestamp(f"{y + 1}-06-05"), now)
+        if end > pd.Timestamp(f"{y}-09-20"):
+            out.append((f"{y}-09-20", end.strftime("%Y-%m-%d")))
+        y -= 1
+    return out
+
+
+def update(names=("euroleague", "eurocup"), first: str = FIRST_SEASON_START, books: str = BOOKS) -> dict:
+    """Spend the remaining monthly budget: per season (newest first), list the fixtures, then pull
+    the history of finished games, newest first. Resumable; stops cleanly at the budget."""
     M = markets()
-    keep_ids = set(M[M.market_type.isin(["totals", "spreads"]) & ~M.player_prop
-                     & M.period.isin(["result", "fulltime"])].outcome_id)
-    books = ",".join(books or BOOKS)
-    n = 0
-    for f in fixtures(tid, start, end):
-        if (f.get("status") or {}).get("statusId") != FINISHED:
-            continue
-        path = RAW / str(tid) / "clv" / f"{f['fixtureId']}.json"
-        if path.exists():
-            continue
-        data = _get_json("/fixtures/odds/clv", {"fixtureId": f["fixtureId"], "bookmakers": books})
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(_slim_clv(data, keep_ids)))
-        n += 1
-    return n
+    keep = _keep_ids(M)
+    now = pd.Timestamp.now(tz="UTC")
+    got = {n: 0 for n in names}
+    try:
+        for start, end in seasons_to_cover(first):
+            for n in names:
+                tid = tournament_id(n)
+                fx = [f for f in fixtures(tid, start, end) if _finished(f, now)]
+                for f in sorted(fx, key=_start, reverse=True):
+                    if not (RAW / str(tid) / "hist" / f"{f['fixtureId']}.json").exists():
+                        history(f, tid, keep, books)
+                        got[n] += 1
+    except BudgetExhausted as e:
+        print(f"stopped: {e}")
+    return got
 
 
 # ---------------------------------------------------------------- parsing
-def ladder(name: str) -> pd.DataFrame:
-    """Long table: fixture x book x line x side with opening and closing price."""
-    tid = tournament_id(name)
-    M = markets().set_index("outcome_id")
+def _ms(ts) -> float:
+    return pd.Timestamp(ts).value / 1e6
+
+
+def ladder() -> pd.DataFrame:
+    """Long table: fixture x book x line x side with opening and closing price (full-game totals)."""
+    M = markets()
+    tot = M[(M.kind == "totals") & M.full_game & M.side.isin(["over", "under"])]
+    tot = tot.drop_duplicates("outcome_id").set_index("outcome_id")
     rows = []
-    for p in sorted((RAW / str(tid) / "clv").glob("*.json")):
+    for p in sorted(RAW.glob("*/hist/*.json")):
         d = json.loads(p.read_text())
-        part, sc = d.get("participants") or {}, ((d.get("scores") or {}).get("result") or {})
-        meta = {"fixture_id": d["fixtureId"], "start": pd.Timestamp(d["startTime"], unit="s", tz="UTC"),
-                "home_name": part.get("participant1Name"), "away_name": part.get("participant2Name"),
-                "home_pts": sc.get("participant1Score"), "away_pts": sc.get("participant2Score")}
-        for book, odds in (d.get("odds") or {}).items():
-            for odds_id, v in odds.items():
-                oid = int(odds_id.split(":")[2])
-                if oid not in M.index or M.at[oid, "market_type"] != "totals":
-                    continue
-                o, c = v.get("olv") or {}, v.get("clv") or {}
-                rows.append({**meta, "book": book, "period": M.at[oid, "period"], "line": float(M.at[oid, "line"]),
-                             "side": M.at[oid, "side"], "open_price": o.get("price"), "open_ms": o.get("changedAt"),
-                             "close_price": c.get("price"), "close_ms": c.get("changedAt"),
-                             "close_active": c.get("active", True)})
+        f = d.get("_fixture") or {}
+        start = _start(f)
+        meta = {"fixture_id": f.get("fixtureId"), "tid": d.get("_tid"), "start": start,
+                "home_name": f.get("participant1Name"), "away_name": f.get("participant2Name")}
+        for book, bd in (d.get("bookmakers") or {}).items():
+            for md in (bd.get("markets") or {}).values():
+                for oid, od in (md.get("outcomes") or {}).items():
+                    if int(oid) not in tot.index:
+                        continue
+                    snaps = sorted((s for s in ((od.get("players") or {}).get("0") or []) if s.get("price")),
+                                   key=lambda s: s["createdAt"])
+                    pre = [s for s in snaps if pd.Timestamp(s["createdAt"]) < start]
+                    live = [s for s in pre if s.get("active", True) is not False]
+                    if not live:
+                        continue
+                    o, c = live[0], pre[-1]
+                    m = tot.loc[int(oid)]
+                    rows.append({**meta, "book": book, "incl_ot": bool(m.incl_ot), "line": m.line, "side": m.side,
+                                 "open_price": o["price"], "open_ms": _ms(o["createdAt"]),
+                                 "close_price": c["price"], "close_ms": _ms(c["createdAt"]),
+                                 "close_active": c.get("active", True) is not False})
     L = pd.DataFrame(rows)
     if L.empty:
         return L
-    # full-game totals including overtime ('result'); 'fulltime' only where a fixture has no 'result' market
-    has_result = L[L.period == "result"].fixture_id.unique()
-    L = L[(L.period == "result") | ~L.fixture_id.isin(has_result)]
-    return L.drop(columns="period")
+    # totals including overtime where the book prices them; regulation-only lines otherwise
+    has_ot = L[L.incl_ot].groupby(["fixture_id", "book"]).size()
+    key = pd.MultiIndex.from_frame(L[["fixture_id", "book"]])
+    return L[L.incl_ot | ~key.isin(has_ot.index)].drop(columns="incl_ot").reset_index(drop=True)
 
 
 def _two_way(L: pd.DataFrame, which: str) -> pd.DataFrame:
@@ -206,7 +324,7 @@ def _two_way(L: pd.DataFrame, which: str) -> pd.DataFrame:
 
 def main_lines(L: pd.DataFrame) -> pd.DataFrame:
     """Per fixture x book: opening main line = the earliest-posted near-balanced line;
-    closing main line = the most balanced line still active at the close."""
+    closing main line = the most balanced line still offered at the close."""
     o = _two_way(L, "open")
     o = o[o.imb < 0.08]
     first = o.groupby(["fixture_id", "book"]).first_ms.transform("min")
@@ -221,76 +339,111 @@ def main_lines(L: pd.DataFrame) -> pd.DataFrame:
     return o.merge(c, on=["fixture_id", "book"], how="outer")
 
 
+_STOP = {"basketball", "basket", "club", "the", "bc", "kk", "bk", "sad", "team", "fc", "as", "cb"}
+
+
+def _tokens(s) -> list[str]:
+    s = unicodedata.normalize("NFKD", str(s or "")).encode("ascii", "ignore").decode().lower()
+    return [t for t in re.findall(r"[a-z0-9]{3,}", s) if t not in _STOP]
+
+
+def name_sim(a, b) -> float:
+    """Share of the shorter name's tokens found (fuzzily) in the other: 'Olimpia Milano' vs
+    'EA7 EMPORIO ARMANI MILAN' -> 0.5, 'Baskonia' vs 'KOSNER BASKONIA VITORIA-GASTEIZ' -> 1."""
+    A, B = _tokens(a), _tokens(b)
+    if not A or not B:
+        return 0.0
+    small, big = (A, B) if len(A) <= len(B) else (B, A)
+    hit = sum(any(difflib.SequenceMatcher(None, t, u).ratio() >= 0.8 for u in big) for t in small)
+    return hit / len(small)
+
+
 def match_official(F: pd.DataFrame, G: pd.DataFrame) -> pd.DataFrame:
-    """Attach official game_key by date (UTC start vs local date, +-1 day) and exact final score."""
+    """Attach the official game_key: same date (+-1 day) and the best home+away name match."""
     G = G.assign(d0=pd.to_datetime(G.date).dt.normalize())
-    out = []
+    keys, scores = [], []
     for f in F.itertuples(index=False):
         d = f.start.tz_convert(None).normalize()
-        cand = G[(G.d0 >= d - pd.Timedelta(days=1)) & (G.d0 <= d + pd.Timedelta(days=1))
-                 & (G.home_pts == f.home_pts) & (G.away_pts == f.away_pts)]
-        out.append(cand.game_key.iloc[0] if len(cand) == 1 else None)
-    return F.assign(game_key=out)
+        cand = G[(G.d0 >= d - pd.Timedelta(days=1)) & (G.d0 <= d + pd.Timedelta(days=1))]
+        best, bs = None, 0.0
+        for g in cand.itertuples(index=False):
+            s = min(name_sim(f.home_name, g.home_name), name_sim(f.away_name, g.away_name))
+            if s > bs:
+                best, bs = g.game_key, s
+        keys.append(best if bs >= 0.5 else None)
+        scores.append(bs)
+    return F.assign(game_key=keys, match_score=scores)
 
 
-def parse(name: str, games: pd.DataFrame | None = None):
-    L = ladder(name)
+def parse(games: pd.DataFrame | None = None):
+    L = ladder()
     if L.empty:
-        raise SystemExit("no cached odds yet; run fetch first")
+        raise SystemExit("no cached odds yet; run `python -m data.oddspapi update` first")
     ML = main_lines(L)
-    fx = L.groupby("fixture_id")[["start", "home_name", "away_name", "home_pts", "away_pts"]].first().reset_index()
+    fx = L.groupby("fixture_id")[["tid", "start", "home_name", "away_name"]].first().reset_index()
     if games is not None:
         fx = match_official(fx, games)
     PROC.mkdir(parents=True, exist_ok=True)
-    L.to_parquet(PROC / f"odds_{name}_ladder.parquet", index=False)
-    ML.merge(fx, on="fixture_id").to_parquet(PROC / f"odds_{name}.parquet", index=False)
-    return L, ML.merge(fx, on="fixture_id")
+    F = ML.merge(fx, on="fixture_id")
+    L.to_parquet(PROC / "odds_euro_ladder.parquet", index=False)
+    F.to_parquet(PROC / "odds_euro.parquet", index=False)
+    return L, F
 
 
-# ---------------------------------------------------------------- probe
+# ---------------------------------------------------------------- probe / plan
 def probe() -> None:
-    """Checks the key and reports, per season, whether finished EuroLeague/EuroCup fixtures carry
-    totals odds (one fixture list + one CLV call per competition and season: ~40 requests)."""
-    books = _get_json("/bookmakers", {})
-    slugs = {b["slug"] for b in books}
-    print(f"key OK: {len(books)} bookmakers visible; default set present: {[b for b in BOOKS if b in slugs]}")
-    T = _get_json("/tournaments", {"sportId": BASKETBALL})
-    hits = [t for t in T if any(s in str(t.get("tournamentSlug", "")) for s in ("euroleague", "eurocup"))]
-    print("matching tournaments:", [(t["tournamentId"], t["tournamentSlug"]) for t in hits])
-    euro = []
-    for name in ("euroleague", "eurocup"):                  # the men's competition: shortest matching slug
-        cand = sorted((t for t in hits if name in str(t["tournamentSlug"])), key=lambda t: len(t["tournamentSlug"]))
-        euro += cand[:1]
+    """Key check, the basketball totals catalogue, and whether finished EuroLeague games carry
+    totals timelines in Nov 2024, Nov 2025 and the last ten days (at most 8 requests)."""
     M = markets()
-    tot = set(M[(M.market_type == "totals") & ~M.player_prop].outcome_id)
-    for t in euro:
-        for y in range(2018, pd.Timestamp.now().year + 1):
-            fx = _get_json("/fixtures", {"tournamentId": t["tournamentId"],
-                                         "startTimeFrom": int(pd.Timestamp(f"{y}-11-01", tz="UTC").timestamp()),
-                                         "startTimeTo": int(pd.Timestamp(f"{y}-11-30", tz="UTC").timestamp())})
-            fin = [f for f in fx if (f.get("status") or {}).get("statusId") == FINISHED]
-            if not fin:
-                print(f"  {t['tournamentSlug']} Nov {y}: no finished fixtures listed")
-                continue
-            d = _get_json("/fixtures/odds/clv", {"fixtureId": fin[0]["fixtureId"], "bookmakers": ",".join(BOOKS)})
-            n = {b: sum(int(k.split(":")[2]) in tot for k in o) for b, o in (d.get("odds") or {}).items()}
-            print(f"  {t['tournamentSlug']} Nov {y}: {len(fin)} finished fixtures; totals prices per book on one: {n}")
+    tot = M[(M.kind == "totals") & M.full_game]
+    print(f"key OK; {M.market_id.nunique()} basketball markets, {tot.market_id.nunique()} full-game totals lines "
+          f"(e.g. {sorted(tot.line.dropna().unique())[:3]} ...)")
+    print("EuroCup tournament id:", tournament_id("eurocup"))
+    keep = _keep_ids(M)
+    now = pd.Timestamp.now(tz="UTC")
+    recent = (now - pd.Timedelta(days=10)).strftime("%Y-%m-%d")
+    for start in ("2024-11-01", "2025-11-01", recent):
+        end = (pd.Timestamp(start) + pd.Timedelta(days=9)).strftime("%Y-%m-%d")
+        fx = [f for f in fixtures(138, start, end) if _finished(f, now)]
+        if not fx:
+            print(f"  EuroLeague {start}: no finished fixtures listed")
+            continue
+        h = history(fx[0], 138, keep)
+        n = {b: sum(len(o.get("players", {}).get("0") or []) for md in bd["markets"].values()
+                    for oid, o in md["outcomes"].items() if int(oid) in set(tot.outcome_id))
+             for b, bd in h["bookmakers"].items()}
+        print(f"  EuroLeague {start}: {len(fx)} finished fixtures; totals price points per book on one game: {n}")
+    print(f"requests used this month: {used()} of {budget()}")
+
+
+def plan(first: str = FIRST_SEASON_START) -> None:
+    """Requests still needed for the backfill, using official game counts (no API calls)."""
+    from data.euroleague import parse as euro_parse
+    codes = [f"{c}{y}" for c in ("E", "U") for y in range(int(first[:4]), pd.Timestamp.now().year + 1)]
+    G, _ = euro_parse(codes)
+    have = len(list(RAW.glob("*/hist/*.json")))
+    lists = 2 * 9 * len(seasons_to_cover(first)) - len(list(RAW.glob("*/fixtures/*.json")))
+    need = max(len(G) - have, 0) + max(lists, 0)
+    print(f"games since {first}: {len(G)} (EuroLeague {int((G.competition == 'euroleague').sum())}, "
+          f"EuroCup {int((G.competition == 'eurocup').sum())}); already cached: {have}")
+    print(f"requests needed: ~{need} (incl. ~{max(lists, 0)} fixture lists); left this month: "
+          f"{budget() - used()}; about {need / budget():.1f} months at {budget()}/month")
 
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "probe"
     if cmd == "probe":
         probe()
-    elif cmd == "fetch":
-        name, start, end = sys.argv[2], sys.argv[3], sys.argv[4]
-        print(f"{name}: fetched {fetch(name, start, end)} new fixtures")
+    elif cmd == "plan":
+        plan()
+    elif cmd == "update":
+        got = update()
+        print(f"fetched {got}; requests used this month: {used()} of {budget()}")
     elif cmd == "parse":
         from data.euroleague import parse as euro_parse
-        name = sys.argv[2]
-        pre = "E" if name == "euroleague" else "U"
-        G, _ = euro_parse([f"{pre}{y}" for y in range(2016, pd.Timestamp.now().year + 1)])
-        L, F = parse(name, G)
-        print(f"{F.fixture_id.nunique()} fixtures, {F.book.nunique()} books, "
-              f"{F.game_key.notna().groupby(F.fixture_id).first().mean():.0%} matched to official games")
+        G, _ = euro_parse([f"{c}{y}" for c in ("E", "U") for y in range(2024, pd.Timestamp.now().year + 1)])
+        L, F = parse(G)
+        m = F.groupby("fixture_id").game_key.first().notna().mean()
+        print(f"{F.fixture_id.nunique()} games, {F.book.nunique()} books, {m:.0%} matched to official games")
     else:
         raise SystemExit(__doc__)

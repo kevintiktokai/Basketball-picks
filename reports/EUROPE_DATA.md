@@ -19,23 +19,49 @@
   several books, including Pinnacle, plus the alternate-line ladders. Our NCAAB edge was
   built on exactly this: stale openers, a market-memory record of each team, and checks
   against the close. Without it, nothing European can be tested or priced honestly.
-* **The best source found is OddsPapi.** Its free key serves, per finished fixture, the
-  opening and closing price of every outcome at every book (Pinnacle and bet365 included).
-  The adapter is built and tested (`data/oddspapi.py`). It needs only a key.
+* **The best free source is OddsPapi's free key.** One request returns a finished game's full
+  price timeline at up to three books (Pinnacle and bet365 included), giving the opening line,
+  the closing line and the alternate ladder. The free tier allows about 200 requests a month,
+  and its history probably starts in 2024 (the company was founded then). Backfilling 2024-26
+  (1,123 games) therefore takes about **6 months of free quota**; the current season costs about
+  80 requests a month. The adapter is built for the free API, never exceeds the budget, and is
+  tested offline (`data/oddspapi.py`). It needs only the key.
 
 ## Sources, checked in this session
 
-| source | what it gives | cost / access | status |
-|---|---|---|---|
-| Official EuroLeague API (`api-live.euroleague.net`, `live.euroleague.net`) | results, box scores, quarter scores, referees, venue, attendance, play-by-play; EuroLeague since 2000, EuroCup since 2008 | free, no key | ✅ **in use**: 4,888 games loaded |
-| [OddsPapi](https://oddspapi.io/sports/basketball/euroleague) | per fixture: opening and closing price for every outcome at each book (`/fixtures/odds/clv`), full price timelines (`/fixtures/odds/historical`), live odds; 350+ books incl. Pinnacle, bet365, exchanges; totals ladders | free key ("the free tier reads the same endpoints as the paid one"); 100 history requests/min | ✅ adapter built and tested offline. **History depth unknown until a key is used.** |
-| [The Odds API](https://the-odds-api.com/historical-odds-data/) | snapshots of featured markets (incl. totals) since June 2020, by bookmaker region (e.g. European books) | paid; 10 credits per region per market per snapshot | EuroLeague covered; **EuroCup not in any coverage list found**. Their site was down (HTTP 509) during this session, so pricing is unconfirmed |
-| [Betfair historical data](https://github.com/betfair/historic-data-workbook) | exchange price history (last traded price) | Basic tier is free; needs a Betfair account | basketball coverage not verified |
-| OddsPortal / BetExplorer | EuroLeague results with historical odds back to 1998-99 | pages load odds dynamically | not used: automated collection conflicts with their terms |
-| sportsbookreview.com (our NCAAB/NBA source) | — | — | ❌ no European leagues |
+**Free:**
 
-A full 2020-26 backfill from OddsPapi is about 3,200 fixtures, one request each: roughly
-40 minutes at their rate limit, if the free tier's history reaches that far back.
+| source | what it gives | access | status |
+|---|---|---|---|
+| Official EuroLeague API | results, box scores, quarter scores, referees, venue, attendance, play-by-play; EuroLeague since 2000, EuroCup since 2008 | no key | ✅ **in use**: 4,888 games loaded |
+| [OddsPapi](https://oddspapi.io/sports/basketball/euroleague) free tier (v4 API) | `/historical-odds`: each book's full price timeline per game (≤ 3 books per request), every market incl. totals ladders; Pinnacle, bet365 and 350+ others; live odds | free key; ~200 requests/month ([their figures vary: 200–250](https://oddspapi.io/blog/the-odds-api-free-tier-limits/)); history "from our archive ingestion start date" | ✅ adapter built and tested offline; `probe` measures the real history depth in ≤ 8 requests |
+| [Betfair historical data](https://github.com/betfair/historic-data-workbook), Basic plan | exchange last-traded prices, 1-minute steps, monthly files; basketball sits in the ["Other Sports" files](https://support.developer.betfair.com/hc/en-us/articles/8085210924957-Which-Sports-Are-Included-in-the-Other-Sports-package) | free, needs a Betfair account (not available in every country) | possibly the deepest free history; parser not built until a sample file confirms the basketball market format |
+| [API-Basketball](https://api-sports.io/sports/basketball) | odds from several books | free key, 100 requests/day | EuroLeague odds and how long odds are kept on the free plan are unconfirmed; at best a way to collect current odds |
+
+**Checked and ruled out:**
+
+| source | why not |
+|---|---|
+| [The Odds API](https://the-odds-api.com/historical-odds-data/) | historical odds on paid plans only (EuroLeague since June 2020; no EuroCup found) |
+| odds-api.io, SportsGameOdds | free tiers have no historical odds |
+| [Kaggle "European Basketball & FIBA Betting Odds"](https://www.kaggle.com/datasets/oliviersportsdata/european-basketball-and-fiba-betting-odds) | only a 50-row sample is free; the full set is sold; closing odds only, totals unconfirmed |
+| Public GitHub/Zenodo/Hugging Face datasets | none with EuroLeague odds (e.g. [sportsdb](https://github.com/Sergio20/sportsdb) states that the basketball sources publish no odds) |
+| OddsPortal / BetExplorer | have the history back to 1998-99, but automated collection conflicts with their terms |
+| sportsbookreview.com (our NCAAB/NBA source) | no European leagues |
+
+### The free budget, in practice
+
+| item | requests |
+|---|---|
+| `probe` (key, catalogue, depth check) | ≤ 8, once |
+| fixture lists (9 per season per competition, cached) | ~54, once |
+| backfill 2024-25 and 2025-26 (EuroLeague 732 + EuroCup 391 games) | 1,123, one per game |
+| current season, as games finish | ~80 a month |
+
+At 200 a month that is about 6 months to cover 2024-26 while keeping the current season
+complete. `python -m data.oddspapi update` spends whatever is left of the month, newest games
+first, and stops at the budget. Each month the quota is unused, ~200 games of history are
+not collected.
 
 ## What the free data showed (details: [`euro_info_study.md`](euro_info_study.md))
 
@@ -61,14 +87,16 @@ A full 2020-26 backfill from OddsPapi is about 3,200 fixtures, one request each:
 ## What is needed from you
 
 * **A free OddsPapi key** (sign up at oddspapi.io). Add it in this cloud environment's
-  settings (environment menu in the session title bar → *Edit*). Use *Network secrets*
-  (*API credentials* in older apps) if that section is offered; otherwise add an environment
-  variable named **`ODDSPAPI_KEY`**. A new session picks it up. Please don't paste the key
+  settings (environment menu in the session title bar → *Edit*) under the name
+  **`ODDSPAPI_KEY`**: *Network secrets* (*API credentials* in older apps) if offered,
+  otherwise an environment variable. A new session picks it up. Please don't paste the key
   into the chat.
-* Then: `python -m data.oddspapi probe`. This shows which seasons carry odds, in about 40
-  requests (under a minute). If ≥ 3 seasons are available, the backfill and the pre-registered European test
-  follow. If history is shallow, the same key collects live odds daily from now on.
-* Optional cross-check: one month of The Odds API to backfill EuroLeague 2020-26 totals.
+* Then: `probe` (≤ 8 requests) shows how far back the free history goes; `update` once a month
+  spends that month's quota; `parse` builds the opening/closing/ladder tables.
+* Optional and also free: a Betfair account would unlock exchange price files that may reach
+  back much further. Send one downloaded basketball file and the parser will be built against it.
+* With two seasons the protocol is: develop on 2024-25, test once on 2025-26, then the forward
+  ledger. First question to answer: do soft-book openers beat Pinnacle's fair price often enough?
 
 ## Disclosure: a bug found along the way
 
