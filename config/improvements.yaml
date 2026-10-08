@@ -81,3 +81,27 @@ study_2:
     The 2021-26 seasons were used before (stage-2b test, stage-3 re-analysis) and the bet diagnostics
     showed the locked engine's 2021-26 bets split by month and by neutral site; stage-by-stage
     results for 2021-26 have not been computed.
+
+# ---------------------------------------------------------------------------------------------
+study_3:
+  name: shooting_luck_neutral_ratings
+  status: pre-registered 2026-10-08, after study 2 stopped (2021-26 still sealed), before any fit below
+  motivation: >
+    A team's 3-point and free-throw percentages, and above all its opponents' percentages, swing
+    from game to game far more than true ability does (opponent 3P% and FT% are close to pure
+    luck). The engine's ratings are built on points scored, so a team that has allowed hot or cold
+    shooting carries that luck into its next forecast, and so may the opening line. A second set of
+    ratings built on "shooting-neutral" points (each game re-scored with league-average 3P% and FT%,
+    shot volumes kept) separates repeatable scoring from shooting luck; the model learns how much
+    weight each deserves.
+  definition: >
+    pts_neutral = 2 x (FGM - 3PM) + 3 x 3PA x L3 + FTA x LFT, where L3 and LFT are the league's
+    season-to-date 3P% and FT% up to the day before (previous season's rate until 5,000 attempts).
+    Games without a box score keep their real points. Same DailyRatings settings as the engine.
+    Features: x_pts_n = neutral points ratings total - opener; x_eff_n = neutral efficiency total - opener.
+  candidates:
+    L1_shooting_neutral: "locked v3 mean features + x_pts_n + x_eff_n (variance model, calibrator, products unchanged)"
+  selection_seasons: "2011-12 .. 2020-21 (eras dev 2011-18 and holdout 2018-21)"
+  selection_rule: "as study_2: lower log loss AND higher matched-volume ROI at -110 than the locked engine in BOTH eras"
+  confirmation: "as study_2: one run on the sealed 2021-26 seasons; lower log loss and matched ROI not lower at -110 and at the best real price"
+  disclosure: "Same 2021-26 history as study_2. Only one candidate, to keep the number of tests low."
