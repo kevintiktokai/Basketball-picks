@@ -1,0 +1,113 @@
+{
+  "experiment": "cards_extrapolation",
+  "timestamp_utc": "20261008T114850Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "2f02459",
+  "params": {
+    "kelly": 0.125,
+    "n_sim": 10000,
+    "seed": 20261008,
+    "season_cards": 133
+  },
+  "params_hash": "27ea258db59d",
+  "results": {
+    "totals": {
+      "cards": 1897,
+      "won_pct": 0.4628360569319979,
+      "avg_odds": 2.562472645032317,
+      "units_flat": 335.54270116954535,
+      "units_kelly": 590.0732506091811,
+      "roi_flat": 0.176880706995016,
+      "max_dd_flat": 17.8312001773413,
+      "max_dd_kelly": 28.088051338404284,
+      "longest_losing_run": 11,
+      "slates": 1983
+    },
+    "test": {
+      "cards": 664,
+      "won_pct": 0.4683734939759036,
+      "avg_odds": 2.5708610602187454,
+      "units_flat": 132.30016114634293,
+      "roi_flat": 0.19924723064208272,
+      "leg_win": 0.6762048192771084,
+      "alt_leg_share": 0.8930722891566265
+    },
+    "scenarios": [
+      {
+        "scenario": "as tested: alternates priced at a 4.5% margin off the opener",
+        "flat $10: median": 1262.746361964337,
+        "flat: 10th-90th": [
+          1073.6892485678334,
+          1454.5507107049539
+        ],
+        "flat: losing season": 0.0345,
+        "1/8 Kelly: median": 1376.471966503652,
+        "Kelly: 10th-90th": [
+          1065.1889512812213,
+          1767.3495693872587
+        ],
+        "Kelly: losing season": 0.0498
+      },
+      {
+        "scenario": "alternates priced worse: 8% margin",
+        "flat $10: median": 1195.69085827632,
+        "flat: 10th-90th": [
+          1002.3112832792049,
+          1402.8229858393133
+        ],
+        "flat: losing season": 0.0973,
+        "1/8 Kelly: median": 1110.6884930212018,
+        "Kelly: 10th-90th": [
+          923.8047592587291,
+          1337.9741688198872
+        ],
+        "Kelly: losing season": 0.2374
+      },
+      {
+        "scenario": "alternates priced off the closing line",
+        "flat $10: median": 1115.5502785321933,
+        "flat: 10th-90th": [
+          939.0961169380748,
+          1287.6660859824551
+        ],
+        "flat: losing season": 0.2006,
+        "1/8 Kelly: median": 1143.7263633082414,
+        "Kelly: 10th-90th": [
+          954.1096801388114,
+          1384.9031270298808
+        ],
+        "Kelly: losing season": 0.1693
+      },
+      {
+        "scenario": "edge cut in half (win rate halfway to break-even)",
+        "flat $10: median": 1137.4973175836044,
+        "flat: 10th-90th": [
+          950.9741633122809,
+          1327.5085770328405
+        ],
+        "flat: losing season": 0.1754,
+        "1/8 Kelly: median": 1136.7226938785657,
+        "Kelly: 10th-90th": [
+          883.0953578195783,
+          1470.0487581151615
+        ],
+        "Kelly: losing season": 0.2529
+      },
+      {
+        "scenario": "no skill: legs win at the book's fair odds",
+        "flat $10: median": 883.2201649468383,
+        "flat: 10th-90th": [
+          705.2020366618033,
+          1066.1094485570231
+        ],
+        "flat: losing season": 0.7928,
+        "1/8 Kelly: median": 857.3165046136301,
+        "Kelly: 10th-90th": [
+          677.7583981699103,
+          1092.2473531807018
+        ],
+        "Kelly: losing season": 0.7923
+      }
+    ]
+  }
+}
