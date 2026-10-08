@@ -105,3 +105,28 @@ study_3:
   selection_rule: "as study_2: lower log loss AND higher matched-volume ROI at -110 than the locked engine in BOTH eras"
   confirmation: "as study_2: one run on the sealed 2021-26 seasons; lower log loss and matched ROI not lower at -110 and at the best real price"
   disclosure: "Same 2021-26 history as study_2. Only one candidate, to keep the number of tests low."
+
+# ---------------------------------------------------------------------------------------------
+study_4:
+  name: roster_continuity
+  status: pre-registered 2026-10-08, before any fit below (study 3 still running; its result unseen)
+  motivation: >
+    The engine's early-season ratings lean on last season's games, but college rosters turn over:
+    the median team had about 55-60% of last season's minutes back before 2021 and only 26% in
+    2025-26 (transfer portal), with incoming transfers worth about 20% of a team's minutes. The
+    market's preseason numbers use roster information the engine does not have. Continuity tells
+    the model when last season's ratings deserve less trust (and the forecast more uncertainty).
+  data: "ESPN player box scores via hoopR-mbb-data, commit 13b41edecaf52edc704ef6966eb5ada0bb4167d5 (data/ncaab_players.py)"
+  definition: >
+    data/ncaab_continuity.py, point in time: cont = share of the team's minutes last season played by
+    players who have already appeared (minutes > 0) for it this season; xfer = last-season minutes of
+    those players for other teams, as a share of the team's own last-season minutes.
+    Game features: cont_avg and xfer_avg (mean of the two teams), lowcont = 1 - cont_avg,
+    x_pts_lowcont = x_pts x lowcont.
+  candidates:
+    R1_continuity: "locked v3 + mean features [cont_avg, xfer_avg, x_pts_lowcont] + variance feature [lowcont]"
+  selection_seasons: "2011-12 .. 2020-21 (eras dev 2011-18 and holdout 2018-21)"
+  selection_rule: "as study_2: lower log loss AND higher matched-volume ROI at -110 than the locked engine in BOTH eras"
+  confirmation: "as study_2, on the sealed 2021-26 seasons, run once"
+  secondary: "early-season games (a team with < 6 games) reported separately; not part of the rule"
+  disclosure: "Season-level medians of cont and xfer were looked at (no outcomes). If study 3 also reaches its confirmation, 2021-26 is used twice; both uses are reported."
