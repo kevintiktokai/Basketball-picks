@@ -1,0 +1,206 @@
+{
+  "experiment": "stage3_wnba_test",
+  "timestamp_utc": "20261008T090100Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "cd565e4",
+  "params": {
+    "lock_wnba": {
+      "comment": "LOCKED WNBA opener engine, chosen by the pre-stated rule (best pooled development log-loss gain at the real opener, 2021-22) and committed BEFORE the 2023-26 WNBA test is evaluated.",
+      "variant": "W1_same_as_ncaab",
+      "model": {
+        "mean_feats": [
+          "x_pts",
+          "x_eff",
+          "early",
+          "log_games",
+          "abs_spread",
+          "neutral_i",
+          "line_rel",
+          "x_poss",
+          "vol_sum",
+          "mkt_bias_sum",
+          "open_bias_sum",
+          "move_hist_sum",
+          "rest_min",
+          "weekend",
+          "march",
+          "log_slate",
+          "lg_drift",
+          "m_efg",
+          "m_tpar",
+          "m_ftr",
+          "m_orb",
+          "m_tovr",
+          "m_pace"
+        ],
+        "var_feats": [
+          "line_rel",
+          "x_poss",
+          "vol_sum",
+          "abs_spread",
+          "early",
+          "log_games",
+          "neutral_i",
+          "log_slate",
+          "m_tpar",
+          "m_pace",
+          "m_ftr"
+        ],
+        "kind": "ridge",
+        "shape": "normal",
+        "alpha": 50.0,
+        "min_games": 3,
+        "train_decay": 0.6,
+        "calib_decay": 0.6
+      },
+      "ratings": {
+        "half_life_days": 45,
+        "prev_season_weight": 0.15,
+        "ridge": 3.0,
+        "venue_tempo": true
+      },
+      "dev_evidence": {
+        "ll_gain_x1e4": {
+          "W1_same_as_ncaab": -145.5,
+          "W3_no_style": -157.6
+        }
+      },
+      "products": "config/stage3_locked.yaml (same as NCAAB and NBA)",
+      "locked_at_revision": "cfb04a0"
+    },
+    "lock": {
+      "engine": "v3",
+      "products": {
+        "target_card": {
+          "objective": "joint",
+          "min_combined_odds": 2.5,
+          "leg_odds_band": [
+            1.4,
+            1.9
+          ],
+          "release_gate": "conservative EV > 0",
+          "alt_price_margin": 0.045,
+          "alt_price_reference": "open",
+          "alt_ladder": "median"
+        },
+        "main_line_double": {
+          "objective": "ev",
+          "legs": "best book's opening number at its REAL price",
+          "min_combined_odds": 2.5,
+          "release_gate": "conservative EV > 0"
+        }
+      },
+      "dev_results_ncaab_2018_21": {
+        "target_card": {
+          "cards": 363,
+          "hit": 0.463,
+          "avg_odds": 2.548,
+          "roi": 0.167,
+          "roi_ci95": [
+            0.039,
+            0.298
+          ]
+        },
+        "target_card_close_priced": {
+          "roi": -0.027
+        }
+      },
+      "locked_at_revision": "0c1130d"
+    }
+  },
+  "params_hash": "590ee55ada16",
+  "results": {
+    "pooled": [
+      {
+        "product": "TARGET CARD (locked: ~1.6 legs, >=2.5, max win prob)",
+        "season": "POOLED",
+        "cards": "302",
+        "pct_slates": "0.7401960784313726",
+        "hit": "0.23841059602649006",
+        "hit_ci95": "(np.float64(0.19382711646802397), np.float64(0.2895655940069409))",
+        "avg_odds": "3.5832202716858643",
+        "breakeven": "0.2804738340632173",
+        "model_hit": "0.30209977462667315",
+        "leg_win": "0.49337748344370863",
+        "leg_p": "0.5481408983313607",
+        "roi": "-0.14031540136123793",
+        "roi_ci95": "(np.float64(-0.31539383281714056), np.float64(0.033942575746370635))",
+        "units": "-42.375251211093854",
+        "max_dd": "66.0911459033116",
+        "losing_run": "19"
+      },
+      {
+        "product": "  sensitivity: alternate margin 8%",
+        "season": "POOLED",
+        "cards": "294",
+        "pct_slates": "0.7205882352941176",
+        "hit": "0.22789115646258504",
+        "hit_ci95": "(np.float64(0.18363233159214049), np.float64(0.2791693724008545))",
+        "avg_odds": "3.617331991113116",
+        "breakeven": "0.27681134845966326",
+        "model_hit": "0.2989662393425291",
+        "leg_win": "0.48299319727891155",
+        "leg_p": "0.5455966560342342",
+        "roi": "-0.17848595433696468",
+        "roi_ci95": "(np.float64(-0.35182112054924203), np.float64(-0.00032269197452387236))",
+        "units": "-52.47487057506761",
+        "max_dd": "76.48483772664652",
+        "losing_run": "19"
+      },
+      {
+        "product": "  stress: alternates priced off the CLOSE",
+        "season": "POOLED",
+        "cards": "302",
+        "pct_slates": "0.7401960784313726",
+        "hit": "0.23841059602649006",
+        "hit_ci95": "(np.float64(0.19382711646802397), np.float64(0.2895655940069409))",
+        "avg_odds": "3.587507635275558",
+        "breakeven": "0.27999043744758007",
+        "model_hit": "0.30209977462667315",
+        "leg_win": "0.49337748344370863",
+        "leg_p": "0.5481408983313607",
+        "roi": "-0.14006636724135202",
+        "roi_ci95": "(np.float64(-0.31441128979031857), np.float64(0.034545427564476566))",
+        "units": "-42.30004290688831",
+        "max_dd": "66.0911459033116",
+        "losing_run": "19"
+      },
+      {
+        "product": "  variant: alternates shopped at best book",
+        "season": "POOLED",
+        "cards": "311",
+        "pct_slates": "0.7622549019607843",
+        "hit": "0.2861736334405145",
+        "hit_ci95": "(np.float64(0.23878920045593266), np.float64(0.33877615304246145))",
+        "avg_odds": "3.24015830420078",
+        "breakeven": "0.3175377402218381",
+        "model_hit": "0.347668326090736",
+        "leg_win": "0.5289389067524116",
+        "leg_p": "0.586357526313336",
+        "roi": "-0.0818337770255606",
+        "roi_ci95": "(np.float64(-0.24839623434619576), np.float64(0.0848022779926164))",
+        "units": "-25.45030465494935",
+        "max_dd": "57.0547094317108",
+        "losing_run": "11"
+      },
+      {
+        "product": "MAIN-LINE DOUBLE (real prices only)",
+        "season": "POOLED",
+        "cards": "118",
+        "pct_slates": "0.28921568627450983",
+        "hit": "0.22033898305084745",
+        "hit_ci95": "(np.float64(0.15503376394311624), np.float64(0.30327932452584666))",
+        "avg_odds": "3.63906217398798",
+        "breakeven": "0.2748427995481277",
+        "model_hit": "0.33640772857399354",
+        "leg_win": "0.4957627118644068",
+        "leg_p": "0.5794370151623988",
+        "roi": "-0.19902743215438087",
+        "roi_ci95": "(np.float64(-0.44808679811550867), np.float64(0.07536424452978663))",
+        "units": "-23.485236994216944",
+        "max_dd": "36.156527299270515",
+        "losing_run": "15"
+      }
+    ]
+  }
+}
