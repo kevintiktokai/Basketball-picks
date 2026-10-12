@@ -37,11 +37,12 @@ def decision_times(T: pd.DataFrame, which: str) -> pd.Series:
 
 
 def legs(T: pd.DataFrame, when: pd.Series, CC: pd.DataFrame, final: pd.Series | None,
-         model: pd.Series | None = None) -> pd.DataFrame:
+         model: pd.Series | None = None, whole_lines: bool = False) -> pd.DataFrame:
     """Every soft-book leg in force at `when`, with EV now, CLV at the close, the model's view
-    and (when `final` is given) the result."""
+    and (when `final` is given) the result. whole_lines: see features.euro_market.fair_curve
+    (live use only; every backtest keeps the default)."""
     B = board_at(T, when)
-    C = fair_curve(B)
+    C = fair_curve(B, whole_lines=whole_lines)
     S = B[B.book.isin(SOFT) & ((B.line * 2) % 2 == 1)].copy()
     S = S[S.fixture_id.isin(C.fixture_id) & S.fixture_id.isin(CC.fixture_id)]
     S["p_now"] = fair_p(C, S.fixture_id, S.line, S.side)

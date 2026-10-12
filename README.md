@@ -9,7 +9,7 @@ time **on seasons it has never seen**.
 | 1 | NBA, Overs only, main line | **No.** Each leg needs ~77%; the NBA close tops out near 60%. 0 cards in 2,896 slates. [`RESEARCH_SUMMARY.md`](reports/RESEARCH_SUMMARY.md) |
 | 2 | NCAA men's basketball, Over **or** Under, opening line, **buffered (alternate) lines** | **Yes:** 63.9% 2/2 over 664 never-seen cards, 2021-26 (95% CI 60.1–67.4%). 60.9% on the 2018-21 holdout. [`STAGE2_SUMMARY.md`](reports/STAGE2_SUMMARY.md) |
 | 3 | Odds-targeted cards: combined odds ≥ 2.5 (legs ≈ 1.6), NCAAB + NBA openers, real prices | **NCAAB: 46.8% of cards won at 2.57 avg (break-even 39%), ROI ≈ +20%** (2021-26 re-analysis; +16–17% in development). NBA: no reliable edge. [`STAGE3_SUMMARY.md`](reports/STAGE3_SUMMARY.md) |
-| Europe | EuroLeague + EuroCup: free official data (2016-26, with referees) + free OddsPapi odds timelines (Pinnacle, 1xBet, Betway; archive from 20 Jan 2026, ~200 games a month) | In development (144 games so far): soft-book prices above Pinnacle's fair price beat Pinnacle's close by +2–5% (CLV); card strategy optimised and locked (`config/europe_locked.yaml`); the holdout (21 Mar–Jun 2026) waits for next month's free quota. [`EUROPE_DATA.md`](reports/EUROPE_DATA.md) |
+| Europe | EuroLeague + EuroCup: free official data (2016-26, with referees) + free OddsPapi odds timelines (Pinnacle, 1xBet, Betway; archive from 20 Jan 2026, ~200 games a month) | In development (144 games so far): soft-book prices above Pinnacle's fair price beat Pinnacle's close by +2–5% (CLV); card strategy optimised and locked (`config/europe_locked.yaml`); the holdout (21 Mar–Jun 2026) waits for next month's free quota. **Live picks** for EuroLeague from a free The Odds API key (Pinnacle + soft books), the locked card plus value singles, 0.5% stakes while it is tested: [`EUROPE_LIVE.md`](reports/EUROPE_LIVE.md). [`EUROPE_DATA.md`](reports/EUROPE_DATA.md) |
 | WNBA | 2019-26 openers (sportsbookreview.com, 2-8 books) + ESPN box scores; same engine and locked products as NCAAB/NBA; one-time test 2023-26 | **No edge.** The model is worse than the market-only line (log loss 0.6943 vs 0.6933); 302 target cards won 23.8% vs 28.0% break-even (ROI −14%); legs moved our way only 44% of the time. [`stage3_wnba_test.md`](reports/stage3_wnba_test.md) |
 | Tuning | Bet-level diagnostics of 10,074 NCAAB bets; NCAAB stage map (6 stages, 2011-21); a loss autopsy (why 2,397 bets lost; 25 pre-game ideas screened); six pre-registered model studies (calibration, stage/matchup, shooting luck, roster continuity, closing-line target, venue park factor); staking | No model change survived the seasons it had not seen (the venue park factor passed 2011-21 but failed its 2021-26 check; roster continuity came closest before it), so the locked engine stays. Losses were 97% shooting and pace swings, not repeatable mistakes ([`loss_autopsy.md`](reports/loss_autopsy.md), [`study6_venue.md`](reports/study6_venue.md)). **Staking by edge (1/8 Kelly) earns +1.2 to +2.2 pts more per unit staked** and is now in the CLI (`--product singles`). [`NCAAB_EDGE_ROADMAP.md`](reports/NCAAB_EDGE_ROADMAP.md), [`ncaab_stage_map.md`](reports/ncaab_stage_map.md), [`staking_study.md`](reports/staking_study.md) |
 
@@ -31,6 +31,8 @@ python scripts/predict_cards.py --date 2026-11-20 --product main --record       
 python scripts/predict_cards.py --date 2026-11-20 --product sixty                 # stage-2 60% buffered card
 python scripts/predict_cards.py --date 2026-11-20 --product singles --record      # P >= 55% singles, 1/8-Kelly stakes
 python scripts/predict_cards.py --date 2026-11-20 --slate my_slate.csv   # manual openers
+python scripts/predict_euro.py --update --bankroll 10000 --record     # EuroLeague: card + value singles (THE_ODDS_API_KEY)
+python scripts/grade_euro.py                                         # European results + value against Pinnacle's close
 python scripts/grade_ledger.py                     # forward-test record of recorded cards
 ```
 
@@ -48,7 +50,8 @@ config/       config.yaml (stage 1), stage2.yaml / stage2b.yaml (pre-registratio
               improvements.yaml (pre-registered tuning studies)
 data/         NBA: sources.py, ingest.py · NCAAB: ncaab_ingest.py (SBR archive + ESPN box),
               sbr_live.py (sportsbookreview.com scraper/parser), ncaab_unify.py (ESPN team ids)
-              Europe: euroleague.py (official API: games, box, referees), oddspapi.py (historical odds)
+              Europe: euroleague.py (official API: games, box, referees), oddspapi.py (historical odds),
+              oddsapi.py (live EuroLeague odds, The Odds API)
               WNBA: wnba_unify.py (SBR odds + ESPN/wehoop box scores, preseason excluded)
               NCAAB extras: ncaab_stages.py (season stage), ncaab_players.py + ncaab_continuity.py,
               ncaab_venue.py (venue park factor, high altitude)

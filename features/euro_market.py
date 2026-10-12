@@ -65,11 +65,16 @@ def two_way(B: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame(columns=["fixture_id", "book", "line", "over", "under"])
 
 
-def fair_curve(B: pd.DataFrame, book: str = "pinnacle") -> pd.DataFrame:
+def fair_curve(B: pd.DataFrame, book: str = "pinnacle", whole_lines: bool = False) -> pd.DataFrame:
     """Per fixture: (a, b) with no-vig P(over at line x) = Phi(a - b*x), fitted on the book's
-    half-point lines with both sides offered, plus its main (most balanced) line."""
+    half-point lines with both sides offered, plus its main (most balanced) line.
+    whole_lines=True (live feeds that show only the main line): a fixture whose book offers no
+    half-point line uses its whole-number lines, the push ignored (P conditional on no push)."""
     w = two_way(B[B.book == book])
-    w = w[(w.line * 2) % 2 == 1]                                  # half-point lines: no pushes
+    half = (w.line * 2) % 2 == 1
+    if whole_lines:
+        half = half | ~w.fixture_id.isin(w.fixture_id[half])
+    w = w[half]                                                   # half-point lines: no pushes
     w["p"] = (1 / w.over) / (1 / w.over + 1 / w.under)
     out = []
     for fid, g in w.groupby("fixture_id"):
