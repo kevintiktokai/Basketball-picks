@@ -30,6 +30,7 @@ python scripts/predict_cards.py --date 2026-11-20 --update --record             
 python scripts/predict_cards.py --date 2026-11-20 --product main --record         # main-line double, real prices
 python scripts/predict_cards.py --date 2026-11-20 --product sixty                 # stage-2 60% buffered card
 python scripts/predict_cards.py --date 2026-11-20 --product singles --record      # P >= 55% singles, 1/8-Kelly stakes
+python scripts/predict_cards.py --date 2026-11-20 --product singles --top 2 --record   # only the day's best 2 by value (~60% won, threshold_curve.md)
 python scripts/predict_cards.py --date 2026-11-20 --slate my_slate.csv   # manual openers
 python scripts/predict_euro.py --update --bankroll 10000 --record     # EuroLeague: card + value singles (THE_ODDS_API_KEY)
 python scripts/grade_euro.py                                         # European results + value against Pinnacle's close

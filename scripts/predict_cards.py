@@ -196,6 +196,10 @@ def print_singles(R, a):
         if np.isnan(line):
             line, price, book = r.line, 1 + 100 / 110, None
         rows.append((r, side, line, price, book))
+    if a.top:                                     # reports/threshold_curve.md: the day's best by value at the price
+        rows = sorted(rows, key=lambda x: x[0].p_best * x[3], reverse=True)[:a.top]
+        print(f"Keeping the best {len(rows)} by value at the price (p x price): best 2 a day won 60.2% at the "
+              "best book in 2021-26 (ROI +15%), against 57.9% (+10%) for every qualifying bet.")
     stakes = single_stakes(np.array([x[0].p_best for x in rows]), np.array([x[3] for x in rows]))
     recs = []
     for (r, side, line, price, book), f in zip(rows, stakes):
@@ -228,6 +232,8 @@ def main():
                          "main: main-line double at real prices; sixty: stage-2 60%% buffered card; "
                          "singles: every P >= 55%% single with a 1/8-Kelly stake")
     ap.add_argument("--bankroll", type=float, default=100.0, help="bankroll for the singles stakes (default 100 units)")
+    ap.add_argument("--top", type=int, default=0,
+                    help="singles: keep only the day's best N by value at the best price (0 = every qualifying bet)")
     ap.add_argument("--engine", choices=["v3", "v2"], default="v3",
                     help="v3 (default, recency-adapted, J=0.65) or v2 (stage-2 locked, J=0.625)")
     ap.add_argument("--card-engine", choices=["venue", "locked"], default="venue",
