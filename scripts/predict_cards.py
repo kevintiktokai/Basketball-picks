@@ -76,6 +76,14 @@ TRACK = {
     "main": ["NCAAB 2021-26 re-analysis (book-outlier guard): 35.6% won at avg 3.64, real prices (ROI +29%)"],
 }
 
+SHADOW_LEDGER = Path(__file__).resolve().parents[1] / "reports" / "live_ledger_shadow.csv"
+TRACK_VENUE = {
+    "target": ["With the park factor (study 6), 2021-26 after its one-time check: 48.5% won, ROI +24% vs +20% "
+               "for the locked engine; day-paired gap +4 pts, 95% range -4 to +12 (not confirmed)"],
+    "main": ["With the park factor (study 6), 2021-26 after its one-time check: 36.8% won, ROI +33% vs +29%; "
+             "day-paired gap +4 pts, 95% range -6 to +15 (not confirmed)"],
+}
+
 
 def print_odds_card(R, a):
     from backtest.odds_cards import best_main
@@ -83,7 +91,8 @@ def print_odds_card(R, a):
     F = R["legs"].frame.set_index("game_key")
     title = ("TARGET CARD — combined odds >= 2.5, highest chance both win" if a.product == "target"
              else "MAIN-LINE DOUBLE — opening numbers at real prices")
-    print(BAR + f"\n{title}\nNCAA men's basketball — {a.date} — engine {a.engine}\n" + BAR)
+    eng = a.engine + (" + park factor" if R.get("card_engine") == "venue" else "")
+    print(BAR + f"\n{title}\nNCAA men's basketball — {a.date} — engine {eng}\n" + BAR)
     print(f"\nGames screened: {R['n_screened']}   eligible: {R['n_eligible']}")
     if C.empty:
         print("\nNO CARD\n\nReason: no pair reaches combined odds >= 2.5 with a positive conservative "
@@ -119,10 +128,13 @@ def print_odds_card(R, a):
     print("\nTrack record of this locked product:")
     for t in TRACK[a.product]:
         print("  " + t)
+    if R.get("card_engine") == "venue":
+        for t in TRACK_VENUE[a.product]:
+            print("  " + t)
     print("\nExpect to LOSE more cards than you win: at ~2.5 the edge is winning ~47% when 40% breaks even.")
     print(f"\nFINAL: TAKE BOTH — only at or above the minimum prices, and as close to the opening line as possible.\n{BAR}")
     if a.record:
-        rec = {"date": a.date, "engine": a.engine, "product": a.product,
+        rec = {"date": a.date, "engine": a.engine, "card_engine": R.get("card_engine", "locked"), "product": a.product,
                "recorded_at": pd.Timestamp.utcnow().isoformat()}
         for leg in ("a", "b"):
             g = F.loc[c[f"game_{leg}"]]
@@ -133,6 +145,27 @@ def print_odds_card(R, a):
         ledger = Path(__file__).resolve().parents[1] / "reports" / "live_ledger.csv"
         pd.DataFrame([rec]).to_csv(ledger, mode="a", header=not ledger.exists(), index=False)
         print(f"recorded to {ledger}")
+        record_shadow(R, a)
+
+
+def record_shadow(R, a):
+    """The locked engine's card for the same slate, kept beside the park-factor card (no stake) so the
+    2026-27 season shows which engine's cards do better (reports/live_ledger_shadow.csv)."""
+    sh = R.get("shadow") or {}
+    C = sh.get(a.product)
+    if C is None or C.empty:
+        return
+    c, F = C.iloc[0], sh["legs"].frame.set_index("game_key")
+    rec = {"date": a.date, "engine": a.engine, "card_engine": "locked (shadow)", "product": a.product,
+           "recorded_at": pd.Timestamp.utcnow().isoformat()}
+    for leg in ("a", "b"):
+        g = F.loc[c[f"game_{leg}"]]
+        rec.update({f"{leg}_away": g.get("away_name", g.away), f"{leg}_home": g.get("home_name", g.home),
+                    f"{leg}_side": side_txt(int(c[f"side_{leg}"])), f"{leg}_line": c[f"thr_{leg}"],
+                    f"{leg}_odds": c[f"odds_{leg}"], f"{leg}_p": c[f"p_{leg}"], f"{leg}_p_cons": c[f"pc_{leg}"]})
+    rec.update({"combined_odds": c.combined_odds, "joint_model": c.joint_model})
+    pd.DataFrame([rec]).to_csv(SHADOW_LEDGER, mode="a", header=not SHADOW_LEDGER.exists(), index=False)
+    print(f"locked engine's card recorded beside it (no stake): {SHADOW_LEDGER}")
 
 
 SINGLES_P_MIN = 0.55
@@ -197,6 +230,10 @@ def main():
     ap.add_argument("--bankroll", type=float, default=100.0, help="bankroll for the singles stakes (default 100 units)")
     ap.add_argument("--engine", choices=["v3", "v2"], default="v3",
                     help="v3 (default, recency-adapted, J=0.65) or v2 (stage-2 locked, J=0.625)")
+    ap.add_argument("--card-engine", choices=["venue", "locked"], default="venue",
+                    help="engine for the 2.5+ card and the main-line double: venue (default) = the locked engine plus "
+                         "the home floor's park factor (study 6: better cards on 2021-26, within noise); locked = "
+                         "the confirmed engine. Singles and the 60%% card always use the locked engine.")
     a = ap.parse_args()
     if a.update:
         update_history(a.date)
@@ -210,7 +247,8 @@ def main():
         from data import sbr_live
         if not (sbr_live.RAW / "totals" / f"{a.date}.json").exists():
             sys.exit("No cached slate for this date: run with --update (or pass --slate).")
-    R = run_card(a.date, slate, engine=a.engine)
+    R = run_card(a.date, slate, engine=a.engine,
+                 card_engine=a.card_engine if a.product in ("target", "main") else "locked")
     if "error" in R:
         print(BAR + f"\nOVER/UNDER CARD ENGINE — NCAAB — {a.date}\n" + BAR)
         print(f"\nNO BET\n\nReason: {R['error']}\n")

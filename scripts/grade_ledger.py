@@ -18,6 +18,7 @@ from data import sbr_live
 
 LEDGER = Path(__file__).resolve().parents[1] / "reports" / "live_ledger.csv"
 SINGLES = Path(__file__).resolve().parents[1] / "reports" / "live_ledger_singles.csv"
+SHADOW = Path(__file__).resolve().parents[1] / "reports" / "live_ledger_shadow.csv"
 
 
 def finals_for(date: str) -> dict:
@@ -68,11 +69,8 @@ def grade_singles() -> None:
     print(f"Ungraded singles: {int(L.result.isna().sum())}")
 
 
-def main():
-    grade_singles()
-    if not LEDGER.exists():
-        sys.exit("no card ledger yet: run predict_cards.py with --record")
-    L = pd.read_csv(LEDGER)
+def grade_cards(path: Path, label: str = "") -> None:
+    L = pd.read_csv(path)
     for c in ("a_total", "b_total", "a_win", "b_win", "card_2of2"):
         if c not in L:
             L[c] = np.nan
@@ -89,20 +87,31 @@ def main():
             L.at[i, "card_2of2"] = int(L.at[i, "a_win"] == 1 and L.at[i, "b_win"] == 1)
             if "combined_odds" in L and not pd.isna(L.at[i, "combined_odds"]):
                 L.at[i, "profit"] = (L.at[i, "combined_odds"] - 1) if L.at[i, "card_2of2"] == 1 else -1.0
-    L.to_csv(LEDGER, index=False)
+    L.to_csv(path, index=False)
     g = L[L.card_2of2.notna()]
-    groups = g.groupby(g["product"].fillna("sixty")) if "product" in g else [("sixty", g)]
-    for prod, gg in groups:
+    key = g["product"].fillna("sixty") if "product" in g else pd.Series("sixty", index=g.index)
+    if "card_engine" in g:
+        key = key + " / " + g.card_engine.fillna("locked")
+    for prod, gg in g.groupby(key):
         k, n = int(gg.card_2of2.sum()), len(gg)
         if not n:
             continue
         lo, hi = wilson(k, n)
-        line = (f"[{prod}] graded cards: {n}   both won: {k} ({k / n:.1%}, 95% CI {lo:.1%}-{hi:.1%})   "
+        line = (f"{label}[{prod}] graded cards: {n}   both won: {k} ({k / n:.1%}, 95% CI {lo:.1%}-{hi:.1%})   "
                 f"model expected {gg.joint_model.mean():.1%}")
         if "profit" in gg and gg.profit.notna().any():
             line += f"   ROI {gg.profit.mean():+.1%} over {int(gg.profit.notna().sum())} priced cards"
         print(line)
-    print(f"Ungraded cards: {int(L.card_2of2.isna().sum())}")
+    print(f"{label}Ungraded cards: {int(L.card_2of2.isna().sum())}")
+
+
+def main():
+    grade_singles()
+    if not LEDGER.exists():
+        sys.exit("no card ledger yet: run predict_cards.py with --record")
+    grade_cards(LEDGER)
+    if SHADOW.exists():
+        grade_cards(SHADOW, "shadow (locked engine, no stake) ")
 
 
 if __name__ == "__main__":

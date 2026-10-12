@@ -196,3 +196,11 @@ study_6:
     optimistic; the 2021-26 run is the real test. 2021-26 was used before only with the locked
     engine (stage-2b test, stage-3 re-analysis, diagnostics, money pages, 2023-24 ledger); no venue,
     altitude or availability analysis has read it.
+  decision_2026_10_12: >
+    The confirmation failed for straight bets, so the protocol does not adopt V1. By the owner's decision
+    the live CLI prices the 2.5+ target card and the main-line double with V1 (the locked engine + venue_factor)
+    by default from 2026-27 (scripts/predict_cards.py --card-engine venue), where 2021-26 favoured it
+    (ROI +24% vs +20% and +33% vs +29%, day-paired 95% ranges -4 to +12 and -6 to +15 points). Singles and the
+    60% card stay on the locked engine. Each recorded V1 card is logged with the locked engine's card for
+    the same slate (reports/live_ledger_shadow.csv, no stake); the 2026-27 season decides which engine keeps
+    the cards. `--card-engine locked` restores the locked engine.

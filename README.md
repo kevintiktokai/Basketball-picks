@@ -26,7 +26,7 @@ python -m data.ncaab_ingest                       # archive odds + ESPN box scor
 python -m data.sbr_live fetch && python -m data.sbr_live parse   # 2021-26 odds (cached, ~1 req/s)
 
 # a day's card: refresh this season's results/odds, then build the card
-python scripts/predict_cards.py --date 2026-11-20 --update --record                 # target card (>=2.5, legs ~1.6)
+python scripts/predict_cards.py --date 2026-11-20 --update --record                 # target card (>=2.5, legs ~1.6); park-factor engine by default
 python scripts/predict_cards.py --date 2026-11-20 --product main --record         # main-line double, real prices
 python scripts/predict_cards.py --date 2026-11-20 --product sixty                 # stage-2 60% buffered card
 python scripts/predict_cards.py --date 2026-11-20 --product singles --record      # P >= 55% singles, 1/8-Kelly stakes

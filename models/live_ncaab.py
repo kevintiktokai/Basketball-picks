@@ -118,8 +118,13 @@ def cached_features(allg: pd.DataFrame, box: pd.DataFrame, season: str) -> pd.Da
     return get_features("ncaab", allg, box, verbose=False)
 
 
-def run_card(date: str, slate: pd.DataFrame | None = None, engine: str = "v3") -> dict:
-    """slate (optional): columns home, away, line_open[, home_spread_open, neutral]."""
+def run_card(date: str, slate: pd.DataFrame | None = None, engine: str = "v3", card_engine: str = "venue") -> dict:
+    """slate (optional): columns home, away, line_open[, home_spread_open, neutral].
+    card_engine: which engine prices the 2.5+ target card and the main-line double.
+      "venue"  = the locked engine + the home floor's park factor (study 6: the cards did better with it
+                 on 2021-26, ROI +24% vs +20% and +33% vs +29%, within noise; it did not pass for
+                 straight bets, so singles and the 60% card always use the locked engine);
+      "locked" = the locked engine for everything."""
     lock, m, cp, decays = engine_spec(engine)
     D = pd.Timestamp(date)
     season = season_of(D)
@@ -174,21 +179,40 @@ def run_card(date: str, slate: pd.DataFrame | None = None, engine: str = "v3") -
     today = P[P.date == D].copy()
     if today.empty or season not in cals:
         return {"date": date, "error": "slate games not eligible (too few games played this season)"}
+    c_today, c_cals, c_calm = today, cals, calm
+    if card_engine == "venue":                    # data/ncaab_venue.py; config/improvements.yaml study_6 (V1)
+        from data.ncaab_venue import venue_factor
+        d = d.reset_index(drop=True)
+        d["venue_factor"] = venue_factor(allg, d)
+        Pv, c_cals, c_calm = walk_forward_market(d, list(m["mean_feats"]) + ["venue_factor"], m["var_feats"], m["kind"],
+                                                 m["shape"], m["alpha"], seasons=seasons, min_games=m["min_games"],
+                                                 train_decay=decays[0], calib_decay=decays[1])
+        c_today = Pv[Pv.date == D].copy()
     # stage-3 odds-targeted products (config/stage3_locked.yaml)
     from backtest.odds_cards import build_legs, odds_cards
     lock3 = yaml.safe_load((ROOT / "config" / "stage3_locked.yaml").read_text())["products"]
     tc = lock3["target_card"]
-    books = today.set_index("game_key").books_json if "books_json" in today else None
-    legs = build_legs(today, cals, calm, books=books, alt_ref="median")
+    books = c_today.set_index("game_key").books_json if "books_json" in c_today else None
+    legs = build_legs(c_today, c_cals, c_calm, books=books, alt_ref="median")
     target = odds_cards(legs, floor=tc["min_combined_odds"], objective=tc["objective"],
                         leg_band=tuple(tc["leg_odds_band"]), margin=tc["alt_price_margin"])
     main_double = odds_cards(legs, floor=lock3["main_line_double"]["min_combined_odds"],
                              objective="ev", main_only=True)
+    shadow = {}
+    if card_engine == "venue":                    # the locked engine's cards, recorded beside them (no stake)
+        lb = build_legs(today, cals, calm, books=today.set_index("game_key").books_json if "books_json" in today else None,
+                        alt_ref="median")
+        shadow = {"legs": lb,
+                  "target": odds_cards(lb, floor=tc["min_combined_odds"], objective=tc["objective"],
+                                       leg_band=tuple(tc["leg_odds_band"]), margin=tc["alt_price_margin"]),
+                  "main": odds_cards(lb, floor=lock3["main_line_double"]["min_combined_odds"], objective="ev",
+                                     main_only=True)}
     T = leg_table(today, cals, calm)
     C = buffered_cards(T, joint_target=cp["joint_target"], max_buffer=cp["max_buffer_points"],
                        top_legs=cp["top_legs"], rho_lo=cp["rho_lo"])
     M = main_line_probs(today, cals)
     lock = dict(lock, card_policy=cp, engine=engine)
-    return {"date": date, "lock": lock, "slate": slate, "frame": T["frame"], "T": T, "card": C,
+    return {"date": date, "lock": lock, "card_engine": card_engine, "shadow": shadow, "slate": slate, "frame": T["frame"],
+            "T": T, "card": C,
             "target_card": target, "main_double": main_double, "legs": legs,
             "main": M, "n_screened": int(len(today)), "n_eligible": int(today.eligible.sum())}

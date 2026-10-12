@@ -61,7 +61,8 @@ information the engine does not yet have.
      officials on game day, after the opener, so this would be a late-bet product judged
      against the closing line.
    * Roster continuity (study 4): forward shadow test.
-   * Venue park factor (study 6): forward shadow test for the 2.5+ card. Its information is real in all
+   * Venue park factor (study 6): in use for the 2.5+ card and the main-line double from 2026-27 (owner's
+     decision, `--card-engine venue`, the default); the locked engine's card is recorded beside it with no stake. Its information is real in all
      three eras (the locked engine's bets against a strong venue factor won 55.2% and 53.9%, against
      57-59% for the rest), but as a model feature it did not improve the straight bets on 2021-26.
    * Before an Over, check for a missing starter: Overs placed right after a 25+ minute player sat
