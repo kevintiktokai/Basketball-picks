@@ -1,0 +1,3 @@
+run_utc,snapshot,kind,card,fixture_id,game_key,start,book,side,line,price,fair_p,ev,model_agrees,stake_frac,total,result,close_p,clv
+2026-10-13 13:23,basketball_euroleague_20261013T132341Z.json,single,,a0c1349a103abb0fb47082be138324e5,E2026_46,2026-10-13 17:45:00+00:00,1xbet,over,162.5,1.93,0.5334653283299176,0.0295880836767408,False,0.005,179,won,,
+2026-10-13 13:23,basketball_euroleague_20261013T132341Z.json,single,,0eb4fbc4a884b3180b25e577f7de944d,E2026_42,2026-10-13 18:30:00+00:00,1xbet,under,174.5,1.91,0.53530553163443,0.0224335654217611,False,0.005,172,won,,

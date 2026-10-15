@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from data import oddsapi
-from data.euroleague import parse, season_games
+from data.euroleague import fetch_season, parse, season_games
 from features.euro_market import fair_curve, fair_p
 from models.live_euro import CUR_CODES
 
@@ -28,18 +28,21 @@ LEDGER = ROOT / "reports" / "live_ledger_euro.csv"
 def finals() -> pd.Series:
     for code in CUR_CODES:
         try:
-            season_games(code, max_age_hours=0.5)
+            season_games(code, max_age_hours=0.5)             # fresh list of played games
+            fetch_season(code)                                # and the box scores parse() reads them from
         except Exception as e:                                   # noqa: BLE001
             print(f"  could not refresh {code}: {e}")
     G, _ = parse(CUR_CODES)
     return G.set_index("game_key").total
 
 
-def closing_fair(fixture_id: str, start: pd.Timestamp, line: float, side: str) -> float:
-    """Pinnacle's no-vig probability for the pick at the last snapshot taken before tip-off."""
+def closing_fair(fixture_id: str, start: pd.Timestamp, line: float, side: str, after: str) -> float:
+    """Pinnacle's no-vig probability for the pick at the last snapshot taken before tip-off and after
+    the pick's own snapshot (`after`); NaN when no later snapshot exists."""
+    t0 = pd.to_datetime(Path(after).stem.split("_")[-1], format="%Y%m%dT%H%M%SZ", utc=True)
     for p in sorted(oddsapi.SNAP.glob("basketball_euroleague_*.json"), reverse=True):
         t = pd.to_datetime(p.stem.split("_")[-1], format="%Y%m%dT%H%M%SZ", utc=True)
-        if t >= start:
+        if t >= start or t <= t0:
             continue
         B = oddsapi.board(p)
         B = B[B.fixture_id == fixture_id]
@@ -60,7 +63,7 @@ def main():
     played = D.total.notna()
     win = np.where(D.side == "over", D.total > D.line, D.total < D.line)
     D["result"] = np.where(~played, "pending", np.where(D.total == D.line, "push", np.where(win, "won", "lost")))
-    D["close_p"] = [closing_fair(f, s, l, sd) for f, s, l, sd in zip(D.fixture_id, D.start, D.line, D.side)]
+    D["close_p"] = [closing_fair(f, s, l, sd, sn) for f, s, l, sd, sn in zip(D.fixture_id, D.start, D.line, D.side, D.snapshot)]
     D["clv"] = D.close_p * D.price - 1
 
     S = D[D.kind == "single"]
@@ -68,8 +71,9 @@ def main():
     pnl = np.where(g.result == "won", g.price - 1, np.where(g.result == "lost", -1.0, 0.0))
     print(f"Singles: {len(S)} recorded, {len(g)} graded: {int((g.result == 'won').sum())} won, "
           f"{int((g.result == 'lost').sum())} lost" + (f", ROI {pnl.mean():+.1%}" if len(g) else "") +
-          (f"; average value at bet time {S.ev.mean():+.1%}, against the close {S.clv.mean():+.1%} "
-           f"({int(S.clv.notna().sum())} with a closing price)" if len(S) else ""))
+          (f"; average value at bet time {S.ev.mean():+.1%}"
+           + (f", against the close {S.clv.mean():+.1%} ({int(S.clv.notna().sum())} with a later snapshot)"
+              if S.clv.notna().any() else ", no later snapshot to measure the close") if len(S) else ""))
     C = D[D.kind == "card"]
     if len(C):
         rows = []
