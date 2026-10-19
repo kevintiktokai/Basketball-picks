@@ -18,6 +18,9 @@ break-even, and the locked card won 5 of 9). The holdout (21 Mar–Jun 2026) wai
 November allowance. Treat the first weeks as a live test: **stake 0.5% of the bankroll per single
 and per card** (half the NCAAB stake), record every pick, and grade them.
 
+A soft-book line more than 3 points from the middle of all books' lines is skipped as an error (the same guard
+the NCAAB picks use), and a pick whose line is 2+ points from the middle is flagged for a manual check.
+
 ## One-time setup
 
 1. Get a free key at [the-odds-api.com](https://the-odds-api.com) (Starter plan: 500 credits a month).
@@ -38,6 +41,8 @@ has gone; some comes back in the last 3–6 hours before tip-off. In practice:
   near Pinnacle's opening and the same day's games 5–7 hours before tip-off.
 * Optionally a second run 2–4 hours before the evening's first tip.
 * Place the bets right after the run; the prices move.
+* About an hour before the first tip-off, take one more snapshot (`python -m data.oddsapi fetch`, 2
+  credits). The grade compares each pick's price with Pinnacle's price in that later snapshot.
 
 ## Commands
 

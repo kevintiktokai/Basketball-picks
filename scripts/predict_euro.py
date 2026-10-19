@@ -34,6 +34,7 @@ import pandas as pd
 import yaml
 
 from backtest.euro_cards import SOFT, TZ, cards, legs
+from backtest.odds_cards import MAX_BOOK_DEV
 from data import oddsapi
 from features.euro_market import fair_curve, fair_p
 
@@ -67,6 +68,11 @@ def picks(B: pd.DataFrame, model: pd.Series, cfg: dict, single_ev_min: float = S
     if L.empty:
         return L, pd.DataFrame(), pd.DataFrame(), curve
     L["clv"] = np.nan                                            # no close yet
+    # the NCAAB book-outlier guard (backtest.odds_cards.MAX_BOOK_DEV): a line more than 3 points from
+    # the median main line of every book in the feed is treated as an error, not value
+    med = B.groupby(["fixture_id", "book"]).line.median().groupby("fixture_id").median()
+    L["off_market"] = L.line - L.fixture_id.map(med)
+    L = L[L.off_market.abs() <= MAX_BOOK_DEV].reset_index(drop=True)
     C = cards(L, cfg)
     S = L[L.book.isin(SOFT) & (L.ev_now >= single_ev_min)]
     S = S.sort_values("ev_now").groupby("fixture_id").tail(1).sort_values("ev_now", ascending=False)
@@ -159,7 +165,8 @@ def main():
         print("    none right now")
     for r in S.itertuples(index=False):
         agree = "model agrees" if r.model_agrees else "model does not agree"
-        print(f"    {leg_txt(r)}  value {r.ev_now:+.1%}, {agree};{stake}")
+        far = f"; line {r.off_market:+.1f} pts from the market's middle, check it" if abs(r.off_market) >= 2 else ""
+        print(f"    {leg_txt(r)}  value {r.ev_now:+.1%}, {agree}{far};{stake}")
 
     live = path.resolve().parent == oddsapi.SNAP.resolve()          # only real snapshots are logged
     if not live:
