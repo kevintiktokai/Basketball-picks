@@ -1,0 +1,498 @@
+{
+ "coverage": [
+  {
+   "book": "1xbet",
+   "games": 55,
+   "players": 246,
+   "prices": 38256
+  },
+  {
+   "book": "betway",
+   "games": 24,
+   "players": 187,
+   "prices": 2484
+  },
+  {
+   "book": "draftkings",
+   "games": 86,
+   "players": 148,
+   "prices": 102895
+  },
+  {
+   "book": "pinnacle",
+   "games": 192,
+   "players": 309,
+   "prices": 147512
+  }
+ ],
+ "validation": [
+  {
+   "season": "2025-26",
+   "gap at least": 0.0,
+   "ids": 103,
+   "correct": 0.7281553398058253
+  },
+  {
+   "season": "2025-26",
+   "gap at least": 0.5,
+   "ids": 82,
+   "correct": 0.8170731707317073
+  },
+  {
+   "season": "2025-26",
+   "gap at least": 1.0,
+   "ids": 65,
+   "correct": 0.8615384615384616
+  },
+  {
+   "season": "2025-26",
+   "gap at least": 2.0,
+   "ids": 44,
+   "correct": 0.9318181818181818
+  },
+  {
+   "season": "2025-26",
+   "gap at least": 3.0,
+   "ids": 34,
+   "correct": 0.9705882352941176
+  },
+  {
+   "season": "2025-26",
+   "gap at least": 5.0,
+   "ids": 20,
+   "correct": 0.95
+  },
+  {
+   "season": "2026-27",
+   "gap at least": 0.0,
+   "ids": 128,
+   "correct": 0.765625
+  },
+  {
+   "season": "2026-27",
+   "gap at least": 0.5,
+   "ids": 102,
+   "correct": 0.8529411764705882
+  },
+  {
+   "season": "2026-27",
+   "gap at least": 1.0,
+   "ids": 80,
+   "correct": 0.95
+  },
+  {
+   "season": "2026-27",
+   "gap at least": 2.0,
+   "ids": 66,
+   "correct": 0.9848484848484849
+  },
+  {
+   "season": "2026-27",
+   "gap at least": 3.0,
+   "ids": 58,
+   "correct": 0.9827586206896551
+  },
+  {
+   "season": "2026-27",
+   "gap at least": 5.0,
+   "ids": 35,
+   "correct": 1.0
+  }
+ ],
+ "gap_used": {
+  "2026-27": 1.0,
+  "2025-26": 3.0
+ },
+ "ids_used": [
+  {
+   "season": "2025-26",
+   "carried": 16,
+   "matched": 8,
+   "name": 126
+  },
+  {
+   "season": "2026-27",
+   "carried": 0,
+   "matched": 22,
+   "name": 146
+  }
+ ],
+ "pinnacle_calibration": [
+  {
+   "bin": "(0.0, 0.4]",
+   "lines": 7,
+   "predicted": 0.38777666235618297,
+   "happened": 0.42857142857142855
+  },
+  {
+   "bin": "(0.4, 0.45]",
+   "lines": 75,
+   "predicted": 0.43596009431362964,
+   "happened": 0.48
+  },
+  {
+   "bin": "(0.45, 0.5]",
+   "lines": 902,
+   "predicted": 0.4838730078661282,
+   "happened": 0.43015521064301554
+  },
+  {
+   "bin": "(0.5, 0.55]",
+   "lines": 728,
+   "predicted": 0.5195655873113987,
+   "happened": 0.5439560439560439
+  },
+  {
+   "bin": "(0.55, 0.6]",
+   "lines": 45,
+   "predicted": 0.5631776393735265,
+   "happened": 0.7111111111111111
+  },
+  {
+   "bin": "(0.6, 1.0]",
+   "lines": 1,
+   "predicted": 0.6071428571428571,
+   "happened": 0.0
+  }
+ ],
+ "A_by_book": [
+  {
+   "check": "15 min before",
+   "book": "1xbet",
+   "bets": 19.0,
+   "won %": 0.6842105263157895,
+   "avg odds": 1.9029473684210525,
+   "value at bet time": 0.03771028946794115,
+   "value vs close": 0.02988805870554731,
+   "close found": 1.0,
+   "ROI": 0.2908421052631579,
+   "ROI \u00b1 (1 se)": 0.20735866409200931,
+   "all bets": 23,
+   "value vs close, all bets": 0.02762909533019443
+  },
+  {
+   "check": "15 min before",
+   "book": "draftkings",
+   "bets": 14.0,
+   "won %": 0.35714285714285715,
+   "avg odds": 1.9628571428571426,
+   "value at bet time": 0.032495212450089954,
+   "value vs close": 0.031636332782059705,
+   "close found": 1.0,
+   "ROI": -0.27999999999999997,
+   "ROI \u00b1 (1 se)": 0.26805567733932845,
+   "all bets": 27,
+   "value vs close, all bets": 0.029975110362851606
+  },
+  {
+   "check": "1h before",
+   "book": "1xbet",
+   "bets": 17.0,
+   "won %": 0.47058823529411764,
+   "avg odds": 1.9017647058823528,
+   "value at bet time": 0.04696389010074936,
+   "value vs close": 0.047608840749458974,
+   "close found": 1.0,
+   "ROI": -0.11176470588235295,
+   "ROI \u00b1 (1 se)": 0.23629062877243934,
+   "all bets": 23,
+   "value vs close, all bets": 0.04029414008996551
+  },
+  {
+   "check": "1h before",
+   "book": "draftkings",
+   "bets": 12.0,
+   "won %": 0.6666666666666666,
+   "avg odds": 1.9790833333333335,
+   "value at bet time": 0.030009438043176316,
+   "value vs close": 0.018142665928634262,
+   "close found": 1.0,
+   "ROI": 0.3190833333333332,
+   "ROI \u00b1 (1 se)": 0.2818535902527832,
+   "all bets": 20,
+   "value vs close, all bets": 0.02162334987764069
+  },
+  {
+   "check": "3h before",
+   "book": "1xbet",
+   "bets": 10.0,
+   "won %": 0.6,
+   "avg odds": 1.8977999999999997,
+   "value at bet time": 0.05755554898382565,
+   "value vs close": 0.0511290965757355,
+   "close found": 0.9090909090909091,
+   "ROI": 0.12999999999999998,
+   "ROI \u00b1 (1 se)": 0.3092859159059425,
+   "all bets": 17,
+   "value vs close, all bets": 0.04436886511415798
+  },
+  {
+   "check": "3h before",
+   "book": "draftkings",
+   "bets": 22.0,
+   "won %": 0.6818181818181818,
+   "avg odds": 1.9290454545454545,
+   "value at bet time": 0.032487313881786446,
+   "value vs close": -0.012090151236166729,
+   "close found": 0.8260869565217391,
+   "ROI": 0.3122272727272727,
+   "ROI \u00b1 (1 se)": 0.19596001813933786,
+   "all bets": 30,
+   "value vs close, all bets": -0.00558060758084115
+  },
+  {
+   "check": "8h before",
+   "book": "1xbet",
+   "bets": 9.0,
+   "won %": 0.5555555555555556,
+   "avg odds": 1.9473333333333334,
+   "value at bet time": 0.04783768065213853,
+   "value vs close": 0.05394702320298523,
+   "close found": 0.7777777777777778,
+   "ROI": 0.07333333333333332,
+   "ROI \u00b1 (1 se)": 0.3396566894183988,
+   "all bets": 9,
+   "value vs close, all bets": 0.05394702320298523
+  },
+  {
+   "check": "8h before",
+   "book": "draftkings",
+   "bets": 34.0,
+   "won %": 0.47058823529411764,
+   "avg odds": 1.8726470588235296,
+   "value at bet time": 0.03871886324722449,
+   "value vs close": -0.03571779459855596,
+   "close found": 0.4117647058823529,
+   "ROI": -0.12882352941176473,
+   "ROI \u00b1 (1 se)": 0.16113499212561827,
+   "all bets": 50,
+   "value vs close, all bets": -0.015801229895987815
+  }
+ ],
+ "A_by_window": [
+  {
+   "window": "2026 playoffs",
+   "book": "draftkings",
+   "bets": 12.0,
+   "won %": 0.6666666666666666,
+   "avg odds": 1.9790833333333335,
+   "value at bet time": 0.030009438043176316,
+   "value vs close": 0.018142665928634262,
+   "close found": 1.0,
+   "ROI": 0.3190833333333332,
+   "ROI \u00b1 (1 se)": 0.2818535902527832
+  },
+  {
+   "window": "2026-27 so far",
+   "book": "1xbet",
+   "bets": 17.0,
+   "won %": 0.47058823529411764,
+   "avg odds": 1.9017647058823528,
+   "value at bet time": 0.04696389010074936,
+   "value vs close": 0.047608840749458974,
+   "close found": 1.0,
+   "ROI": -0.11176470588235295,
+   "ROI \u00b1 (1 se)": 0.23629062877243934
+  }
+ ],
+ "A_by_value": [
+  {
+   "ev band": "2-4%",
+   "bets": 20.0,
+   "won %": 0.6,
+   "avg odds": 1.9369499999999995,
+   "value at bet time": 0.02816007206756077,
+   "value vs close": 0.016775416962246794,
+   "close found": 1.0,
+   "ROI": 0.16994999999999996,
+   "ROI \u00b1 (1 se)": 0.2199693815415897
+  },
+  {
+   "ev band": "4-7%",
+   "bets": 5.0,
+   "won %": 0.4,
+   "avg odds": 1.918,
+   "value at bet time": 0.04660820791354521,
+   "value vs close": 0.047233077890539876,
+   "close found": 1.0,
+   "ROI": -0.264,
+   "ROI \u00b1 (1 se)": 0.45181412107192925
+  },
+  {
+   "ev band": "7-12%",
+   "bets": 4.0,
+   "won %": 0.5,
+   "avg odds": 1.9375,
+   "value at bet time": 0.09102656832188227,
+   "value vs close": 0.11418895103829146,
+   "close found": 1.0,
+   "ROI": -0.03750000000000003,
+   "ROI \u00b1 (1 se)": 0.5557033831100905
+  }
+ ],
+ "offered": {
+  "8h before": 2469,
+  "3h before": 2566,
+  "1h before": 2646,
+  "15 min before": 2652
+ },
+ "B_brier": {
+  "Pinnacle no-vig": 0.24863379752907194,
+  "our model": 0.25913576631992213,
+  "half and half": 0.25082461725365585,
+  "always 50%": 0.25
+ },
+ "B_regression": {
+  "Pinnacle weight": 1.4878531843274876,
+  "model-minus-Pinnacle weight": 0.06627183130937175,
+  "its standard error": 0.09977959682412281,
+  "lines": 1755
+ },
+ "B_by_threshold": [
+  {
+   "thr": 0.0,
+   "bets": 1376.0,
+   "won %": 0.5036337209302325,
+   "avg odds": 1.9040937500000004,
+   "value at bet time": 0.14734537036845693,
+   "value vs close": -0.05100924918887311,
+   "close found": 0.8997093023255814,
+   "ROI": -0.04453343023255815,
+   "ROI \u00b1 (1 se)": 0.025647504612431978
+  },
+  {
+   "thr": 0.03,
+   "bets": 1191.0,
+   "won %": 0.5079764903442485,
+   "avg odds": 1.9067741393786732,
+   "value at bet time": 0.16807854058743094,
+   "value vs close": -0.050958499691967016,
+   "close found": 0.8933669185558354,
+   "ROI": -0.03406968933669187,
+   "ROI \u00b1 (1 se)": 0.02763081514970789
+  },
+  {
+   "thr": 0.06,
+   "bets": 987.0,
+   "won %": 0.502532928064843,
+   "avg odds": 1.909028368794326,
+   "value at bet time": 0.19367175890584007,
+   "value vs close": -0.05033413418836702,
+   "close found": 0.8915906788247214,
+   "ROI": -0.043390070921985824,
+   "ROI \u00b1 (1 se)": 0.030391619044569985
+  },
+  {
+   "thr": 0.1,
+   "bets": 767.0,
+   "won %": 0.516297262059974,
+   "avg odds": 1.911406779661017,
+   "value at bet time": 0.22661285066540587,
+   "value vs close": -0.04967394956168964,
+   "close found": 0.8852672750977836,
+   "ROI": -0.017078226857887884,
+   "ROI \u00b1 (1 se)": 0.03446804922688154
+  }
+ ],
+ "B_by_window": [
+  {
+   "window": "2025-26 Mar-Apr",
+   "bets": 216.0,
+   "won %": 0.5370370370370371,
+   "avg odds": 1.8790972222222222,
+   "value at bet time": 0.15491022345997257,
+   "value vs close": -0.05803530426812876,
+   "close found": 0.6805555555555556,
+   "ROI": 0.010300925925925908,
+   "ROI \u00b1 (1 se)": 0.06414654697150973
+  },
+  {
+   "window": "2026 playoffs",
+   "bets": 607.0,
+   "won %": 0.5090609555189456,
+   "avg odds": 1.9198154859967054,
+   "value at bet time": 0.1620296896181752,
+   "value vs close": -0.043677329287490546,
+   "close found": 0.9126853377265239,
+   "ROI": -0.02659802306425043,
+   "ROI \u00b1 (1 se)": 0.03890136942694989
+  },
+  {
+   "window": "2026-27 so far",
+   "bets": 368.0,
+   "won %": 0.4891304347826087,
+   "avg odds": 1.901508152173913,
+   "value at bet time": 0.18578508688598863,
+   "value vs close": -0.05920499592167554,
+   "close found": 0.9864130434782609,
+   "ROI": -0.07243750000000002,
+   "ROI \u00b1 (1 se)": 0.04967719310118618
+  }
+ ],
+ "C": [
+  {
+   "model": "agrees",
+   "bets": 13.0,
+   "won %": 0.38461538461538464,
+   "avg odds": 1.9676923076923076,
+   "value at bet time": 0.0394207834127734,
+   "value vs close": 0.033767392599211174,
+   "close found": 1.0,
+   "ROI": -0.2330769230769231,
+   "ROI \u00b1 (1 se)": 0.2805109454772565
+  },
+  {
+   "model": "disagrees",
+   "bets": 16.0,
+   "won %": 0.6875,
+   "avg odds": 1.9061875,
+   "value at bet time": 0.04055335433135397,
+   "value vs close": 0.036190242088561815,
+   "close found": 1.0,
+   "ROI": 0.3099375,
+   "ROI \u00b1 (1 se)": 0.229026571761699
+  }
+ ],
+ "books_vs_pinnacle": [
+  {
+   "book": "1xbet",
+   "prices on Pinnacle's line": 840,
+   "average value": -0.07869718929788987,
+   "share above fair": 0.055952380952380955,
+   "share 2%+ above": 0.02738095238095238
+  },
+  {
+   "book": "draftkings",
+   "prices on Pinnacle's line": 2081,
+   "average value": -0.05866333496223791,
+   "share above fair": 0.038923594425756845,
+   "share 2%+ above": 0.009610764055742432
+  }
+ ],
+ "pinnacle_favoured": [
+  {
+   "window": "2025-26 Mar-Apr",
+   "bets": 314.0,
+   "won %": 0.5191082802547771,
+   "avg odds": 1.7899745222929933,
+   "ROI": -0.07192038216560512,
+   "ROI \u00b1 (1 se)": 0.05051770956573501
+  },
+  {
+   "window": "2026 playoffs",
+   "bets": 656.0,
+   "won %": 0.5685975609756098,
+   "avg odds": 1.8295076219512199,
+   "ROI": 0.04052286585365853,
+   "ROI \u00b1 (1 se)": 0.03543830003574269
+  },
+  {
+   "window": "2026-27 so far",
+   "bets": 461.0,
+   "won %": 0.5509761388286334,
+   "avg odds": 1.7703861171366593,
+   "ROI": -0.024062906724511942,
+   "ROI \u00b1 (1 se)": 0.0411334818274069
+  }
+ ]
+}

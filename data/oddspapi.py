@@ -19,6 +19,7 @@ usage: python -m data.oddspapi probe       # ~8 requests: key, market catalogue,
 from __future__ import annotations
 
 import difflib
+import http.client
 import json
 import os
 import re
@@ -55,8 +56,20 @@ def budget() -> int:
     return int(os.environ.get("ODDSPAPI_MONTHLY_BUDGET", "200"))
 
 
+def _account() -> str:
+    """A short fingerprint of the key in use (never the key), so each account's monthly count is
+    kept apart. The first account's counts carry no suffix."""
+    import hashlib
+    key = os.environ.get("ODDSPAPI_KEY", "").strip()
+    fp = hashlib.sha256(key.encode()).hexdigest()[:8] if key else ""
+    p = RAW / "usage.json"
+    u = json.loads(p.read_text()) if p.exists() else {}
+    legacy = u.get("_legacy_account")
+    return "" if not fp or fp == legacy else f"@{fp}"
+
+
 def _month() -> str:
-    return pd.Timestamp.now(tz="UTC").strftime("%Y-%m")
+    return pd.Timestamp.now(tz="UTC").strftime("%Y-%m") + _account()
 
 
 def used(month: str | None = None) -> int:
@@ -123,8 +136,8 @@ def _get_json(path: str, params: dict):
                 time.sleep(2 ** attempt)
                 continue
             raise RuntimeError(f"OddsPapi {path}: HTTP {e.code}") from None
-        except urllib.error.URLError:
-            time.sleep(2 ** attempt)
+        except (urllib.error.URLError, ConnectionError, TimeoutError, http.client.IncompleteRead):
+            time.sleep(2 ** attempt)                     # dropped or cut-off transfer: try again
     raise RuntimeError(f"OddsPapi {path}: gave up after retries")
 
 

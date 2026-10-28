@@ -11,6 +11,7 @@ and cached, so nothing is requested twice.
 usage: python -m data.nba_props probe                       # 2-3 requests: player names, 1xBet/Betway coverage
        python -m data.nba_props backfill FROM TO [--books pinnacle,1xbet,betway] [--max N]
        python -m data.nba_props parse                       # -> data/processed/nba_props.parquet
+       python -m data.nba_props names [BOOK ...]            # 1 request per book: player names from live odds
 """
 from __future__ import annotations
 
@@ -24,6 +25,7 @@ from data import oddspapi as op
 NBA = 132
 BOOKS = "pinnacle,1xbet,betway"            # sharp reference + the two books bet at
 PROPS = op.RAW / str(NBA) / "props"
+NAMES = op.RAW / str(NBA) / "player_names.json"
 
 
 def points_markets() -> pd.DataFrame:
@@ -76,6 +78,25 @@ def history(f: dict, books: str = BOOKS) -> dict:
 def participants() -> object:
     """OddsPapi's participant list for basketball (to turn player ids into names); cached raw."""
     return op._cached(op.RAW / "participants_11.json", lambda: op._get_json("/participants", {"sportId": 11}))
+
+
+def names(books: list[str] | None = None) -> dict:
+    """Player id -> "Last, First" from the live odds feed (/odds-by-tournaments carries playerName,
+    the history does not). Each book named costs one request; every saved feed is read."""
+    for b in books or []:
+        data = op._get_json("/odds-by-tournaments", {"bookmaker": b, "tournamentIds": NBA})
+        (op.RAW / str(NBA) / f"odds_by_tournament_{b}.json").write_text(json.dumps(data))
+    out = json.loads(NAMES.read_text()) if NAMES.exists() else {}
+    for p in sorted((op.RAW / str(NBA)).glob("odds_by_tournament_*.json")):
+        for f in json.loads(p.read_text()) or []:
+            for bd in (f.get("bookmakerOdds") or {}).values():
+                for md in (bd.get("markets") or {}).values():
+                    for o in (md.get("outcomes") or {}).values():
+                        for pid, x in (o.get("players") or {}).items():
+                            if pid != "0" and x.get("playerName"):
+                                out[pid] = x["playerName"]
+    NAMES.write_text(json.dumps(dict(sorted(out.items())), indent=0))
+    return out
 
 
 def backfill(start: str, end: str, books: str = BOOKS, max_games: int | None = None) -> int:
@@ -141,6 +162,9 @@ if __name__ == "__main__":
         books = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--books=")), BOOKS)
         mx = next((int(a.split("=", 1)[1]) for a in sys.argv if a.startswith("--max=")), None)
         print("fetched", backfill(args[0], args[1], books, mx), f"games; requests used: {op.used()} of {op.budget()}")
+    elif cmd == "names":
+        n = names([a for a in sys.argv[2:]])
+        print(len(n), f"named player ids; requests used: {op.used()} of {op.budget()}")
     elif cmd == "parse":
         T = parse()
         print(len(T), "prices,", T.fixture_id.nunique(), "games,", T.player_id.nunique(), "players")

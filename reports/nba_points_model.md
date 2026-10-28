@@ -110,3 +110,11 @@ Through the season (model error by month):
   DraftKings and FanDuel props between 10 Mar and 4 May 2026 (both from the playoffs at the latest);
   all three carry the 2026-27 season.
 * One request per game. Downloader and parser: `data/nba_props.py` (`probe`, `backfill`, `parse`).
+
+## Results at real prices (28 Oct 2026, `reports/nba_props_test.md`)
+
+192 games of OddsPapi price history (March-April 2026, the 2026 playoffs, and 2026-27 to 28 Oct; 218
+requests). The model adds nothing beyond Pinnacle's price (1,755 lines), and betting it at
+Pinnacle's prices loses about the margin. The only lead is line shopping: 1xBet prices 2%+ above
+Pinnacle's no-vig price (about 0.4 a game) were about 4% better than Pinnacle's close on 23 bets,
+which is too few to call. Re-run: `python scripts/nba_props_test.py`.
