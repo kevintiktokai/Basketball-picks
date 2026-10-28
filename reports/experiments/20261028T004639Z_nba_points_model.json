@@ -1,0 +1,158 @@
+{
+  "experiment": "nba_points_model",
+  "timestamp_utc": "20261028T004639Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "718b297",
+  "params": {
+    "seasons": [
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "test": [
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "feats": [
+      "pts_ewm",
+      "pts_l5",
+      "pts_season",
+      "min_ewm",
+      "min_l5",
+      "ppm_ewm",
+      "use_ewm",
+      "fta_ewm",
+      "tpa_ewm",
+      "pts_sd",
+      "started_last",
+      "n_season",
+      "home",
+      "rest",
+      "team_for",
+      "team_against",
+      "opp_against",
+      "missed_last",
+      "prev_ppm",
+      "prev_min"
+    ]
+  },
+  "params_hash": "4818933a63f4",
+  "results": {
+    "seasons": [
+      {
+        "season": "2022-23",
+        "player-games": 13801,
+        "per day": 68.66169154228855,
+        "model error (avg pts)": 5.497571477472804,
+        "recent average error": 5.447254538824584,
+        "season average error": 5.497508937336917,
+        "bias": -0.018029660635995336,
+        "inside 50% range": 0.5163393956959641,
+        "inside 80% range": 0.8239258024780813
+      },
+      {
+        "season": "2023-24",
+        "player-games": 13345,
+        "per day": 67.74111675126903,
+        "model error (avg pts)": 5.4632944365578435,
+        "recent average error": 5.4803601080399105,
+        "season average error": 5.537488406937367,
+        "bias": -0.17257609027589366,
+        "inside 50% range": 0.5178718621206444,
+        "inside 80% range": 0.8191082802547771
+      },
+      {
+        "season": "2024-25",
+        "player-games": 13978,
+        "per day": 68.85714285714286,
+        "model error (avg pts)": 5.419721132038633,
+        "recent average error": 5.466260321010816,
+        "season average error": 5.532406284713755,
+        "bias": 0.0010463773467118455,
+        "inside 50% range": 0.504149377593361,
+        "inside 80% range": 0.8084847617684934
+      },
+      {
+        "season": "2025-26",
+        "player-games": 14113,
+        "per day": 70.2139303482587,
+        "model error (avg pts)": 5.357538469652605,
+        "recent average error": 5.4122897963922325,
+        "season average error": 5.508823912400873,
+        "bias": -0.22149218350709732,
+        "inside 50% range": 0.5110890668178275,
+        "inside 80% range": 0.8100333026287819
+      }
+    ],
+    "calibration": [
+      {
+        "bin": "(0.0, 0.2]",
+        "predicted": 0.15873213206716646,
+        "happened": 0.19019362898188633,
+        "n": 3202
+      },
+      {
+        "bin": "(0.2, 0.3]",
+        "predicted": 0.2640736962331351,
+        "happened": 0.27912877986889406,
+        "n": 28374
+      },
+      {
+        "bin": "(0.3, 0.4]",
+        "predicted": 0.3539780636473066,
+        "happened": 0.3472496016850747,
+        "n": 74062
+      },
+      {
+        "bin": "(0.4, 0.45]",
+        "predicted": 0.42493949285646637,
+        "happened": 0.4044296116504854,
+        "n": 46144
+      },
+      {
+        "bin": "(0.45, 0.5]",
+        "predicted": 0.4747251913878118,
+        "happened": 0.45352950969782735,
+        "n": 48052
+      },
+      {
+        "bin": "(0.5, 0.55]",
+        "predicted": 0.5250561822583659,
+        "happened": 0.5037746927819485,
+        "n": 47686
+      },
+      {
+        "bin": "(0.55, 0.6]",
+        "predicted": 0.5746231745849136,
+        "happened": 0.5516769920957061,
+        "n": 46810
+      },
+      {
+        "bin": "(0.6, 0.7]",
+        "predicted": 0.6490390571280149,
+        "happened": 0.6272019999065465,
+        "n": 85604
+      },
+      {
+        "bin": "(0.7, 0.8]",
+        "predicted": 0.7415890750215024,
+        "happened": 0.7100655841850557,
+        "n": 53519
+      },
+      {
+        "bin": "(0.8, 1.0]",
+        "predicted": 0.8257023172733665,
+        "happened": 0.7808835721899798,
+        "n": 8443
+      }
+    ],
+    "sharp": {
+      "share of lines where the model says 60%+ either way": 0.5729968137299274,
+      "those calls came true": 0.670121048162556
+    }
+  }
+}
