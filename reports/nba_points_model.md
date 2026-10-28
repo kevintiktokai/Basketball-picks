@@ -101,3 +101,12 @@ Through the season (model error by month):
   FanDuel, DraftKings, BetMGM and Bovada carry NBA player points; Pinnacle, 1xBet and Betway do not.
   Live: 1 credit per game. Historical (from May 2023): paid plans only, about 10 credits per game, so
   one season of lines (~1,230 games) needs the 20,000-credit month (about $30).
+
+## OddsPapi probe, 28 Oct 2026 (14 requests, new account)
+
+* NBA is tournament 132. /historical-odds keeps each book's full pre-game price timeline for every
+  player-points line, keyed by a numeric player id (names still to be mapped).
+* Nothing is stored before about 20 Jan 2026. Pinnacle props appear between 24 Jan and 10 Mar 2026;
+  DraftKings and FanDuel props between 10 Mar and 4 May 2026 (both from the playoffs at the latest);
+  all three carry the 2026-27 season.
+* One request per game. Downloader and parser: `data/nba_props.py` (`probe`, `backfill`, `parse`).
