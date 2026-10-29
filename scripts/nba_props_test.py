@@ -422,7 +422,12 @@ def main():
            "B_by_window": B_win.to_dict("records"), "C": C_tab.to_dict("records"),
            "books_vs_pinnacle": book_tab.to_dict("records"), "pinnacle_favoured": fav_tab.to_dict("records")}
     OUT.with_suffix(".json").write_text(json.dumps(out, indent=1, default=str))
-    A.to_csv(OUT.with_name("nba_props_test_bets_A.csv"), index=False)
+    keep = ["fixture_id", "start", "window", "book", "player_id", "athlete_id", "line", "side", "price", "ev",
+            "clv", "points", "result", "pnl"]
+    A.assign(start=A.fixture_id.map(starts))[["check"] + keep].to_csv(
+        OUT.with_name("nba_props_test_bets_A.csv"), index=False)
+    B[B.thr == 0.03].assign(start=B.fixture_id.map(starts), book="pinnacle")[keep].to_csv(
+        OUT.with_name("nba_props_test_bets_B.csv"), index=False)
     fmt = "{:.3f}"
     a1 = A[(A.check == "1h before") & (A.book == "1xbet")]
     a1g = a1[a1.result.isin(["won", "lost", "push"])]
