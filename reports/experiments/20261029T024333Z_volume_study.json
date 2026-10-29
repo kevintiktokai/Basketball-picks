@@ -1,0 +1,342 @@
+{
+  "experiment": "volume_study",
+  "timestamp_utc": "20261029T024333Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "9f87890",
+  "params": {
+    "rules": [
+      "P >= 55.0%",
+      "P >= 54.5%",
+      "P >= 54.0%",
+      "P >= 53.5%",
+      "P >= 53.0%",
+      "P >= 52.5%",
+      "best 3 a day, P >= 53.0%",
+      "best 3 a day, P >= 52.5%",
+      "best 5 a day, P >= 53.0%",
+      "best 5 a day, P >= 52.5%",
+      "best 8 a day, P >= 53.0%",
+      "best 8 a day, P >= 52.5%",
+      "all at 55% + best of rest to 3 a day (P >= 53%)",
+      "all at 55% + best of rest to 5 a day (P >= 53%)"
+    ],
+    "pick": "P >= 53.0%"
+  },
+  "params_hash": "6cb2fe2e8cae",
+  "results": {
+    "dev": [
+      {
+        "rule": "P >= 55.0%",
+        "bets a season": 665.7,
+        "won": 0.5743581953516633,
+        "ROI": 0.09542928154915539,
+        "units a season": 63.527272727272745,
+        "worst season (units)": 19.363636363636374,
+        "seasons losing": 0,
+        "deepest dip (units)": 29.090909090908895
+      },
+      {
+        "rule": "P >= 54.5%",
+        "bets a season": 787.2,
+        "won": 0.5719239660929875,
+        "ROI": 0.0908513488543977,
+        "units a season": 71.51818181818186,
+        "worst season (units)": 16.1818181818182,
+        "seasons losing": 0,
+        "deepest dip (units)": 33.09090909090895
+      },
+      {
+        "rule": "P >= 54.0%",
+        "bets a season": 931.5,
+        "won": 0.5653211805555556,
+        "ROI": 0.0784072610159567,
+        "units a season": 73.03636363636369,
+        "worst season (units)": 14.000000000000089,
+        "seasons losing": 0,
+        "deepest dip (units)": 36.00000000000006
+      },
+      {
+        "rule": "P >= 53.5%",
+        "bets a season": 1082.7,
+        "won": 0.5630252100840336,
+        "ROI": 0.07405728103982472,
+        "units a season": 80.18181818181823,
+        "worst season (units)": 18.454545454545553,
+        "seasons losing": 0,
+        "deepest dip (units)": 37.81818181818187
+      },
+      {
+        "rule": "P >= 53.0%",
+        "bets a season": 1247.1,
+        "won": 0.5630981346309814,
+        "ROI": 0.07415749994532776,
+        "units a season": 92.48181818181824,
+        "worst season (units)": 13.454545454545475,
+        "seasons losing": 0,
+        "deepest dip (units)": 39.363636363636374
+      },
+      {
+        "rule": "P >= 52.5%",
+        "bets a season": 1440.4,
+        "won": 0.5619208087615838,
+        "ROI": 0.07194971093888065,
+        "units a season": 103.6363636363637,
+        "worst season (units)": 9.090909090909113,
+        "seasons losing": 0,
+        "deepest dip (units)": 39.818181818181756
+      },
+      {
+        "rule": "best 3 a day, P >= 53.0%",
+        "bets a season": 320.9,
+        "won": 0.5976108142093681,
+        "ROI": 0.13966401314484836,
+        "units a season": 44.818181818181834,
+        "worst season (units)": 3.7272727272727373,
+        "seasons losing": 0,
+        "deepest dip (units)": 15.636363636363711
+      },
+      {
+        "rule": "best 3 a day, P >= 52.5%",
+        "bets a season": 331.9,
+        "won": 0.593436645396536,
+        "ROI": 0.1318031170396341,
+        "units a season": 43.745454545454564,
+        "worst season (units)": 1.0658141036401503e-14,
+        "seasons losing": 0,
+        "deepest dip (units)": 18.545454545454618
+      },
+      {
+        "rule": "best 5 a day, P >= 53.0%",
+        "bets a season": 478.2,
+        "won": 0.5907458271709275,
+        "ROI": 0.12647808068134297,
+        "units a season": 60.4818181818182,
+        "worst season (units)": 6.272727272727286,
+        "seasons losing": 0,
+        "deepest dip (units)": 14.090909090908895
+      },
+      {
+        "rule": "best 5 a day, P >= 52.5%",
+        "bets a season": 501.7,
+        "won": 0.5866720354338635,
+        "ROI": 0.118814213492308,
+        "units a season": 59.60909090909094,
+        "worst season (units)": 3.636363636363651,
+        "seasons losing": 0,
+        "deepest dip (units)": 19.090909090908895
+      },
+      {
+        "rule": "best 8 a day, P >= 53.0%",
+        "bets a season": 646.9,
+        "won": 0.5804031879981247,
+        "ROI": 0.10687333998510383,
+        "units a season": 69.13636363636365,
+        "worst season (units)": 8.36363636363638,
+        "seasons losing": 0,
+        "deepest dip (units)": 13.090909090909122
+      },
+      {
+        "rule": "best 8 a day, P >= 52.5%",
+        "bets a season": 695.2,
+        "won": 0.5764757196859552,
+        "ROI": 0.09947431739721734,
+        "units a season": 69.1545454545455,
+        "worst season (units)": 4.909090909090927,
+        "seasons losing": 0,
+        "deepest dip (units)": 17.999999999999602
+      },
+      {
+        "rule": "all at 55% + best of rest to 3 a day (P >= 53%)",
+        "bets a season": 735.6,
+        "won": 0.5738448844884488,
+        "ROI": 0.0944312620495329,
+        "units a season": 69.4636363636364,
+        "worst season (units)": 11.363636363636378,
+        "seasons losing": 0,
+        "deepest dip (units)": 24.0
+      },
+      {
+        "rule": "all at 55% + best of rest to 5 a day (P >= 53%)",
+        "bets a season": 803.1,
+        "won": 0.5713745747763639,
+        "ROI": 0.08974315436773418,
+        "units a season": 72.07272727272729,
+        "worst season (units)": 5.636363636363651,
+        "seasons losing": 0,
+        "deepest dip (units)": 24.0
+      }
+    ],
+    "test": [
+      {
+        "rule": "P >= 55.0%",
+        "bets a season": 702.0,
+        "won": 0.5789624534250501,
+        "ROI": 0.10255443709980783,
+        "units a season": 71.99321484406511,
+        "worst season (units)": 0.23984510656024072,
+        "seasons losing": 0,
+        "deepest dip (units)": 29.915248155766335
+      },
+      {
+        "rule": "P >= 54.5%",
+        "bets a season": 877.2,
+        "won": 0.5756254303419784,
+        "ROI": 0.09607168841802126,
+        "units a season": 84.27408508028824,
+        "worst season (units)": 9.885078970258112,
+        "seasons losing": 0,
+        "deepest dip (units)": 26.74940190043054
+      },
+      {
+        "rule": "P >= 54.0%",
+        "bets a season": 1087.2,
+        "won": 0.5719311238659508,
+        "ROI": 0.08909815832821508,
+        "units a season": 96.86751773443544,
+        "worst season (units)": 27.90196920177836,
+        "seasons losing": 0,
+        "deepest dip (units)": 20.62074708051341
+      },
+      {
+        "rule": "P >= 53.5%",
+        "bets a season": 1346.2,
+        "won": 0.5667513828673942,
+        "ROI": 0.07940034126760893,
+        "units a season": 106.88873941445517,
+        "worst season (units)": 25.004897203271177,
+        "seasons losing": 0,
+        "deepest dip (units)": 25.5213813347724
+      },
+      {
+        "rule": "P >= 53.0%",
+        "bets a season": 1631.8,
+        "won": 0.564172111946739,
+        "ROI": 0.07459283401102647,
+        "units a season": 121.72058653919296,
+        "worst season (units)": 28.184114431196292,
+        "seasons losing": 0,
+        "deepest dip (units)": 39.27162293589919
+      },
+      {
+        "rule": "P >= 52.5%",
+        "bets a season": 1970.4,
+        "won": 0.5569284182579394,
+        "ROI": 0.06080975209539876,
+        "units a season": 119.81953552877371,
+        "worst season (units)": 24.597697716861422,
+        "seasons losing": 0,
+        "deepest dip (units)": 63.38619294987603
+      },
+      {
+        "rule": "best 3 a day, P >= 53.0%",
+        "bets a season": 340.6,
+        "won": 0.5966981132075472,
+        "ROI": 0.13666945935752664,
+        "units a season": 46.54961785717357,
+        "worst season (units)": 28.398674568139317,
+        "seasons losing": 0,
+        "deepest dip (units)": 21.827735051527213
+      },
+      {
+        "rule": "best 3 a day, P >= 52.5%",
+        "bets a season": 357.0,
+        "won": 0.5912162162162162,
+        "ROI": 0.12616032340764685,
+        "units a season": 45.03923545652991,
+        "worst season (units)": 23.421511634454642,
+        "seasons losing": 0,
+        "deepest dip (units)": 24.318041846181814
+      },
+      {
+        "rule": "best 5 a day, P >= 53.0%",
+        "bets a season": 516.2,
+        "won": 0.5936161930712339,
+        "ROI": 0.1306893688503146,
+        "units a season": 67.4618522005324,
+        "worst season (units)": 30.433496250635226,
+        "seasons losing": 0,
+        "deepest dip (units)": 26.84324803390595
+      },
+      {
+        "rule": "best 5 a day, P >= 52.5%",
+        "bets a season": 554.4,
+        "won": 0.5874455732946299,
+        "ROI": 0.11884290505513224,
+        "units a season": 65.8865065625653,
+        "worst season (units)": 29.295262827086667,
+        "seasons losing": 0,
+        "deepest dip (units)": 29.140598507875893
+      },
+      {
+        "rule": "best 8 a day, P >= 53.0%",
+        "bets a season": 723.0,
+        "won": 0.5812274368231047,
+        "ROI": 0.10693514937735035,
+        "units a season": 77.3141129998243,
+        "worst season (units)": 28.237930432925886,
+        "seasons losing": 0,
+        "deepest dip (units)": 28.265605556790774
+      },
+      {
+        "rule": "best 8 a day, P >= 52.5%",
+        "bets a season": 794.4,
+        "won": 0.5766312594840668,
+        "ROI": 0.09819204861931043,
+        "units a season": 78.00376342318019,
+        "worst season (units)": 16.54341335916799,
+        "seasons losing": 0,
+        "deepest dip (units)": 39.38304744813564
+      },
+      {
+        "rule": "all at 55% + best of rest to 3 a day (P >= 53%)",
+        "bets a season": 820.8,
+        "won": 0.5795148247978437,
+        "ROI": 0.10372083538695136,
+        "units a season": 85.13406168560968,
+        "worst season (units)": 25.26331279926272,
+        "seasons losing": 0,
+        "deepest dip (units)": 29.541154427670392
+      },
+      {
+        "rule": "all at 55% + best of rest to 5 a day (P >= 53%)",
+        "bets a season": 907.2,
+        "won": 0.5779206384393705,
+        "ROI": 0.10078741440760819,
+        "units a season": 91.43434235058217,
+        "worst season (units)": 24.79357088905687,
+        "seasons losing": 0,
+        "deepest dip (units)": 30.76159316235345
+      },
+      {
+        "rule": "line shopping, P >= 55% at the best line",
+        "bets a season": 1611.0,
+        "won": 0.5628973943398579,
+        "ROI": 0.06996278526013577,
+        "units a season": 112.71004705407873,
+        "worst season (units)": 28.820512429466124,
+        "seasons losing": 0,
+        "deepest dip (units)": 49.88947231844594
+      },
+      {
+        "rule": "line shopping, P >= 54% at the best line",
+        "bets a season": 2257.4,
+        "won": 0.5569496351663997,
+        "ROI": 0.05905842331668385,
+        "units a season": 133.31848479508213,
+        "worst season (units)": 45.60092047521221,
+        "seasons losing": 0,
+        "deepest dip (units)": 42.60891419587591
+      },
+      {
+        "rule": "line shopping, P >= 53% at the best line",
+        "bets a season": 3042.0,
+        "won": 0.5507887268167118,
+        "ROI": 0.04775761953949957,
+        "units a season": 145.2786786391577,
+        "worst season (units)": 15.530179633403256,
+        "seasons losing": 0,
+        "deepest dip (units)": 53.575836822931876
+      }
+    ]
+  }
+}
