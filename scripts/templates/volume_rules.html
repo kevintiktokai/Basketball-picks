@@ -108,7 +108,8 @@ tr.test td:first-child { font-weight: 700; }
     <h1>Betting more often without giving up the edge</h1>
     <p class="lede">The locked engine's picks, bet three ways over 15 seasons. The current rule bets every pick at 55% or more.
       The tiered rule adds the 53–55% picks at half stake. Best 5 a day bets each day's five strongest picks at 53% or more,
-      so volume no longer depends on how far the engine leans away from the openers.</p>
+      so volume no longer depends on how far the engine leans away from the openers. Turn on doubling to see each rule
+      with 1×, 2×, 4× stakes after a loss.</p>
   </header>
 
   <div class="switch">
@@ -117,7 +118,14 @@ tr.test td:first-child { font-weight: 700; }
       <button type="button" id="mode-flat" data-mode="flat" aria-pressed="true">$100 a bet ($50 half)</button>
       <button type="button" id="mode-pct" data-mode="pct" aria-pressed="false">2% of the account (1% half)</button>
     </div>
+    <span class="label" id="dbl-label">Doubling</span>
+    <div class="seg" role="group" aria-labelledby="dbl-label">
+      <button type="button" id="dbl-none" data-dbl="none" aria-pressed="true">Off</button>
+      <button type="button" id="dbl-bet" data-dbl="bet" aria-pressed="false">After each losing bet</button>
+      <button type="button" id="dbl-night" data-dbl="night" aria-pressed="false">After each losing night</button>
+    </div>
   </div>
+  <p class="foot" id="dbl-note"></p>
 
   <section class="kpis" aria-label="Summary, 2021-26 at real prices">
     <div class="kpi"><span class="label"><i class="key-box" style="background:var(--cur)"></i>Current: 55%+, full stake</span><span class="value" id="k-cur"></span><span class="sub" id="k-cur-sub"></span></div>
@@ -128,7 +136,7 @@ tr.test td:first-child { font-weight: 700; }
 
   <section class="panel">
     <h2>15 seasons, night by night</h2>
-    <p>Running profit at $100 a full stake ($50 a half stake), without compounding, so the seasons add up. The shaded stretch is
+    <p id="cum-note">Running profit at $100 a full stake ($50 a half stake), without compounding, so the seasons add up. The shaded stretch is
       2021-26, priced at each game's best real opening line.</p>
     <div class="legend" data-legend></div>
     <div class="chart" id="cum" role="img" aria-label="Running profit over 15 seasons, by rule"></div>
@@ -169,6 +177,7 @@ tr.test td:first-child { font-weight: 700; }
     <h2>What these numbers assume</h2>
     <ul>
       <li>The engine is unchanged; only the rule for which picks to bet, and how much, differs.</li>
+      <li>Doubling: after a loss the next stake doubles, at most twice (1×, 2×, 4× the bet's own stake, so a half stake goes $50, $100, $200), then resets after a win or a third loss. "After each losing bet" assumes every result is known before the next bet, in tip-off order, which busy nights do not allow; "after each losing night" is the version you could follow.</li>
       <li>Each season starts again from $5,000. In the 2% view, a half stake is 1%, each stake is a share of the balance at the start of the night, and a night never stakes more than the balance.</li>
       <li>Lower-probability picks win less often: the 53–55% band wins about 55% of the time against about 57–58% for 55%+. They add profit because they are still above the break-even of about 52.4% at −110.</li>
       <li>The 2% view compounds within a season, so the biggest seasons end far above $5,000. Books cap stakes and limit winning accounts long before that.</li>
@@ -196,6 +205,8 @@ tr.test td:first-child { font-weight: 700; }
   const S = D.seasons;
   const TEST = S.filter(s => s.era === 'test');
   let mode = 'flat';
+  let dbl = 'none';
+  const V = (r) => r.v[`${mode}_${dbl}`];
   let season = '2024-25';
 
   const el = (tag, attrs, parent) => {
@@ -243,8 +254,9 @@ tr.test td:first-child { font-weight: 700; }
   }
   const hideTip = () => { tip.hidden = true; };
   const seasonLabel = (s, W) => (W < 640 ? s.slice(2, 4) + '–' + s.slice(-2) : s);
-  const profitOf = (r) => (mode === 'flat' ? r.flat_end - START : r.pct_end - START);
-  const lowOf = (r) => (mode === 'flat' ? r.flat_low : r.pct_low);
+  const profitOf = (r) => V(r).end - START;
+  const lowOf = (r) => V(r).low;
+  const BROKE = 1;
 
   function legends() {
     for (const L of document.querySelectorAll('[data-legend]')) {
@@ -266,12 +278,21 @@ tr.test td:first-child { font-weight: 700; }
       const worst = Math.min(...rs.map(r => profitOf(r)));
       const low = Math.min(...rs.map(lowOf));
       document.getElementById('k-' + p.cls).textContent = signed(avg) + ' a season';
+      const all = S.map(s => s.rules[p.key]);
+      const broke = all.filter(r => lowOf(r) <= BROKE).length, below = all.filter(r => profitOf(r) < -0.005).length;
+      const lowAll = Math.min(...all.map(lowOf));
       document.getElementById('k-' + p.cls + '-sub').textContent =
-        `${nf0.format(bets / rs.length)} bets a season · ${(100 * won / (won + lost)).toFixed(1)}% won · worst season ${signed(worst)} · lowest balance ${money(low)}`;
+        `${nf0.format(bets / rs.length)} bets a season · ${(100 * won / (won + lost)).toFixed(1)}% won · worst 2021-26 season ${signed(worst)}. ` +
+        `All 15 seasons: ${broke ? 'went broke in ' + broke + ', ' : ''}${below} ended below $5,000, lowest balance ${money(lowAll)}`;
+      document.getElementById('k-' + p.cls).className = 'value' + (broke ? ' neg' : '');
     }
-    document.getElementById('kpi-note').textContent = mode === 'flat'
-      ? 'Averages over the five 2021-26 seasons, at real prices, each season from $5,000 at $100 a full stake.'
-      : 'Averages over the five 2021-26 seasons, at real prices, each season from $5,000 at 2% of the account a full stake. Compounding makes the big seasons very large.';
+    document.getElementById('kpi-note').textContent = (mode === 'flat'
+      ? 'Profit a season: average over the five 2021-26 seasons, at real prices, each season from $5,000 at $100 a full stake.'
+      : 'Profit a season: average over the five 2021-26 seasons, at real prices, each season from $5,000 at 2% of the account a full stake. Compounding makes the big seasons very large.')
+      + (dbl === 'none' ? '' : dbl === 'bet' ? ' Doubling after each losing bet.' : ' Doubling after each losing night.');
+    document.getElementById('dbl-note').textContent = dbl === 'none' ? ''
+      : dbl === 'bet' ? 'After a losing bet the next stake doubles, then doubles again; it resets after a win or a third loss. Assumes each result is known before the next bet.'
+      : 'After a night that lost money overall, every bet the next night doubles, then doubles again; it resets after a winning night or a third losing night.';
   }
 
   // ---------- cumulative profit across all seasons (flat $100, no compounding)
@@ -281,7 +302,7 @@ tr.test td:first-child { font-weight: 700; }
     host.replaceChildren();
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}` }, host);
     const C = D.cum, n = C.nights.length;
-    const series = RULES.map(p => ({ p, v: C[p.key].map(u => u * UNIT) }));
+    const series = RULES.map(p => ({ p, v: C[p.key][dbl] }));
     const hi = Math.max(...series.flatMap(q => q.v)) * 1.05, lo = Math.min(0, ...series.flatMap(q => q.v));
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     const x = k => m.l + k / (n - 1) * iw;
@@ -371,11 +392,16 @@ tr.test td:first-child { font-weight: 700; }
   function profitBars() {
     document.getElementById('season-note').textContent = mode === 'flat'
       ? 'Profit at $100 a full stake ($50 a half stake), each season from $5,000. Hover a season for the numbers.'
-      : 'Profit at 2% of the account a full stake (1% a half stake), compounding within each season from $5,000, on a ratio scale where the range is wide.';
-    grouped('profit', (s, p) => profitOf(s.rules[p.key]), {
+      : 'Ending balance at 2% of the account a full stake (1% a half stake), compounding within each season from $5,000, on a ratio scale because the range is wide.';
+    const val = (s, p) => (mode === 'flat' ? profitOf(s.rules[p.key]) : Math.max(1, V(s.rules[p.key]).end));
+    grouped('profit', val, {
       log: mode === 'pct', fmtTick: short,
-      head: s => `${s.s} · profit from $5,000`,
-      fmt: (s, p) => `${signed(profitOf(s.rules[p.key]))} (${nf0.format(s.rules[p.key].bets)} bets)`,
+      head: s => (mode === 'flat' ? `${s.s} · profit from $5,000` : `${s.s} · ending balance from $5,000`),
+      fmt: (s, p) => {
+        const r = s.rules[p.key], v = V(r);
+        if (v.low <= BROKE) return 'went broke';
+        return (mode === 'flat' ? signed(v.end - START) : money(v.end)) + ` · lowest ${money(v.low)}`;
+      },
     });
   }
   function volumeBars() {
@@ -397,6 +423,7 @@ tr.test td:first-child { font-weight: 700; }
       const b = document.createElement('button');
       b.type = 'button'; b.textContent = s.s;
       b.setAttribute('aria-pressed', String(s.s === season));
+      if (RULES.some(p => lowOf(s.rules[p.key]) <= BROKE)) b.classList.add('is-broke');
       b.addEventListener('click', () => { season = s.s; chips(); path(); });
       host.appendChild(b);
     }
@@ -407,11 +434,11 @@ tr.test td:first-child { font-weight: 700; }
     host.replaceChildren();
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}` }, host);
     const s = S.find(x => x.s === season);
-    const series = RULES.map(p => ({ p, v: s.rules[p.key][mode === 'flat' ? 'path_flat' : 'path_pct'] }));
+    const series = RULES.map(p => ({ p, v: V(s.rules[p.key]).path }));
     const n = s.nights.length;
     const all = series.flatMap(q => q.v);
     const logScale = mode === 'pct' && Math.max(...all) > 4 * START;
-    const lo = logScale ? Math.min(START, ...all) * 0.85 : Math.min(START, ...all) * 0.9;
+    const lo = logScale ? Math.max(100, Math.min(START, ...all) * 0.85) : Math.min(0.9 * START, ...all.map(v => v * 0.9));
     const hi = Math.max(START, ...all) * 1.06;
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     const x = k => m.l + k / n * iw;
@@ -448,7 +475,7 @@ tr.test td:first-child { font-weight: 700; }
       showTip(e, head, series.map(q => [q.p.color, q.p.name, money(q.v[k])]));
     });
     hit.addEventListener('pointerleave', () => { hideTip(); cursor.setAttribute('opacity', 0); dots.forEach(d => d.setAttribute('opacity', 0)); });
-    const parts = RULES.map(p => { const r = s.rules[p.key]; return `${p.short.toLowerCase()} ${nf0.format(r.bets)} bets, ended ${money(mode === 'flat' ? r.flat_end : r.pct_end)}`; });
+    const parts = RULES.map(p => { const r = s.rules[p.key]; return `${p.short.toLowerCase()} ${nf0.format(r.bets)} bets, ended ${money(V(r).end)}, lowest ${money(V(r).low)}`; });
     document.getElementById('path-note').textContent = `${s.s}: ${parts.join('; ')}.` + (logScale ? ' Ratio scale, so the large compounding balances fit.' : '');
   }
 
@@ -459,7 +486,7 @@ tr.test td:first-child { font-weight: 700; }
     const thead = T.createTHead().insertRow();
     const th = (t, sw) => { const c = document.createElement('th'); if (sw) { const k = document.createElement('i'); k.className = 'sw'; k.style.background = sw; c.appendChild(k); } c.appendChild(document.createTextNode(t)); thead.appendChild(c); };
     th('Season'); th('Period');
-    for (const p of RULES) { th(p.short + ' bets', p.color); th('won'); th('profit'); }
+    for (const p of RULES) { th(p.short + ' bets', p.color); th('won'); th('profit'); th('lowest'); }
     const tb = T.createTBody();
     for (const s of S) {
       const tr = tb.insertRow();
@@ -472,16 +499,24 @@ tr.test td:first-child { font-weight: 700; }
         td(nf0.format(r.bets));
         td((100 * r.won / Math.max(1, r.won + r.lost)).toFixed(1) + '%');
         td(signed(pr), pr < 0 ? 'neg' : 'pos');
+        td(lowOf(r) <= BROKE ? 'broke ($0)' : money(lowOf(r)), lowOf(r) <= BROKE || lowOf(r) < 0.25 * START ? 'neg' : '');
       }
     }
   }
 
   function drawAll() { legends(); kpis(); cum(); profitBars(); volumeBars(); chips(); path(); table(); }
-  for (const b of document.querySelectorAll('.seg button')) {
+  for (const b of document.querySelectorAll('.seg button[data-mode]')) {
     b.addEventListener('click', () => {
       mode = b.dataset.mode;
-      for (const o of document.querySelectorAll('.seg button')) o.setAttribute('aria-pressed', String(o === b));
-      kpis(); profitBars(); path(); table();
+      for (const o of document.querySelectorAll('.seg button[data-mode]')) o.setAttribute('aria-pressed', String(o === b));
+      kpis(); profitBars(); chips(); path(); table();
+    });
+  }
+  for (const b of document.querySelectorAll('.seg button[data-dbl]')) {
+    b.addEventListener('click', () => {
+      dbl = b.dataset.dbl;
+      for (const o of document.querySelectorAll('.seg button[data-dbl]')) o.setAttribute('aria-pressed', String(o === b));
+      kpis(); cum(); profitBars(); chips(); path(); table();
     });
   }
   drawAll();
