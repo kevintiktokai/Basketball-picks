@@ -1,0 +1,462 @@
+<title>NCAAB Doubling Backtest</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: one reading column (max 1040px) — summary tiles, a stake switch, three chart panels, then the season table and notes */
+:root {
+  --bg: #f3f5f8; --surface: #ffffff; --ink: #12161c; --ink-2: #465061; --muted: #747e8c;
+  --grid: #e5e9ef; --axis: #c3cad4; --hair: rgba(18, 22, 28, 0.10); --era: #eef2f7;
+  --flat: #eb6834; --bet: #7a4fd0; --night: #2a78d6; --deemph: #b6bfcb;
+  --good: #0f7a2e; --bad: #b42323;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+    --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --era: #1b2029;
+    --flat: #e8743f; --bet: #a07ef0; --night: #3987e5; --deemph: #4c5462;
+    --good: #3ccf68; --bad: #f07272; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+  --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --era: #1b2029;
+  --flat: #e8743f; --bet: #a07ef0; --night: #3987e5; --deemph: #4c5462;
+  --good: #3ccf68; --bad: #f07272; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 28px; }
+h1, h2 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; text-wrap: balance; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(2rem, 4.6vw, 3rem); }
+h2 { font-size: 1.5rem; }
+p { margin: 0; }
+.eyebrow { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--ink-2); max-width: 66ch; font-size: 1.06rem; }
+header { display: grid; gap: 12px; }
+.switch { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.switch .label { font-size: 0.86rem; color: var(--ink-2); font-weight: 600; }
+.seg { display: inline-flex; border: 1px solid var(--axis); border-radius: 999px; padding: 3px; background: var(--surface); }
+.seg button, .chips button { font: 600 0.9rem/1 var(--font-body); color: var(--ink-2); background: none; border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.seg button:focus-visible, .chips button:focus-visible { outline: 2px solid var(--night); outline-offset: 2px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--hair); border-radius: 10px; padding: 16px 18px; display: grid; gap: 4px; min-width: 0; align-content: start; }
+.kpi .label { font-size: 0.86rem; color: var(--ink-2); display: inline-flex; gap: 8px; align-items: center; }
+.kpi .value { font-size: 2rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi .sub { font-size: 0.84rem; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 22px 22px 18px; display: grid; gap: 12px; min-width: 0; }
+.panel > p { color: var(--ink-2); max-width: 70ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.88rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.key-line { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+.key-box { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { border: 1px solid var(--hair); padding: 6px 10px; font-size: 0.84rem; font-variant-numeric: tabular-nums; }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.chips button.is-broke { color: var(--bad); }
+.chips button.is-broke[aria-pressed="true"] { color: var(--surface); background: var(--bad); border-color: var(--bad); }
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font-family: var(--font-body); }
+.tick { fill: var(--muted); font-size: 12px; }
+.lbl { fill: var(--ink-2); font-size: 12.5px; font-weight: 600; }
+.warn-lbl { fill: var(--bad); font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.era-lbl { fill: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--axis); stroke-width: 1; }
+.startline { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 4 4; opacity: 0.7; }
+.era-band { fill: var(--era); }
+.c-flat { fill: var(--flat); stroke: var(--flat); }
+.c-bet { fill: var(--bet); stroke: var(--bet); }
+.c-night { fill: var(--night); stroke: var(--night); }
+.line { fill: none; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; }
+.ring { stroke: var(--surface); stroke-width: 2; }
+.hit { fill: transparent; }
+.cursor { stroke: var(--axis); stroke-width: 1; }
+.tip { position: fixed; z-index: 10; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--hair);
+  border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16); padding: 10px 12px; font-size: 0.86rem; line-height: 1.4; min-width: 200px; max-width: 300px; }
+.tip .t-head { color: var(--muted); font-size: 0.8rem; margin-bottom: 4px; }
+.tip .t-row { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.tip .t-row b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.tip .t-name { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--hair); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { padding: 9px 10px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+th { font-weight: 600; color: var(--ink-2); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--axis); vertical-align: bottom; }
+th .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+td { border-bottom: 1px solid var(--grid); }
+tr:last-child td { border-bottom: 0; }
+th:first-child, td:first-child { text-align: left; }
+tr.test td:first-child { font-weight: 700; }
+.pos { color: var(--good); font-weight: 600; }
+.neg { color: var(--bad); font-weight: 600; }
+.chip { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--hair); color: var(--ink-2); }
+.notes ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; color: var(--ink-2); max-width: 74ch; }
+.foot { font-size: 0.84rem; color: var(--muted); }
+@media (max-width: 560px) { .panel { padding: 16px 14px 14px; } .kpi .value { font-size: 1.7rem; } }
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">NCAA men's basketball · game totals · straight bets at 55%+</p>
+    <h1>Doubling after a loss: what it does to a season</h1>
+    <p class="lede">Every straight bet the locked engine would have made over 15 seasons, replayed three ways from a fresh
+      $5,000 each season: the same stake every bet, doubling after each losing bet, and doubling the whole next night after
+      a losing night. Doubling goes 1×, 2×, 4× the base, then resets after a win or a third loss.</p>
+  </header>
+
+  <div class="switch">
+    <span class="label" id="mode-label">Base stake</span>
+    <div class="seg" role="group" aria-labelledby="mode-label">
+      <button type="button" id="mode-dollar" data-mode="dollar" aria-pressed="true">$100 → $200 → $400</button>
+      <button type="button" id="mode-pct" data-mode="pct" aria-pressed="false">2% → 4% → 8% of the account</button>
+    </div>
+  </div>
+
+  <section class="kpis" aria-label="Summary">
+    <div class="kpi"><span class="label">Straight bets, 15 seasons</span><span class="value" id="k-bets"></span><span class="sub" id="k-bets-sub"></span></div>
+    <div class="kpi"><span class="label"><i class="key-box" style="background:var(--flat)"></i><span id="k-a-name"></span></span><span class="value" id="k-a"></span><span class="sub" id="k-a-sub"></span></div>
+    <div class="kpi"><span class="label"><i class="key-box" style="background:var(--bet)"></i>Doubling after each losing bet</span><span class="value" id="k-b"></span><span class="sub" id="k-b-sub"></span></div>
+    <div class="kpi"><span class="label"><i class="key-box" style="background:var(--night)"></i>Doubling after each losing night</span><span class="value" id="k-c"></span><span class="sub" id="k-c-sub"></span></div>
+  </section>
+
+  <section class="panel">
+    <h2>The lowest point of every season</h2>
+    <p>How far the $5,000 fell before the season ended. This is the number that decides whether a staking plan survives.
+      A bar at zero means the account went broke.</p>
+    <div class="legend" data-legend></div>
+    <div class="chart" id="lows" role="group" aria-label="Lowest balance in each season, by staking plan"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Where every season ended</h2>
+    <p>The balance on the last night of each season, on a ratio scale so a $10,000 season and a $100,000 season both read.
+      The dashed line is the $5,000 start. The engine has a real edge in most seasons, so betting more usually ends higher;
+      the lowest points above show what that costs.</p>
+    <div class="legend" data-legend></div>
+    <div class="chart" id="ends" role="group" aria-label="Ending balance in each season, by staking plan"></div>
+  </section>
+
+  <section class="panel">
+    <h2>One season, night by night</h2>
+    <p id="path-note">The balance at the end of every betting night. Pick a season.</p>
+    <div class="chips" id="season-chips" role="group" aria-label="Season"></div>
+    <div class="legend" data-legend></div>
+    <div class="chart" id="path" role="img" aria-label="Balance night by night in the chosen season"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Every season</h2>
+    <p>Period: <b>build</b> seasons were used to develop the engine, <b>check</b> seasons to confirm it, <b>test</b> seasons were
+      scored once with it locked, at each game's best real price. Red marks a season that finished below $5,000 or went broke.</p>
+    <div class="tablewrap"><table id="seasons"></table></div>
+  </section>
+
+  <section class="panel notes">
+    <h2>What these numbers assume</h2>
+    <ul>
+      <li>Doubling after each losing bet needs the last result before the next bet. NCAAB nights carry up to 75 bets, many tipping at the same time, so that version could not really be followed; it is shown in tip-off order. Doubling by night is the version you could follow.</li>
+      <li>A night's bets never stake more than the balance. After two losing nights the nightly plan stakes four times the base on every bet, which on a busy night can be most of the account.</li>
+      <li>Every season starts again from $5,000. Prices: standard −110 before 2021-22, each game's best real opening price after.</li>
+      <li>The percentage plans compound inside a season, which is why some seasons end above $100,000. Books cap stakes and limit winning accounts long before that.</li>
+      <li>Doubling does not change the return per dollar bet. It changes how much is bet and when, which raises both the good seasons and the risk of ruin.</li>
+    </ul>
+    <p class="foot">Source: locked v3 engine straight bets (reports/singles_extrapolation.md); staking replay in scripts/doubling_backtest.py.</p>
+  </section>
+</main>
+<div class="tip" id="tip" hidden></div>
+<script type="application/json" id="data">__DATA__</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const NS = 'http://www.w3.org/2000/svg';
+  const tip = document.getElementById('tip');
+  const nf0 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  const money = v => (v < 0 ? '−$' : '$') + nf0.format(Math.abs(Math.round(v)));
+  const short = v => v >= 1e6 ? '$' + (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : v >= 1e3 ? '$' + (v / 1e3).toFixed(v >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'k' : '$' + nf0.format(v);
+  const START = D.start;
+  const BROKE = 1;
+  const MODES = {
+    dollar: [{ key: 'flat', name: 'Flat $100', cls: 'flat' },
+             { key: 'mg_flat', name: 'Doubling after each losing bet', cls: 'bet' },
+             { key: 'mg_flat_night', name: 'Doubling after each losing night', cls: 'night' }],
+    pct: [{ key: 'pct', name: '2% of the account', cls: 'flat' },
+          { key: 'mg_pct', name: 'Doubling after each losing bet', cls: 'bet' },
+          { key: 'mg_pct_night', name: 'Doubling after each losing night', cls: 'night' }],
+  };
+  const COLOR = { flat: 'var(--flat)', bet: 'var(--bet)', night: 'var(--night)' };
+  let mode = 'dollar';
+  const worstSeason = D.seasons.slice().sort((a, b) => a.plans.mg_flat.low - b.plans.mg_flat.low)[0].s;
+  let season = worstSeason;
+
+  const el = (tag, attrs, parent) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  };
+  const text = (parent, x, y, s, cls, anchor) => {
+    const t = el('text', { x, y, class: cls, 'text-anchor': anchor || 'start' }, parent);
+    t.textContent = s;
+    return t;
+  };
+  function niceTicks(lo, hi, n) {
+    const span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+    const out = [];
+    for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(Math.round(v * 100) / 100);
+    return out;
+  }
+  function logTicks(lo, hi) {
+    const out = [];
+    for (let e = Math.floor(Math.log10(lo)); e <= Math.ceil(Math.log10(hi)); e++)
+      for (const m of [1, 2, 5]) { const v = m * Math.pow(10, e); if (v >= lo && v <= hi) out.push(v); }
+    return out.length > 7 ? out.filter(v => String(v)[0] !== '2') : out;
+  }
+  function showTip(evt, head, rows) {
+    tip.replaceChildren();
+    const h = document.createElement('div'); h.className = 't-head'; h.textContent = head; tip.appendChild(h);
+    for (const [color, name, value] of rows) {
+      const r = document.createElement('div'); r.className = 't-row';
+      const n = document.createElement('span'); n.className = 't-name';
+      if (color) { const k = document.createElement('i'); k.className = 'key-box'; k.style.background = color; n.appendChild(k); }
+      n.appendChild(document.createTextNode(name));
+      const b = document.createElement('b'); b.textContent = value;
+      r.append(n, b); tip.appendChild(r);
+    }
+    tip.hidden = false;
+    const pad = 14, w = tip.offsetWidth, h2 = tip.offsetHeight;
+    let x = evt.clientX + pad, y = evt.clientY + pad;
+    if (x + w > window.innerWidth - 8) x = evt.clientX - w - pad;
+    if (y + h2 > window.innerHeight - 8) y = evt.clientY - h2 - pad;
+    tip.style.left = Math.max(8, x) + 'px';
+    tip.style.top = Math.max(8, y) + 'px';
+  }
+  const hideTip = () => { tip.hidden = true; };
+  const fmtVal = v => (v <= BROKE ? 'broke ($0)' : money(v));
+
+  // ---------- legends and KPIs
+  function legends() {
+    for (const L of document.querySelectorAll('[data-legend]')) {
+      L.replaceChildren();
+      for (const p of MODES[mode]) {
+        const s = document.createElement('span');
+        const k = document.createElement('i'); k.className = 'key-box'; k.style.background = COLOR[p.cls];
+        s.append(k, document.createTextNode(p.name));
+        L.appendChild(s);
+      }
+    }
+  }
+  function kpis() {
+    const S = D.seasons;
+    const bets = S.reduce((a, s) => a + s.bets, 0), won = S.reduce((a, s) => a + s.won, 0), lost = S.reduce((a, s) => a + s.lost, 0);
+    document.getElementById('k-bets').textContent = nf0.format(bets);
+    document.getElementById('k-bets-sub').textContent = `${(100 * won / (won + lost)).toFixed(1)}% won · ${S[0].s} to ${S[S.length - 1].s}`;
+    const [a, b, c] = MODES[mode];
+    const sum = key => {
+      const r = S.map(s => ({ s: s.s, ...s.plans[key] }));
+      const below = r.filter(x => x.end < START - 0.005), broke = r.filter(x => x.low <= BROKE);
+      const worst = r.slice().sort((x, y) => x.low - y.low)[0];
+      return { below: below.length, broke, worst };
+    };
+    document.getElementById('k-a-name').textContent = a.name;
+    for (const [id, p] of [['k-a', a], ['k-b', b], ['k-c', c]]) {
+      const r = sum(p.key);
+      const v = document.getElementById(id);
+      v.textContent = r.broke.length ? `Broke in ${r.broke.length}` : `${r.below} below $5k`;
+      v.className = 'value' + (r.broke.length || r.below ? ' neg' : '');
+      document.getElementById(id + '-sub').textContent = r.broke.length
+        ? `went to $0 in ${r.broke.map(x => x.s).join(', ')} · ${r.below} season${r.below === 1 ? '' : 's'} ended below $5,000`
+        : `seasons that ended below $5,000 · lowest point ${money(r.worst.low)} (${r.worst.s})`;
+    }
+  }
+
+  // ---------- chart: grouped bars of each season's lowest balance
+  function lows() {
+    const host = document.getElementById('lows');
+    const W = Math.max(300, host.clientWidth), H = 300, m = { l: 52, r: 8, t: 14, b: 40 };
+    host.replaceChildren();
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}` }, host);
+    const S = D.seasons, P = MODES[mode];
+    const iw = W - m.l - m.r, ih = H - m.t - m.b, gw = iw / S.length;
+    const max = START * 1.04;
+    const y = v => m.t + ih - Math.max(0, v) / max * ih;
+    S.forEach((s, i) => { if (s.era === 'test') el('rect', { x: m.l + i * gw, y: m.t, width: gw, height: ih, class: 'era-band' }, svg); });
+    for (const t of niceTicks(0, START, 5)) {
+      el('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: 'gridline' }, svg);
+      text(svg, m.l - 8, y(t) + 4, short(t), 'tick', 'end');
+    }
+    el('line', { x1: m.l, x2: W - m.r, y1: y(START), y2: y(START), class: 'startline' }, svg);
+    S.forEach((s, i) => {
+      const gx = m.l + i * gw, bw = Math.max(2, (gw * 0.78) / P.length);
+      P.forEach((p, j) => {
+        const v = s.plans[p.key].low, x = gx + gw * 0.11 + j * bw;
+        el('rect', { x, y: y(v), width: Math.max(1, bw - 1), height: Math.max(0, y(0) - y(v)), rx: 1.5, class: 'c-' + p.cls }, svg);
+        if (v <= BROKE) text(svg, x + bw / 2, y(0) - 6, '✕', 'warn-lbl', 'middle');
+      });
+      const lab = W < 640 ? s.s.slice(2, 4) + '–' + s.s.slice(-2) : s.s;
+      text(svg, gx + gw / 2, H - m.b + 18, lab, 'tick', 'middle');
+      const hit = el('rect', { x: gx, y: m.t, width: gw, height: ih + 24, class: 'hit' }, svg);
+      hit.addEventListener('pointermove', e => showTip(e, `${s.s} · ${nf0.format(s.bets)} bets · lowest point`,
+        P.map(p => [COLOR[p.cls], p.name, fmtVal(s.plans[p.key].low)])));
+      hit.addEventListener('pointerleave', hideTip);
+    });
+    el('line', { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: 'baseline' }, svg);
+    const firstTest = S.findIndex(s => s.era === 'test');
+    if (firstTest >= 0) text(svg, m.l + firstTest * gw + 4, H - 6, 'Untouched test, real prices', 'era-lbl');
+  }
+
+  // ---------- chart: dots of each season's ending balance, ratio scale
+  function ends() {
+    const host = document.getElementById('ends');
+    const W = Math.max(300, host.clientWidth), H = 300, m = { l: 52, r: 8, t: 14, b: 40 };
+    host.replaceChildren();
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}` }, host);
+    const S = D.seasons, P = MODES[mode];
+    const vals = S.flatMap(s => P.map(p => s.plans[p.key].end)).filter(v => v > BROKE);
+    const lo = Math.min(START, ...vals) * 0.85, hi = Math.max(START, ...vals) * 1.12;
+    const iw = W - m.l - m.r, ih = H - m.t - m.b, gw = iw / S.length;
+    const y = v => m.t + ih - (Math.log(Math.max(v, lo)) - Math.log(lo)) / (Math.log(hi) - Math.log(lo)) * ih;
+    S.forEach((s, i) => { if (s.era === 'test') el('rect', { x: m.l + i * gw, y: m.t, width: gw, height: ih, class: 'era-band' }, svg); });
+    for (const t of logTicks(lo, hi)) {
+      el('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: 'gridline' }, svg);
+      text(svg, m.l - 8, y(t) + 4, short(t), 'tick', 'end');
+    }
+    el('line', { x1: m.l, x2: W - m.r, y1: y(START), y2: y(START), class: 'startline' }, svg);
+    S.forEach((s, i) => {
+      const cx = m.l + i * gw + gw / 2;
+      const pts = P.map((p, j) => ({ p, v: s.plans[p.key].end, x: cx + (j - 1) * Math.min(7, gw * 0.2) }));
+      const ys = pts.map(q => y(q.v));
+      el('line', { x1: cx, x2: cx, y1: Math.min(...ys), y2: Math.max(...ys), class: 'baseline' }, svg);
+      for (const q of pts) {
+        if (q.v <= BROKE) {
+          text(svg, q.x, m.t + ih - 4, '✕', 'warn-lbl', 'middle');
+        } else {
+          el('circle', { cx: q.x, cy: y(q.v), r: 5, class: 'c-' + q.p.cls + ' ring' }, svg);
+        }
+      }
+      const lab = W < 640 ? s.s.slice(2, 4) + '–' + s.s.slice(-2) : s.s;
+      text(svg, cx, H - m.b + 18, lab, 'tick', 'middle');
+      const hit = el('rect', { x: m.l + i * gw, y: m.t, width: gw, height: ih + 24, class: 'hit' }, svg);
+      hit.addEventListener('pointermove', e => showTip(e, `${s.s} · ended the season at`,
+        P.map(p => [COLOR[p.cls], p.name, fmtVal(s.plans[p.key].end)])));
+      hit.addEventListener('pointerleave', hideTip);
+    });
+    const firstTest = S.findIndex(s => s.era === 'test');
+    if (firstTest >= 0) text(svg, m.l + firstTest * gw + 4, H - 6, 'Untouched test, real prices', 'era-lbl');
+  }
+
+  // ---------- chart: one season night by night
+  function chips() {
+    const host = document.getElementById('season-chips');
+    host.replaceChildren();
+    for (const s of D.seasons) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = s.s;
+      b.setAttribute('aria-pressed', String(s.s === season));
+      if (MODES[mode].some(p => s.plans[p.key].low <= BROKE)) b.classList.add('is-broke');
+      b.addEventListener('click', () => { season = s.s; chips(); path(); });
+      host.appendChild(b);
+    }
+  }
+  function path() {
+    const host = document.getElementById('path');
+    const W = Math.max(300, host.clientWidth), H = 320, m = { l: 56, r: 12, t: 14, b: 34 };
+    host.replaceChildren();
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}` }, host);
+    const s = D.seasons.find(x => x.s === season), P = MODES[mode];
+    const series = P.map(p => ({ p, v: s.plans[p.key].path }));
+    const n = s.nights.length;
+    const all = series.flatMap(q => q.v);
+    const logScale = mode === 'pct' && Math.max(...all) > 4 * START;
+    const lo = logScale ? Math.max(100, Math.min(START, ...all.filter(v => v > BROKE)) * 0.85) : 0;
+    const hi = Math.max(START, ...all) * 1.06;
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const x = k => m.l + k / n * iw;
+    const y = logScale
+      ? v => m.t + ih - (Math.log(Math.max(v, lo)) - Math.log(lo)) / (Math.log(hi) - Math.log(lo)) * ih
+      : v => m.t + ih - Math.max(0, v) / hi * ih;
+    for (const t of (logScale ? logTicks(lo, hi) : niceTicks(0, hi, 5))) {
+      el('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: 'gridline' }, svg);
+      text(svg, m.l - 8, y(t) + 4, short(t), 'tick', 'end');
+    }
+    el('line', { x1: m.l, x2: W - m.r, y1: y(START), y2: y(START), class: 'startline' }, svg);
+    if (!logScale) el('line', { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: 'baseline' }, svg);
+    // month labels along the bottom
+    let lastMonth = '';
+    s.nights.forEach((d, k) => {
+      const mo = d.slice(0, 7);
+      if (mo !== lastMonth) {
+        lastMonth = mo;
+        const lab = new Date(d + 'T12:00:00Z').toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+        if (x(k + 1) < W - m.r - 20) text(svg, x(k + 1), H - 10, lab, 'tick', 'middle');
+      }
+    });
+    for (const q of series) {
+      const d = q.v.map((v, k) => `${k ? 'L' : 'M'}${x(k).toFixed(1)},${y(v).toFixed(1)}`).join('');
+      el('path', { d, class: 'line c-' + q.p.cls, fill: 'none' }, svg).style.fill = 'none';
+      const k0 = q.v.findIndex(v => v <= BROKE);
+      if (k0 > 0) text(svg, x(k0), y(0) - 8, 'broke', 'warn-lbl', 'middle');
+    }
+    const cursor = el('line', { x1: 0, x2: 0, y1: m.t, y2: m.t + ih, class: 'cursor', opacity: 0 }, svg);
+    const dots = series.map(q => el('circle', { r: 4, class: 'c-' + q.p.cls + ' ring', opacity: 0 }, svg));
+    const hit = el('rect', { x: m.l, y: m.t, width: iw, height: ih, class: 'hit' }, svg);
+    hit.addEventListener('pointermove', e => {
+      const r = svg.getBoundingClientRect();
+      const px = (e.clientX - r.left) * W / r.width;
+      const k = Math.max(0, Math.min(n, Math.round((px - m.l) / iw * n)));
+      cursor.setAttribute('x1', x(k)); cursor.setAttribute('x2', x(k)); cursor.setAttribute('opacity', 1);
+      series.forEach((q, j) => { dots[j].setAttribute('cx', x(k)); dots[j].setAttribute('cy', y(q.v[k])); dots[j].setAttribute('opacity', 1); });
+      const head = k === 0 ? `${s.s} · start` : `${s.s} · night ${k} of ${n} · ${new Date(s.nights[k - 1] + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}`;
+      showTip(e, head, series.map(q => [COLOR[q.p.cls], q.p.name, fmtVal(q.v[k])]));
+    });
+    hit.addEventListener('pointerleave', () => { hideTip(); cursor.setAttribute('opacity', 0); dots.forEach(d => d.setAttribute('opacity', 0)); });
+    const lows = P.map(p => `${p.name.toLowerCase()} ${fmtVal(s.plans[p.key].low)}`).join(', ');
+    document.getElementById('path-note').textContent =
+      `${s.s}: ${nf0.format(s.bets)} bets over ${n} nights, ${s.won} won and ${s.lost} lost. Lowest points: ${lows}.` +
+      (logScale ? ' Ratio scale, so the large compounding balances fit.' : '');
+  }
+
+  // ---------- table
+  function table() {
+    const T = document.getElementById('seasons');
+    T.replaceChildren();
+    const P = MODES[mode];
+    const thead = T.createTHead().insertRow();
+    const th = (t, sw) => { const c = document.createElement('th'); if (sw) { const k = document.createElement('i'); k.className = 'sw'; k.style.background = sw; c.appendChild(k); } c.appendChild(document.createTextNode(t)); thead.appendChild(c); };
+    th('Season'); th('Period'); th('Bets'); th('Won–lost');
+    for (const p of P) { th(p.cls === 'flat' ? (mode === 'dollar' ? 'Flat ends' : '2% ends') : p.cls === 'bet' ? 'Per bet ends' : 'Nightly ends', COLOR[p.cls]); th('lowest'); }
+    const tb = T.createTBody();
+    for (const s of D.seasons) {
+      const tr = tb.insertRow();
+      if (s.era === 'test') tr.className = 'test';
+      const td = (t, cls) => { const c = tr.insertCell(); c.textContent = t; if (cls) c.className = cls; return c; };
+      td(s.s);
+      const pc = tr.insertCell(); const chip = document.createElement('span'); chip.className = 'chip'; chip.textContent = s.era; pc.appendChild(chip); pc.style.textAlign = 'left';
+      td(nf0.format(s.bets)); td(`${s.won}–${s.lost}`);
+      for (const p of P) {
+        const r = s.plans[p.key];
+        td(fmtVal(r.end), r.low <= BROKE || r.end < START - 0.005 ? 'neg' : '');
+        td(fmtVal(r.low), r.low <= BROKE ? 'neg' : '');
+      }
+    }
+  }
+
+  function drawAll() { legends(); kpis(); lows(); ends(); chips(); path(); table(); }
+  for (const b of document.querySelectorAll('.seg button')) {
+    b.addEventListener('click', () => {
+      mode = b.dataset.mode;
+      for (const o of document.querySelectorAll('.seg button')) o.setAttribute('aria-pressed', String(o === b));
+      drawAll();
+    });
+  }
+  drawAll();
+  let rt;
+  new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { lows(); ends(); path(); }, 120); }).observe(document.querySelector('.wrap'));
+})();
+</script>
