@@ -1,0 +1,423 @@
+<title>NCAAB Every Bet Ledger</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: one reading column (max 1100px) — rule and doubling switches, filters, four totals, one chart, the bet ledger, notes */
+:root {
+  --bg: #f3f5f8; --surface: #ffffff; --ink: #12161c; --ink-2: #465061; --muted: #747e8c;
+  --grid: #e5e9ef; --axis: #c3cad4; --hair: rgba(18, 22, 28, 0.10); --era: #eef2f7;
+  --cur: #8a94a3; --tier: #2a78d6; --best: #eb6834; --tier-half: rgba(42, 120, 214, 0.42); --deemph: #b6bfcb;
+  --good: #0f7a2e; --bad: #b42323;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+    --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --era: #1b2029;
+    --cur: #7f8997; --tier: #3987e5; --best: #e8743f; --tier-half: rgba(57, 135, 229, 0.45); --deemph: #4c5462;
+    --good: #3ccf68; --bad: #f07272; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+  --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --era: #1b2029;
+  --cur: #7f8997; --tier: #3987e5; --best: #e8743f; --tier-half: rgba(57, 135, 229, 0.45); --deemph: #4c5462;
+  --good: #3ccf68; --bad: #f07272; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 28px; }
+h1, h2 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; text-wrap: balance; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(2rem, 4.6vw, 3rem); }
+h2 { font-size: 1.5rem; }
+p { margin: 0; }
+.eyebrow { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--ink-2); max-width: 66ch; font-size: 1.06rem; }
+header { display: grid; gap: 12px; }
+.switch { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.switch .label { font-size: 0.86rem; color: var(--ink-2); font-weight: 600; }
+.seg { display: inline-flex; border: 1px solid var(--axis); border-radius: 999px; padding: 3px; background: var(--surface); }
+.seg button, .chips button { font: 600 0.9rem/1 var(--font-body); color: var(--ink-2); background: none; border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.seg button:focus-visible, .chips button:focus-visible { outline: 2px solid var(--tier); outline-offset: 2px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--hair); border-radius: 10px; padding: 16px 18px; display: grid; gap: 4px; min-width: 0; align-content: start; }
+.kpi .label { font-size: 0.86rem; color: var(--ink-2); display: inline-flex; gap: 8px; align-items: center; }
+.kpi .value { font-size: 2rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi .sub { font-size: 0.84rem; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 22px 22px 18px; display: grid; gap: 12px; min-width: 0; }
+.panel > p { color: var(--ink-2); max-width: 70ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.88rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.key-line { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+.key-box { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { border: 1px solid var(--hair); padding: 6px 10px; font-size: 0.84rem; font-variant-numeric: tabular-nums; }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.chips button.is-broke { color: var(--bad); }
+.chips button.is-broke[aria-pressed="true"] { color: var(--surface); background: var(--bad); border-color: var(--bad); }
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font-family: var(--font-body); }
+.tick { fill: var(--muted); font-size: 12px; }
+.lbl { fill: var(--ink-2); font-size: 12.5px; font-weight: 600; }
+.warn-lbl { fill: var(--bad); font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.era-lbl { fill: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--axis); stroke-width: 1; }
+.startline { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 4 4; opacity: 0.7; }
+.era-band { fill: var(--era); }
+.c-cur { fill: var(--cur); stroke: var(--cur); }
+.c-tier { fill: var(--tier); stroke: var(--tier); }
+.c-best { fill: var(--best); stroke: var(--best); }
+.c-half { fill: var(--tier-half); stroke: none; }
+.line { fill: none; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; }
+.ring { stroke: var(--surface); stroke-width: 2; }
+.hit { fill: transparent; }
+.cursor { stroke: var(--axis); stroke-width: 1; }
+.tip { position: fixed; z-index: 10; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--hair);
+  border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16); padding: 10px 12px; font-size: 0.86rem; line-height: 1.4; min-width: 200px; max-width: 300px; }
+.tip .t-head { color: var(--muted); font-size: 0.8rem; margin-bottom: 4px; }
+.tip .t-row { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.tip .t-row b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.tip .t-name { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--hair); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { padding: 9px 10px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+th { font-weight: 600; color: var(--ink-2); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--axis); vertical-align: bottom; }
+th .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+td { border-bottom: 1px solid var(--grid); }
+tr:last-child td { border-bottom: 0; }
+th:first-child, td:first-child { text-align: left; }
+tr.test td:first-child { font-weight: 700; }
+.pos { color: var(--good); font-weight: 600; }
+.neg { color: var(--bad); font-weight: 600; }
+.chip { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--hair); color: var(--ink-2); }
+.notes ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; color: var(--ink-2); max-width: 74ch; }
+.foot { font-size: 0.84rem; color: var(--muted); }
+@media (max-width: 560px) { .panel { padding: 16px 14px 14px; } .kpi .value { font-size: 1.7rem; } }
+
+.filters { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; }
+.field { display: grid; gap: 4px; font-size: 0.8rem; color: var(--ink-2); font-weight: 600; }
+.field select, .field input { font: 400 0.95rem var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--axis);
+  border-radius: 8px; padding: 7px 10px; min-width: 0; }
+.field input { width: 14rem; max-width: 100%; }
+.field select:focus-visible, .field input:focus-visible { outline: 2px solid var(--tier); outline-offset: 1px; }
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--ink-2); }
+.pager button { font: 600 0.86rem var(--font-body); color: var(--ink-2); background: var(--surface); border: 1px solid var(--hair); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+.pager button:disabled { opacity: 0.4; cursor: default; }
+.pager button:focus-visible { outline: 2px solid var(--tier); outline-offset: 2px; }
+.res { display: inline-block; min-width: 3.4em; text-align: center; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px; }
+.res.won { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+.res.lost { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
+.res.push { background: var(--era); color: var(--muted); }
+td.game, th.game { text-align: left; white-space: normal; min-width: 12rem; }
+td.game .vs { color: var(--muted); }
+td.up { color: var(--best); font-weight: 700; }
+.sub-note { font-size: 0.84rem; color: var(--muted); }
+#ledger tbody tr:hover td { background: var(--era); }
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">NCAA men's basketball · game totals · every straight bet, 2011-12 to 2025-26</p>
+    <h1>Every bet, one by one</h1>
+    <p class="lede">All the straight bets behind the volume comparison: each game the locked engine rated 53% or better at the
+      opening number. Choose a rule and a doubling mode to see which games it bet, how much it staked, and where the
+      account stood after each bet. Each season starts from $5,000 at $100 a full stake.</p>
+  </header>
+
+  <div class="switch">
+    <span class="label" id="rule-label">Rule</span>
+    <div class="seg" role="group" aria-labelledby="rule-label">
+      <button type="button" data-rule="current" aria-pressed="false">Current: 55%+</button>
+      <button type="button" data-rule="tiered" aria-pressed="true">Tiered: full 55%+, half 53–55%</button>
+      <button type="button" data-rule="best5" aria-pressed="false">Best 5 a day, 53%+</button>
+    </div>
+    <span class="label" id="dbl-label">Doubling</span>
+    <div class="seg" role="group" aria-labelledby="dbl-label">
+      <button type="button" data-dbl="none" aria-pressed="true">Off</button>
+      <button type="button" data-dbl="bet" aria-pressed="false">After each losing bet</button>
+      <button type="button" data-dbl="night" aria-pressed="false">After each losing night</button>
+    </div>
+  </div>
+
+  <div class="filters" role="group" aria-label="Filters">
+    <label class="field" for="f-season">Season<select id="f-season"></select></label>
+    <label class="field" for="f-result">Result<select id="f-result">
+      <option value="">All results</option><option value="0">Won</option><option value="1">Lost</option><option value="2">Push</option></select></label>
+    <label class="field" for="f-pick">Pick<select id="f-pick">
+      <option value="">Overs and Unders</option><option value="1">Overs</option><option value="0">Unders</option></select></label>
+    <label class="field" for="f-team">Team<input id="f-team" type="search" placeholder="e.g. Duke" autocomplete="off"></label>
+    <label class="field" for="f-order">Order<select id="f-order"><option value="asc">Oldest first</option><option value="desc">Newest first</option></select></label>
+  </div>
+
+  <section class="kpis" aria-label="Totals for the bets shown">
+    <div class="kpi"><span class="label">Bets shown</span><span class="value" id="k-n"></span><span class="sub" id="k-n-sub"></span></div>
+    <div class="kpi"><span class="label">Money staked</span><span class="value" id="k-st"></span><span class="sub" id="k-st-sub"></span></div>
+    <div class="kpi"><span class="label">Profit</span><span class="value" id="k-pr"></span><span class="sub" id="k-pr-sub"></span></div>
+    <div class="kpi"><span class="label" id="k-4-label"></span><span class="value" id="k-4"></span><span class="sub" id="k-4-sub"></span></div>
+  </section>
+
+  <section class="panel">
+    <h2 id="chart-title"></h2>
+    <p id="chart-note"></p>
+    <div class="chart" id="chart" role="img" aria-label="Account balance or profit for the bets shown"></div>
+  </section>
+
+  <section class="panel">
+    <h2>The ledger</h2>
+    <p class="sub-note" id="ledger-note"></p>
+    <div class="pager" id="pager-top"></div>
+    <div class="tablewrap"><table id="ledger"></table></div>
+    <div class="pager" id="pager-bottom"></div>
+  </section>
+
+  <section class="panel notes">
+    <h2>How to read this</h2>
+    <ul>
+      <li><b>Pick</b> is the line the bet was graded at. Before 2021-22 that is the consensus opening total at −110 (1.909). From 2021-22 it is the best opening line and price among the US books in the data (BetMGM, BetRivers, DraftKings, bet365, FanDuel, Caesars, Fanatics), shown with the book; <b>Opener</b> is the consensus opening total.</li>
+      <li><b>Engine</b> is the locked engine's calibrated chance that the pick wins. Tiered stakes $100 at 55%+ and $50 at 53–55%.</li>
+      <li>With doubling on, a stake in orange is above its normal size (2× or 4× after a loss). Doubling after each losing bet assumes each result is known before the next bet, in tip-off order.</li>
+      <li><b>Balance</b> is the account after the bet. With doubling after each losing night, every bet of a night is placed together, so the balance moves bet by bet within the night as the results come in.</li>
+      <li>A push returns the stake. Games with no clean opening total are not in the backtest.</li>
+      <li>2021-26 was already used once to test the engine, and the 53% rules were chosen on 2011-21. This shows what following each rule would have looked like, not a promise about next season. The full ledger is also in the repo as reports/every_bet_2011_26.csv.</li>
+    </ul>
+    <p class="foot">Source: locked v3 engine walk-forward picks; scripts/every_bet_page.py.</p>
+  </section>
+</main>
+<div class="tip" id="tip" hidden></div>
+<script type="application/json" id="data">__DATA__</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const NS = 'http://www.w3.org/2000/svg';
+  const tip = document.getElementById('tip');
+  const nf0 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  const money = v => (v < 0 ? '−$' : '$') + nf0.format(Math.abs(Math.round(v)));
+  const signed = v => (Math.round(v) === 0 ? '$0' : (v < 0 ? '−$' : '+$') + nf0.format(Math.abs(Math.round(v))));
+  const short = v => { const a = Math.abs(v), s = v < 0 ? '−$' : '$';
+    return a >= 1e6 ? s + (a / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : a >= 1e3 ? s + (a / 1e3).toFixed(a >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'k' : s + nf0.format(a); };
+  const START = D.start, UNIT = D.unit, N = D.d.length, PAGE = 100;
+  const RES = ['won', 'lost', 'push'];
+  const RULE_NAME = { current: 'Current: 55%+', tiered: 'Tiered: full 55%+, half 53–55%', best5: 'Best 5 a day, 53%+' };
+  const DBL_NAME = { none: 'no doubling', bet: 'doubling after each losing bet', night: 'doubling after each losing night' };
+  const teamLower = D.teams.map(t => t.toLowerCase());
+  let rule = 'tiered', dbl = 'none', page = 0;
+
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  const text = (parent, x, y, s, cls, anchor) => { const t = el('text', { x, y, class: cls, 'text-anchor': anchor || 'start' }, parent); t.textContent = s; return t; };
+  function niceTicks(lo, hi, n) {
+    const span = hi - lo || 1, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+    const out = [];
+    for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(Math.round(v * 100) / 100);
+    return out;
+  }
+  function showTip(evt, head, rows) {
+    tip.replaceChildren();
+    const h = document.createElement('div'); h.className = 't-head'; h.textContent = head; tip.appendChild(h);
+    for (const [name, value] of rows) {
+      const r = document.createElement('div'); r.className = 't-row';
+      const n = document.createElement('span'); n.className = 't-name'; n.textContent = name;
+      const b = document.createElement('b'); b.textContent = value;
+      r.append(n, b); tip.appendChild(r);
+    }
+    tip.hidden = false;
+    const pad = 14, w = tip.offsetWidth, h2 = tip.offsetHeight;
+    let x = evt.clientX + pad, y = evt.clientY + pad;
+    if (x + w > window.innerWidth - 8) x = evt.clientX - w - pad;
+    if (y + h2 > window.innerHeight - 8) y = evt.clientY - h2 - pad;
+    tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+  }
+  const hideTip = () => { tip.hidden = true; };
+  const fmtDate = d => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+
+  // ---------- season select
+  const sSel = document.getElementById('f-season');
+  sSel.appendChild(new Option('All seasons', ''));
+  D.seasons.forEach((s, i) => sSel.appendChild(new Option(`${s} (${D.era[s]})`, String(i))));
+  sSel.value = String(D.seasons.length - 2);                     // open on 2024-25, the lean season
+
+  const member = i => (rule === 'current' ? D.cur[i] === 1 : rule === 'best5' ? D.b5[i] === 1 : true);
+  const X = () => D.x[`${rule}_${dbl}`];
+  const profitOf = (i, st) => (D.r[i] === 0 ? st * (D.pr[i] - 1) : D.r[i] === 1 ? -st : 0);
+  const baseStake = i => (rule === 'tiered' && D.p[i] < 550 ? 0.5 * UNIT : UNIT);
+
+  function filtered() {
+    const season = sSel.value === '' ? null : Number(sSel.value);
+    const res = document.getElementById('f-result').value, pick = document.getElementById('f-pick').value;
+    const q = document.getElementById('f-team').value.trim().toLowerCase();
+    const out = [];
+    for (let i = 0; i < N; i++) {
+      if (!member(i)) continue;
+      if (season !== null && D.s[i] !== season) continue;
+      if (res !== '' && D.r[i] !== Number(res)) continue;
+      if (pick !== '' && D.o[i] !== Number(pick)) continue;
+      if (q && !teamLower[D.a[i]].includes(q) && !teamLower[D.h[i]].includes(q)) continue;
+      out.push(i);
+    }
+    if (document.getElementById('f-order').value === 'desc') out.reverse();
+    return { rows: out, season };
+  }
+
+  function kpis(F) {
+    const x = X();
+    let w = 0, l = 0, p = 0, st = 0, pr = 0, up = 0;
+    for (const i of F.rows) {
+      const s = x.st[i] || 0;
+      if (D.r[i] === 0) w++; else if (D.r[i] === 1) l++; else p++;
+      st += s; pr += profitOf(i, s);
+      if (s > baseStake(i) + 0.5) up++;
+    }
+    document.getElementById('k-n').textContent = nf0.format(F.rows.length);
+    document.getElementById('k-n-sub').textContent = `${w} won, ${l} lost${p ? ', ' + p + ' pushed' : ''} · ${(100 * w / Math.max(1, w + l)).toFixed(1)}% won`;
+    document.getElementById('k-st').textContent = money(st);
+    document.getElementById('k-st-sub').textContent = dbl === 'none' ? `${RULE_NAME[rule]}, no doubling` : `${nf0.format(up)} bets above their normal stake`;
+    const prEl = document.getElementById('k-pr');
+    prEl.textContent = signed(pr);
+    prEl.className = 'value ' + (pr < 0 ? 'neg' : 'pos');
+    document.getElementById('k-pr-sub').textContent = st ? `${(100 * pr / st).toFixed(1)}% return on money staked` : '';
+    const lab = document.getElementById('k-4-label'), v4 = document.getElementById('k-4'), s4 = document.getElementById('k-4-sub');
+    if (F.season !== null) {
+      const idx = []; for (let i = 0; i < N; i++) if (member(i) && D.s[i] === F.season) idx.push(i);
+      const end = idx.length ? Math.max(0, x.bal[idx[idx.length - 1]]) : START;
+      const low = Math.min(START, ...idx.map(i => x.bal[i]));
+      lab.textContent = `Account at the end of ${D.seasons[F.season]}`;
+      v4.textContent = money(end);
+      v4.className = 'value ' + (end < START ? 'neg' : '');
+      s4.textContent = `from $5,000 · lowest point ${money(Math.max(0, low))}` + (low <= 1 ? ' (broke)' : '');
+    } else {
+      let below = 0, broke = 0;
+      D.seasons.forEach((_, si) => {
+        const idx = []; for (let i = 0; i < N; i++) if (member(i) && D.s[i] === si) idx.push(i);
+        if (!idx.length) return;
+        if (x.bal[idx[idx.length - 1]] < START) below++;
+        if (Math.min(...idx.map(i => x.bal[i])) <= 1) broke++;
+      });
+      lab.textContent = 'Seasons that ended below $5,000';
+      v4.textContent = `${below} of ${D.seasons.length}`;
+      v4.className = 'value ' + (below ? 'neg' : '');
+      s4.textContent = broke ? `went broke in ${broke}` : 'each season starts again from $5,000';
+    }
+  }
+
+  function chart(F) {
+    const host = document.getElementById('chart');
+    const W = Math.max(300, host.clientWidth), H = 280, m = { l: 58, r: 12, t: 14, b: 32 };
+    host.replaceChildren();
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}` }, host);
+    const iw = W - m.l - m.r, ih = H - m.t - m.b, x = X();
+    if (F.season !== null) {
+      const idx = []; for (let i = 0; i < N; i++) if (member(i) && D.s[i] === F.season) idx.push(i);
+      const shown = new Set(F.rows);
+      document.getElementById('chart-title').textContent = `The account through ${D.seasons[F.season]}`;
+      document.getElementById('chart-note').textContent = `Balance after each of the season's ${nf0.format(idx.length)} bets under ${RULE_NAME[rule].toLowerCase()}, ${DBL_NAME[dbl]}. Dots are the bets your filters show (green won, red lost). Hover for a bet.`;
+      const v = [START, ...idx.map(i => Math.max(0, x.bal[i]))];
+      const lo = Math.min(...v) * 0.95, hi = Math.max(...v) * 1.03;
+      const X0 = k => m.l + k / Math.max(1, v.length - 1) * iw, Y = val => m.t + ih - (val - lo) / (hi - lo || 1) * ih;
+      for (const t of niceTicks(lo, hi, 5)) { el('line', { x1: m.l, x2: W - m.r, y1: Y(t), y2: Y(t), class: 'gridline' }, svg); text(svg, m.l - 8, Y(t) + 4, short(t), 'tick', 'end'); }
+      el('line', { x1: m.l, x2: W - m.r, y1: Y(START), y2: Y(START), class: 'startline' }, svg);
+      let lastMonth = '';
+      idx.forEach((i, k) => { const mo = D.d[i].slice(0, 7); if (mo !== lastMonth) { lastMonth = mo; if (X0(k + 1) < W - 30) text(svg, X0(k + 1), H - 8, new Date(D.d[i] + 'T12:00:00Z').toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }), 'tick', 'middle'); } });
+      el('path', { d: v.map((val, k) => `${k ? 'L' : 'M'}${X0(k).toFixed(1)},${Y(val).toFixed(1)}`).join(''), class: 'line c-tier' }, svg).style.fill = 'none';
+      if (shown.size < idx.length && shown.size <= 600) idx.forEach((i, k) => { if (shown.has(i)) { const c = el('circle', { cx: X0(k + 1), cy: Y(Math.max(0, x.bal[i])), r: 2.6 }, svg); c.style.fill = D.r[i] === 0 ? 'var(--good)' : D.r[i] === 1 ? 'var(--bad)' : 'var(--muted)'; } });
+      const cursor = el('line', { x1: 0, x2: 0, y1: m.t, y2: m.t + ih, class: 'cursor', opacity: 0 }, svg);
+      const hit = el('rect', { x: m.l, y: m.t, width: iw, height: ih, class: 'hit' }, svg);
+      hit.addEventListener('pointermove', e => {
+        const r = svg.getBoundingClientRect();
+        const k = Math.max(1, Math.min(idx.length, Math.round(((e.clientX - r.left) * W / r.width - m.l) / iw * (v.length - 1))));
+        const i = idx[k - 1];
+        cursor.setAttribute('x1', X0(k)); cursor.setAttribute('x2', X0(k)); cursor.setAttribute('opacity', 1);
+        showTip(e, `Bet ${k} of ${idx.length} · ${fmtDate(D.d[i])}`, [
+          ['Game', `${D.teams[D.a[i]]} at ${D.teams[D.h[i]]}`], ['Pick', `${D.o[i] ? 'Over' : 'Under'} ${D.l[i]} @ ${D.pr[i].toFixed(2)}`],
+          ['Final total', String(D.f[i])], ['Result', RES[D.r[i]]], ['Stake', money(x.st[i] || 0)], ['Balance after', money(Math.max(0, x.bal[i]))]]);
+      });
+      hit.addEventListener('pointerleave', () => { hideTip(); cursor.setAttribute('opacity', 0); });
+    } else {
+      document.getElementById('chart-title').textContent = 'Profit in each season';
+      document.getElementById('chart-note').textContent = `Profit from the bets your filters show, ${RULE_NAME[rule].toLowerCase()}, ${DBL_NAME[dbl]}. Hover a season.`;
+      const per = D.seasons.map(() => ({ pr: 0, n: 0, w: 0, l: 0 }));
+      for (const i of F.rows) { const s = per[D.s[i]], st = x.st[i] || 0; s.pr += profitOf(i, st); s.n++; if (D.r[i] === 0) s.w++; else if (D.r[i] === 1) s.l++; }
+      const lo = Math.min(0, ...per.map(p => p.pr)), hi = Math.max(1, ...per.map(p => p.pr)) * 1.08;
+      const gw = iw / per.length, Y = val => m.t + ih - (val - lo) / (hi - lo || 1) * ih;
+      D.seasons.forEach((s, si) => { if (D.era[s] === 'test') el('rect', { x: m.l + si * gw, y: m.t, width: gw, height: ih, class: 'era-band' }, svg); });
+      for (const t of niceTicks(lo, hi, 5)) { el('line', { x1: m.l, x2: W - m.r, y1: Y(t), y2: Y(t), class: 'gridline' }, svg); text(svg, m.l - 8, Y(t) + 4, short(t), 'tick', 'end'); }
+      per.forEach((p, si) => {
+        const bx = m.l + si * gw + gw * 0.2, bw = gw * 0.6, top = Math.min(Y(p.pr), Y(0));
+        const r = el('rect', { x: bx, y: top, width: bw, height: Math.max(0.5, Math.abs(Y(0) - Y(p.pr))), rx: 2 }, svg);
+        r.style.fill = p.pr < 0 ? 'var(--bad)' : 'var(--tier)';
+        const s = D.seasons[si];
+        text(svg, m.l + si * gw + gw / 2, H - 8, W < 640 ? s.slice(2, 4) + '–' + s.slice(-2) : s, 'tick', 'middle');
+        const hit = el('rect', { x: m.l + si * gw, y: m.t, width: gw, height: ih + 20, class: 'hit' }, svg);
+        hit.addEventListener('pointermove', e => showTip(e, `${s} · ${D.era[s]}`, [['Bets', nf0.format(p.n)], ['Won–lost', `${p.w}–${p.l}`], ['Profit', signed(p.pr)]]));
+        hit.addEventListener('pointerleave', hideTip);
+        hit.addEventListener('click', () => { sSel.value = String(si); page = 0; drawAll(); });
+      });
+      el('line', { x1: m.l, x2: W - m.r, y1: Y(0), y2: Y(0), class: 'baseline' }, svg);
+    }
+  }
+
+  function ledger(F) {
+    const T = document.getElementById('ledger'), x = X();
+    T.replaceChildren();
+    const head = T.createTHead().insertRow();
+    for (const h of ['Date', 'Game', 'Pick', 'Opener', 'Book', 'Price', 'Engine', 'Final', 'Result', 'Stake', 'Profit', 'Balance']) {
+      const th = document.createElement('th'); th.textContent = h; if (h === 'Game') th.className = 'game'; head.appendChild(th);
+    }
+    const pages = Math.max(1, Math.ceil(F.rows.length / PAGE));
+    page = Math.min(page, pages - 1);
+    const tb = T.createTBody();
+    for (const i of F.rows.slice(page * PAGE, page * PAGE + PAGE)) {
+      const tr = tb.insertRow(), st = x.st[i] || 0, pr = profitOf(i, st);
+      const td = (t, cls) => { const c = tr.insertCell(); c.textContent = t; if (cls) c.className = cls; return c; };
+      td(fmtDate(D.d[i]));
+      const g = tr.insertCell(); g.className = 'game';
+      g.append(document.createTextNode(D.teams[D.a[i]]), Object.assign(document.createElement('span'), { className: 'vs', textContent: ' at ' }), document.createTextNode(D.teams[D.h[i]]));
+      td(`${D.o[i] ? 'Over' : 'Under'} ${D.l[i]}`);
+      td(String(D.op[i]));
+      td(D.bk[i] ? D.books[D.bk[i] - 1] : '−110');
+      td(D.pr[i].toFixed(2));
+      td((D.p[i] / 10).toFixed(1) + '%');
+      td(String(D.f[i]));
+      const rc = tr.insertCell(); const chip = document.createElement('span'); chip.className = 'res ' + RES[D.r[i]]; chip.textContent = RES[D.r[i]]; rc.appendChild(chip);
+      td(money(st), st > baseStake(i) + 0.5 ? 'up' : '');
+      td(signed(pr), pr > 0 ? 'pos' : pr < 0 ? 'neg' : '');
+      td(money(Math.max(0, x.bal[i])), x.bal[i] < START ? 'neg' : '');
+    }
+    for (const id of ['pager-top', 'pager-bottom']) {
+      const P = document.getElementById(id);
+      P.replaceChildren();
+      const btn = (label, to, dis) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.disabled = dis; b.addEventListener('click', () => { page = to; ledger(F); if (id === 'pager-bottom') document.getElementById('ledger').scrollIntoView({ block: 'start' }); }); P.appendChild(b); };
+      btn('« First', 0, page === 0); btn('‹ Previous', page - 1, page === 0);
+      const s = document.createElement('span');
+      s.textContent = F.rows.length ? `Bets ${nf0.format(page * PAGE + 1)}–${nf0.format(Math.min(F.rows.length, (page + 1) * PAGE))} of ${nf0.format(F.rows.length)} · page ${page + 1} of ${pages}` : 'No bets match these filters';
+      P.appendChild(s);
+      btn('Next ›', page + 1, page >= pages - 1); btn('Last »', pages - 1, page >= pages - 1);
+    }
+    document.getElementById('ledger-note').textContent = `${RULE_NAME[rule]}, ${DBL_NAME[dbl]}. ${PAGE} bets a page. Stakes in orange are doubled.`;
+  }
+
+  function drawAll() { const F = filtered(); kpis(F); chart(F); ledger(F); }
+  for (const b of document.querySelectorAll('.seg button[data-rule]')) b.addEventListener('click', () => {
+    rule = b.dataset.rule; page = 0;
+    for (const o of document.querySelectorAll('.seg button[data-rule]')) o.setAttribute('aria-pressed', String(o === b));
+    drawAll();
+  });
+  for (const b of document.querySelectorAll('.seg button[data-dbl]')) b.addEventListener('click', () => {
+    dbl = b.dataset.dbl;
+    for (const o of document.querySelectorAll('.seg button[data-dbl]')) o.setAttribute('aria-pressed', String(o === b));
+    drawAll();
+  });
+  for (const id of ['f-season', 'f-result', 'f-pick', 'f-order']) document.getElementById(id).addEventListener('change', () => { page = 0; drawAll(); });
+  let qt; document.getElementById('f-team').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(() => { page = 0; drawAll(); }, 200); });
+  drawAll();
+  let rt;
+  new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => chart(filtered()), 120); }).observe(document.querySelector('.wrap'));
+})();
+</script>
