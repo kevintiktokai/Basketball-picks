@@ -1,0 +1,42 @@
+{
+  "experiment": "nba_props_test",
+  "timestamp_utc": "20261103T020017Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "0073ff1",
+  "params": {
+    "checks": {
+      "8h before": 8.0,
+      "3h before": 3.0,
+      "1h before": 1.0,
+      "15 min before": 0.25
+    },
+    "ev_min": 0.02,
+    "soft": [
+      "1xbet",
+      "betway",
+      "draftkings",
+      "fanduel"
+    ]
+  },
+  "params_hash": "8648c953eeae",
+  "results": {
+    "B_brier": {
+      "Pinnacle no-vig": 0.24831768920487593,
+      "our model": 0.2565003090004981,
+      "half and half": 0.24919200381137843,
+      "always 50%": 0.25
+    },
+    "B_regression": {
+      "Pinnacle weight": 1.570039190059411,
+      "model-minus-Pinnacle weight": 0.16397477239369782,
+      "its standard error": 0.08696907822735858,
+      "lines": 1989
+    },
+    "offered": {
+      "8h before": 2571,
+      "3h before": 2815,
+      "1h before": 2904,
+      "15 min before": 2878
+    }
+  }
+}
