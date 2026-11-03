@@ -1,0 +1,75 @@
+{
+  "experiment": "best5_parlay",
+  "timestamp_utc": "20261103T095219Z",
+  "dataset_version": "nba-v1",
+  "code_revision": "24ada7a",
+  "params": {
+    "straights": "best 5 a day, P >= 53%",
+    "parlay": "TARGET 2.5+ card"
+  },
+  "params_hash": "9cd9041abfa0",
+  "results": {
+    "summary": [
+      {
+        "plan": "combo",
+        "seasons": "2011-21",
+        "bets a season": 601.5,
+        "won": 0.5636942675159236,
+        "units a season": 80.80699999999999,
+        "$ a season ($100 a bet)": 8080.6,
+        "worst season ($)": 665.6000000000004,
+        "lowest balance ($)": 3910.8
+      },
+      {
+        "plan": "combo",
+        "seasons": "2021-26",
+        "bets a season": 649.0,
+        "won": 0.5678935972780699,
+        "units a season": 93.92399999999999,
+        "$ a season ($100 a bet)": 9392.18,
+        "worst season ($)": 3602.6000000000004,
+        "lowest balance ($)": 3527.9
+      },
+      {
+        "plan": "straight",
+        "seasons": "2011-21",
+        "bets a season": 478.2,
+        "won": 0.5907458271709275,
+        "units a season": 60.482000000000006,
+        "$ a season ($100 a bet)": 6048.18,
+        "worst season ($)": 627.3000000000002,
+        "lowest balance ($)": 4209.1
+      },
+      {
+        "plan": "straight",
+        "seasons": "2021-26",
+        "bets a season": 516.2,
+        "won": 0.5936161930712339,
+        "units a season": 67.462,
+        "$ a season ($100 a bet)": 6746.1799999999985,
+        "worst season ($)": 3043.3,
+        "lowest balance ($)": 3689.5
+      },
+      {
+        "plan": "parlay",
+        "seasons": "2011-21",
+        "bets a season": 123.3,
+        "won": 0.45985401459854014,
+        "units a season": 20.324,
+        "$ a season ($100 a bet)": 2032.4200000000005,
+        "worst season ($)": 38.30000000000018,
+        "lowest balance ($)": 4259.3
+      },
+      {
+        "plan": "parlay",
+        "seasons": "2021-26",
+        "bets a season": 132.8,
+        "won": 0.4683734939759036,
+        "units a season": 26.459999999999997,
+        "$ a season ($100 a bet)": 2645.98,
+        "worst season ($)": 559.1999999999998,
+        "lowest balance ($)": 4584.4
+      }
+    ]
+  }
+}

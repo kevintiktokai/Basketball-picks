@@ -1,0 +1,557 @@
+<title>Best 5 Plus Parlay</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: one reading column (max 1100px) — stake switch, three plan tiles, four chart panels, the season table, then every bet with filters, notes */
+:root {
+  --bg: #f3f5f8; --surface: #ffffff; --ink: #12161c; --ink-2: #465061; --muted: #747e8c;
+  --grid: #e5e9ef; --axis: #c3cad4; --hair: rgba(18, 22, 28, 0.10); --era: #eef2f7;
+  --cur: #8a94a3; --tier: #2a78d6; --best: #eb6834; --par: #7a4fd0; --tier-half: rgba(42, 120, 214, 0.42); --deemph: #b6bfcb;
+  --good: #0f7a2e; --bad: #b42323;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+    --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --era: #1b2029;
+    --cur: #7f8997; --tier: #3987e5; --best: #e8743f; --par: #a07ef0; --tier-half: rgba(57, 135, 229, 0.45); --deemph: #4c5462;
+    --good: #3ccf68; --bad: #f07272; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #161a20; --ink: #f1f3f6; --ink-2: #c2c8d2; --muted: #8d96a3;
+  --grid: #252a32; --axis: #3a414b; --hair: rgba(255, 255, 255, 0.10); --era: #1b2029;
+  --cur: #7f8997; --tier: #3987e5; --best: #e8743f; --par: #a07ef0; --tier-half: rgba(57, 135, 229, 0.45); --deemph: #4c5462;
+  --good: #3ccf68; --bad: #f07272; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 28px; }
+h1, h2 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; text-wrap: balance; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(2rem, 4.6vw, 3rem); }
+h2 { font-size: 1.5rem; }
+p { margin: 0; }
+.eyebrow { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--ink-2); max-width: 66ch; font-size: 1.06rem; }
+header { display: grid; gap: 12px; }
+.switch { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.switch .label { font-size: 0.86rem; color: var(--ink-2); font-weight: 600; }
+.seg { display: inline-flex; border: 1px solid var(--axis); border-radius: 999px; padding: 3px; background: var(--surface); }
+.seg button, .chips button { font: 600 0.9rem/1 var(--font-body); color: var(--ink-2); background: none; border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.seg button:focus-visible, .chips button:focus-visible { outline: 2px solid var(--tier); outline-offset: 2px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--hair); border-radius: 10px; padding: 16px 18px; display: grid; gap: 4px; min-width: 0; align-content: start; }
+.kpi .label { font-size: 0.86rem; color: var(--ink-2); display: inline-flex; gap: 8px; align-items: center; }
+.kpi .value { font-size: 2rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi .sub { font-size: 0.84rem; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 22px 22px 18px; display: grid; gap: 12px; min-width: 0; }
+.panel > p { color: var(--ink-2); max-width: 70ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.88rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.key-line { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+.key-box { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { border: 1px solid var(--hair); padding: 6px 10px; font-size: 0.84rem; font-variant-numeric: tabular-nums; }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.chips button.is-broke { color: var(--bad); }
+.chips button.is-broke[aria-pressed="true"] { color: var(--surface); background: var(--bad); border-color: var(--bad); }
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font-family: var(--font-body); }
+.tick { fill: var(--muted); font-size: 12px; }
+.lbl { fill: var(--ink-2); font-size: 12.5px; font-weight: 600; }
+.warn-lbl { fill: var(--bad); font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.era-lbl { fill: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--axis); stroke-width: 1; }
+.startline { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 4 4; opacity: 0.7; }
+.era-band { fill: var(--era); }
+.c-cur { fill: var(--cur); stroke: var(--cur); }
+.c-tier { fill: var(--tier); stroke: var(--tier); }
+.c-best { fill: var(--best); stroke: var(--best); }
+.c-half { fill: var(--tier-half); stroke: none; }
+.line { fill: none; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; }
+.ring { stroke: var(--surface); stroke-width: 2; }
+.hit { fill: transparent; }
+.cursor { stroke: var(--axis); stroke-width: 1; }
+.tip { position: fixed; z-index: 10; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--hair);
+  border-radius: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16); padding: 10px 12px; font-size: 0.86rem; line-height: 1.4; min-width: 200px; max-width: 300px; }
+.tip .t-head { color: var(--muted); font-size: 0.8rem; margin-bottom: 4px; }
+.tip .t-row { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.tip .t-row b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.tip .t-name { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--hair); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { padding: 9px 10px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+th { font-weight: 600; color: var(--ink-2); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--axis); vertical-align: bottom; }
+th .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+td { border-bottom: 1px solid var(--grid); }
+tr:last-child td { border-bottom: 0; }
+th:first-child, td:first-child { text-align: left; }
+tr.test td:first-child { font-weight: 700; }
+.pos { color: var(--good); font-weight: 600; }
+.neg { color: var(--bad); font-weight: 600; }
+.chip { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--hair); color: var(--ink-2); }
+.notes ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; color: var(--ink-2); max-width: 74ch; }
+.foot { font-size: 0.84rem; color: var(--muted); }
+@media (max-width: 560px) { .panel { padding: 16px 14px 14px; } .kpi .value { font-size: 1.7rem; } }
+
+.filters { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; }
+.field { display: grid; gap: 4px; font-size: 0.8rem; color: var(--ink-2); font-weight: 600; }
+.field select, .field input { font: 400 0.95rem var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--axis);
+  border-radius: 8px; padding: 7px 10px; min-width: 0; }
+.field input { width: 14rem; max-width: 100%; }
+.field select:focus-visible, .field input:focus-visible { outline: 2px solid var(--tier); outline-offset: 1px; }
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--ink-2); }
+.pager button { font: 600 0.86rem var(--font-body); color: var(--ink-2); background: var(--surface); border: 1px solid var(--hair); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+.pager button:disabled { opacity: 0.4; cursor: default; }
+.pager button:focus-visible { outline: 2px solid var(--tier); outline-offset: 2px; }
+.res { display: inline-block; min-width: 3.4em; text-align: center; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px; }
+.res.won { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+.res.lost { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
+.res.push { background: var(--era); color: var(--muted); }
+td.game, th.game { text-align: left; white-space: normal; min-width: 12rem; }
+td.game .vs { color: var(--muted); }
+td.up { color: var(--best); font-weight: 700; }
+.sub-note { font-size: 0.84rem; color: var(--muted); }
+#ledger tbody tr:hover td { background: var(--era); }
+.c-par { fill: var(--par); stroke: var(--par); }
+.kind { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 7px; border-radius: 6px; }
+.kind.s { background: color-mix(in srgb, var(--best) 14%, transparent); color: var(--best); }
+.kind.p { background: color-mix(in srgb, var(--par) 16%, transparent); color: var(--par); }
+td.bet { text-align: left; white-space: normal; min-width: 16rem; }
+td.bet .leg { display: block; }
+td.bet .leg + .leg { margin-top: 4px; }
+td.bet .meta { color: var(--muted); font-size: 0.84rem; }
+td.bet .lr { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; margin-left: 6px; }
+td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet .lr.p { color: var(--muted); }
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">NCAA men's basketball · game totals · 2011-12 to 2025-26</p>
+    <h1>Best 5 a day, plus the parlay when there is one</h1>
+    <p class="lede">Each day the locked engine bets its five strongest picks at 53% or better as straight bets. On days it can
+      build one, it also plays the 2.5+ parlay: two legs from different games, combined odds of 2.5 or more. Every season starts
+      from $5,000. The parlay counts as one bet with the same stake as a straight bet.</p>
+  </header>
+
+  <div class="switch">
+    <span class="label" id="mode-label">Stake</span>
+    <div class="seg" role="group" aria-labelledby="mode-label">
+      <button type="button" data-mode="flat" aria-pressed="true">$100 a bet</button>
+      <button type="button" data-mode="pct" aria-pressed="false">2% of the account a bet</button>
+    </div>
+  </div>
+
+  <section class="kpis" aria-label="Summary, 2021-26">
+    <div class="kpi"><span class="label"><i class="key-box" style="background:var(--tier)"></i>Best 5 + parlay</span><span class="value" id="k-combo"></span><span class="sub" id="k-combo-sub"></span></div>
+    <div class="kpi"><span class="label"><i class="key-box" style="background:var(--best)"></i>Best 5 straight bets only</span><span class="value" id="k-straight"></span><span class="sub" id="k-straight-sub"></span></div>
+    <div class="kpi"><span class="label"><i class="key-box" style="background:var(--par)"></i>Parlay only</span><span class="value" id="k-parlay"></span><span class="sub" id="k-parlay-sub"></span></div>
+  </section>
+  <p class="foot" id="kpi-note"></p>
+
+  <section class="panel">
+    <h2>15 seasons, night by night</h2>
+    <p>Running profit at $100 a bet, without compounding, so the seasons add up. The shaded stretch is 2021-26, the seasons
+      scored once with the engine locked, at real opening prices for the straight bets.</p>
+    <div class="legend" data-legend></div>
+    <div class="chart" id="cum" role="img" aria-label="Running profit over 15 seasons, by plan"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Profit in each season</h2>
+    <p id="season-note"></p>
+    <div class="legend" data-legend></div>
+    <div class="chart" id="profit" role="group" aria-label="Profit in each season, by plan"></div>
+  </section>
+
+  <section class="panel">
+    <h2>The parlay, season by season</h2>
+    <p>Parlays played and won each season. At average odds of about 2.55, a parlay needs to win about 39% of the time to break even.</p>
+    <div class="legend"><span><i class="key-box" style="background:var(--par)"></i>Won</span><span><i class="key-box" style="background:var(--deemph)"></i>Lost</span><span><i class="key-line" style="background:var(--ink-2)"></i>Share won</span></div>
+    <div class="chart" id="parlay" role="group" aria-label="Parlays won and lost each season"></div>
+  </section>
+
+  <section class="panel">
+    <h2>One season, night by night</h2>
+    <p id="path-note"></p>
+    <div class="chips" id="season-chips" role="group" aria-label="Season"></div>
+    <div class="legend" data-legend></div>
+    <div class="chart" id="path" role="img" aria-label="Balance night by night in the chosen season"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Every season</h2>
+    <p>Period: <b>build</b> seasons were used to develop the engine, <b>check</b> seasons to confirm it (both at −110 for the
+      straight bets), <b>test</b> seasons were scored once with it locked. The best-5 rule was chosen on 2011-21.</p>
+    <div class="tablewrap"><table id="seasons"></table></div>
+  </section>
+
+  <section class="panel" id="ledger-panel">
+    <h2>Every bet</h2>
+    <p class="sub-note" id="ledger-note"></p>
+    <div class="filters" role="group" aria-label="Filters">
+      <label class="field" for="f-season">Season<select id="f-season"></select></label>
+      <label class="field" for="f-kind">Bet<select id="f-kind"><option value="">Straight bets and parlays</option><option value="s">Straight bets</option><option value="p">Parlays</option></select></label>
+      <label class="field" for="f-result">Result<select id="f-result"><option value="">All results</option><option value="0">Won</option><option value="1">Lost</option><option value="2">Push</option></select></label>
+      <label class="field" for="f-team">Team<input id="f-team" type="search" placeholder="e.g. Duke" autocomplete="off"></label>
+      <label class="field" for="f-order">Order<select id="f-order"><option value="asc">Oldest first</option><option value="desc">Newest first</option></select></label>
+    </div>
+    <div class="pager" id="pager-top"></div>
+    <div class="tablewrap"><table id="ledger"></table></div>
+    <div class="pager" id="pager-bottom"></div>
+  </section>
+
+  <section class="panel notes">
+    <h2>What these numbers assume</h2>
+    <ul>
+      <li>Straight bets: before 2021-22, the consensus opening total at −110 (1.909). From 2021-22, the best opening line and price among the US books in the data, shown with the book.</li>
+      <li>The parlay's legs are often moved lines (a few points better than the opener). Their prices are our estimate of the book's price, not a real quote, so check the price on the day; the engine needs combined odds of 2.5 or more.</li>
+      <li>A parlay leg can be the same game as one of the day's straight bets. A pushed leg drops out and the parlay pays at the other leg's price.</li>
+      <li>The bets of a night are placed together: in the 2% view each stake is 2% of the balance at the start of the night.</li>
+      <li>The 2% view compounds within a season, so the best seasons end far above $5,000. Books cap stakes and limit winning accounts long before that.</li>
+      <li>2021-26 was already used once to test the engine. This shows what following the plan would have looked like, not a promise about next season.</li>
+    </ul>
+    <p class="foot">Source: locked v3 engine walk-forward picks and the locked 2.5+ card; scripts/best5_parlay.py (reports/best5_parlay.md).</p>
+  </section>
+</main>
+<div class="tip" id="tip" hidden></div>
+<script type="application/json" id="data">__DATA__</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const NS = 'http://www.w3.org/2000/svg';
+  const tip = document.getElementById('tip');
+  const nf0 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  const money = v => (v < 0 ? '−$' : '$') + nf0.format(Math.abs(Math.round(v)));
+  const signed = v => (Math.round(v) === 0 ? '$0' : (v < 0 ? '−$' : '+$') + nf0.format(Math.abs(Math.round(v))));
+  const short = v => { const a = Math.abs(v), s = v < 0 ? '−$' : '$';
+    return a >= 1e6 ? s + (a / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : a >= 1e3 ? s + (a / 1e3).toFixed(a >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'k' : s + nf0.format(a); };
+  const START = D.start, S = D.seasons, TEST = S.filter(s => s.era === 'test'), PAGE = 100;
+  const PLANS = [{ key: 'combo', name: 'Best 5 + parlay', cls: 'tier', color: 'var(--tier)' },
+                 { key: 'straight', name: 'Best 5 straight bets only', cls: 'best', color: 'var(--best)' },
+                 { key: 'parlay', name: 'Parlay only', cls: 'par', color: 'var(--par)' }];
+  const RES = ['won', 'lost', 'push'];
+  let mode = 'flat', season = '2024-25', page = 0;
+
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  const text = (parent, x, y, s, cls, anchor) => { const t = el('text', { x, y, class: cls, 'text-anchor': anchor || 'start' }, parent); t.textContent = s; return t; };
+  function niceTicks(lo, hi, n) {
+    const span = hi - lo || 1, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+    const out = [];
+    for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(Math.round(v * 100) / 100);
+    return out;
+  }
+  function logTicks(lo, hi) {
+    const out = [];
+    for (let e = Math.floor(Math.log10(lo)); e <= Math.ceil(Math.log10(hi)); e++)
+      for (const m of [1, 2, 5]) { const v = m * Math.pow(10, e); if (v >= lo && v <= hi) out.push(v); }
+    return out.length > 7 ? out.filter(v => String(v)[0] !== '2') : out;
+  }
+  function showTip(evt, head, rows) {
+    tip.replaceChildren();
+    const h = document.createElement('div'); h.className = 't-head'; h.textContent = head; tip.appendChild(h);
+    for (const [color, name, value] of rows) {
+      const r = document.createElement('div'); r.className = 't-row';
+      const n = document.createElement('span'); n.className = 't-name';
+      if (color) { const k = document.createElement('i'); k.className = 'key-box'; k.style.background = color; n.appendChild(k); }
+      n.appendChild(document.createTextNode(name));
+      const b = document.createElement('b'); b.textContent = value;
+      r.append(n, b); tip.appendChild(r);
+    }
+    tip.hidden = false;
+    const pad = 14, w = tip.offsetWidth, h2 = tip.offsetHeight;
+    let x = evt.clientX + pad, y = evt.clientY + pad;
+    if (x + w > window.innerWidth - 8) x = evt.clientX - w - pad;
+    if (y + h2 > window.innerHeight - 8) y = evt.clientY - h2 - pad;
+    tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+  }
+  const hideTip = () => { tip.hidden = true; };
+  const seasonLabel = (s, W) => (W < 640 ? s.slice(2, 4) + '–' + s.slice(-2) : s);
+  const fmtDate = d => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+  const V = (s, key) => s.plans[key][mode];
+  const profit = (s, key) => V(s, key).end - START;
+
+  function legends() {
+    for (const L of document.querySelectorAll('[data-legend]')) {
+      L.replaceChildren();
+      for (const p of PLANS) { const s = document.createElement('span'); const k = document.createElement('i'); k.className = 'key-box'; k.style.background = p.color; s.append(k, document.createTextNode(p.name)); L.appendChild(s); }
+    }
+  }
+
+  function kpis() {
+    for (const p of PLANS) {
+      const rs = TEST.map(s => s.plans[p.key]);
+      const bets = rs.reduce((a, r) => a + r.bets, 0), won = rs.reduce((a, r) => a + r.won, 0), lost = rs.reduce((a, r) => a + r.lost, 0);
+      const avg = TEST.reduce((a, s) => a + profit(s, p.key), 0) / TEST.length;
+      const worst = Math.min(...TEST.map(s => profit(s, p.key)));
+      const low = Math.min(...S.map(s => V(s, p.key).low));
+      document.getElementById('k-' + p.key).textContent = signed(avg) + ' a season';
+      document.getElementById('k-' + p.key + '-sub').textContent =
+        `${nf0.format(bets / TEST.length)} bets a season · ${(100 * won / Math.max(1, won + lost)).toFixed(1)}% won · worst 2021-26 season ${signed(worst)} · lowest balance in 15 seasons ${money(low)}`;
+    }
+    document.getElementById('kpi-note').textContent = 'Profit a season: average over the five 2021-26 seasons, each from $5,000, at ' +
+      (mode === 'flat' ? '$100 a bet.' : '2% of the account a bet, compounding within the season.');
+  }
+
+  function cum() {
+    const host = document.getElementById('cum');
+    const W = Math.max(300, host.clientWidth), H = 320, m = { l: 60, r: 64, t: 14, b: 34 };
+    host.replaceChildren();
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}` }, host);
+    const C = D.cum, n = C.nights.length;
+    const series = PLANS.map(p => ({ p, v: C[p.key] }));
+    const all = series.flatMap(q => q.v);
+    const hi = Math.max(...all) * 1.05, lo = Math.min(0, ...all);
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const x = k => m.l + k / (n - 1) * iw, y = v => m.t + ih - (v - lo) / (hi - lo) * ih;
+    const t0 = C.season.findIndex(s => s >= '2021-22');
+    if (t0 >= 0) el('rect', { x: x(t0), y: m.t, width: x(n - 1) - x(t0), height: ih, class: 'era-band' }, svg);
+    for (const t of niceTicks(lo, hi, 5)) { el('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: 'gridline' }, svg); text(svg, m.l - 8, y(t) + 4, short(t), 'tick', 'end'); }
+    el('line', { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: 'baseline' }, svg);
+    let last = '';
+    C.season.forEach((s, k) => { if (s !== last) { last = s; const yr = s.slice(0, 4); if (W >= 640 || Number(yr) % 2 === 1) text(svg, x(k), H - 10, W < 640 ? "'" + s.slice(2, 4) : yr, 'tick'); } });
+    for (const q of series) el('path', { d: q.v.map((v, k) => `${k ? 'L' : 'M'}${x(k).toFixed(1)},${y(v).toFixed(1)}`).join(''), class: 'line c-' + q.p.cls }, svg).style.fill = 'none';
+    const ends = series.map(q => ({ q, y: y(q.v[n - 1]) })).sort((a, b) => a.y - b.y);
+    for (let i = 1; i < ends.length; i++) ends[i].y = Math.max(ends[i].y, ends[i - 1].y + 15);
+    for (const e of ends) { const t = text(svg, W - m.r + 6, e.y + 4, short(e.q.v[n - 1]), 'lbl'); t.style.fill = e.q.p.color; }
+    const cursor = el('line', { x1: 0, x2: 0, y1: m.t, y2: m.t + ih, class: 'cursor', opacity: 0 }, svg);
+    const hit = el('rect', { x: m.l, y: m.t, width: iw, height: ih, class: 'hit' }, svg);
+    hit.addEventListener('pointermove', e => {
+      const r = svg.getBoundingClientRect();
+      const k = Math.max(0, Math.min(n - 1, Math.round(((e.clientX - r.left) * W / r.width - m.l) / iw * (n - 1))));
+      cursor.setAttribute('x1', x(k)); cursor.setAttribute('x2', x(k)); cursor.setAttribute('opacity', 1);
+      showTip(e, `${C.season[k]} · ${fmtDate(C.nights[k])} · running profit`, series.map(q => [q.p.color, q.p.name, signed(q.v[k])]));
+    });
+    hit.addEventListener('pointerleave', () => { hideTip(); cursor.setAttribute('opacity', 0); });
+  }
+
+  function profitBars() {
+    document.getElementById('season-note').textContent = mode === 'flat'
+      ? 'Profit at $100 a bet, each season from $5,000. Hover a season for the numbers.'
+      : 'Ending balance at 2% of the account a bet, compounding within each season from $5,000, on a ratio scale because the range is wide.';
+    const host = document.getElementById('profit');
+    const W = Math.max(300, host.clientWidth), H = 300, m = { l: 56, r: 8, t: 14, b: 40 };
+    host.replaceChildren();
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}` }, host);
+    const iw = W - m.l - m.r, ih = H - m.t - m.b, gw = iw / S.length;
+    const val = (s, p) => (mode === 'flat' ? profit(s, p.key) : Math.max(1, V(s, p.key).end));
+    const vals = S.flatMap(s => PLANS.map(p => val(s, p)));
+    let lo, hi, y;
+    if (mode === 'pct') {
+      lo = Math.min(...vals) * 0.8; hi = Math.max(...vals) * 1.15;
+      y = v => m.t + ih - (Math.log(Math.max(v, lo)) - Math.log(lo)) / (Math.log(hi) - Math.log(lo)) * ih;
+    } else { lo = Math.min(0, ...vals); hi = Math.max(...vals) * 1.06; y = v => m.t + ih - (v - lo) / (hi - lo) * ih; }
+    S.forEach((s, i) => { if (s.era === 'test') el('rect', { x: m.l + i * gw, y: m.t, width: gw, height: ih, class: 'era-band' }, svg); });
+    for (const t of (mode === 'pct' ? logTicks(lo, hi) : niceTicks(lo, hi, 5))) { el('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: 'gridline' }, svg); text(svg, m.l - 8, y(t) + 4, short(t), 'tick', 'end'); }
+    const base = mode === 'pct' ? lo : 0;
+    S.forEach((s, i) => {
+      const gx = m.l + i * gw, bw = Math.max(2, (gw * 0.78) / PLANS.length);
+      PLANS.forEach((p, j) => {
+        const v = val(s, p), x = gx + gw * 0.11 + j * bw;
+        el('rect', { x, y: Math.min(y(v), y(base)), width: Math.max(1, bw - 1), height: Math.max(0.5, Math.abs(y(base) - y(v))), rx: 1.5, class: 'c-' + p.cls }, svg);
+      });
+      text(svg, gx + gw / 2, H - m.b + 18, seasonLabel(s.s, W), 'tick', 'middle');
+      const hit = el('rect', { x: gx, y: m.t, width: gw, height: ih + 24, class: 'hit' }, svg);
+      hit.addEventListener('pointermove', e => showTip(e, `${s.s} · ${mode === 'flat' ? 'profit' : 'ending balance'} from $5,000`,
+        PLANS.map(p => [p.color, p.name, (mode === 'flat' ? signed(profit(s, p.key)) : money(V(s, p.key).end)) + ` · lowest ${money(V(s, p.key).low)}`])));
+      hit.addEventListener('pointerleave', hideTip);
+    });
+    el('line', { x1: m.l, x2: W - m.r, y1: y(base), y2: y(base), class: 'baseline' }, svg);
+    const ft = S.findIndex(s => s.era === 'test');
+    if (ft >= 0) text(svg, m.l + ft * gw + 4, H - 6, 'Locked-engine test, 2021-26', 'era-lbl');
+  }
+
+  function parlayBars() {
+    const host = document.getElementById('parlay');
+    const W = Math.max(300, host.clientWidth), H = 260, m = { l: 44, r: 40, t: 14, b: 40 };
+    host.replaceChildren();
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}` }, host);
+    const iw = W - m.l - m.r, ih = H - m.t - m.b, gw = iw / S.length;
+    const hi = Math.max(...S.map(s => s.plans.parlay.bets)) * 1.1;
+    const y = v => m.t + ih - v / hi * ih, yp = v => m.t + ih - v * ih;
+    for (const t of niceTicks(0, hi, 4)) { el('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: 'gridline' }, svg); text(svg, m.l - 8, y(t) + 4, nf0.format(t), 'tick', 'end'); }
+    for (const t of [0, 0.25, 0.5, 0.75, 1]) text(svg, W - m.r + 6, yp(t) + 4, Math.round(t * 100) + '%', 'tick');
+    const pts = [];
+    S.forEach((s, i) => {
+      const r = s.plans.parlay, x = m.l + i * gw + gw * 0.2, bw = gw * 0.6;
+      el('rect', { x, y: y(r.won + r.lost), width: bw, height: y(0) - y(r.won + r.lost), rx: 2 }, svg).style.fill = 'var(--deemph)';
+      el('rect', { x, y: y(r.won), width: bw, height: y(0) - y(r.won), rx: 2, class: 'c-par' }, svg);
+      const share = r.won / Math.max(1, r.won + r.lost);
+      pts.push([m.l + i * gw + gw / 2, yp(share)]);
+      text(svg, m.l + i * gw + gw / 2, H - m.b + 18, seasonLabel(s.s, W), 'tick', 'middle');
+      const hit = el('rect', { x: m.l + i * gw, y: m.t, width: gw, height: ih + 24, class: 'hit' }, svg);
+      hit.addEventListener('pointermove', e => showTip(e, `${s.s} · parlays`, [[null, 'Played', nf0.format(r.bets)], [null, 'Won–lost', `${r.won}–${r.lost}`],
+        [null, 'Share won', (100 * share).toFixed(1) + '%'], [null, 'Average odds', s.parlay_odds ? s.parlay_odds.toFixed(2) : '—'], [null, 'Profit at $100', signed(s.plans.parlay.flat.end - START)]]));
+      hit.addEventListener('pointerleave', hideTip);
+    });
+    const ln = el('path', { d: pts.map((p, k) => `${k ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(''), class: 'line' }, svg);
+    ln.style.fill = 'none'; ln.style.stroke = 'var(--ink-2)';
+    for (const p of pts) { const c = el('circle', { cx: p[0], cy: p[1], r: 3.5, class: 'ring' }, svg); c.style.fill = 'var(--ink-2)'; }
+    el('line', { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: 'baseline' }, svg);
+    el('line', { x1: m.l, x2: W - m.r, y1: yp(1 / 2.55), y2: yp(1 / 2.55), class: 'startline' }, svg);
+    const bl = text(svg, W - m.r - 4, yp(1 / 2.55) - 6, 'break-even ≈ 39%', 'lbl', 'end');
+    bl.setAttribute('paint-order', 'stroke'); bl.style.stroke = 'var(--surface)'; bl.style.strokeWidth = '4px';
+  }
+
+  function chips() {
+    const host = document.getElementById('season-chips');
+    host.replaceChildren();
+    for (const s of S) {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = s.s;
+      b.setAttribute('aria-pressed', String(s.s === season));
+      b.addEventListener('click', () => { season = s.s; chips(); path(); });
+      host.appendChild(b);
+    }
+  }
+  function path() {
+    const host = document.getElementById('path');
+    const W = Math.max(300, host.clientWidth), H = 320, m = { l: 56, r: 12, t: 14, b: 34 };
+    host.replaceChildren();
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}` }, host);
+    const s = S.find(x => x.s === season);
+    const series = PLANS.map(p => ({ p, v: V(s, p.key).path }));
+    const n = s.nights.length, all = series.flatMap(q => q.v);
+    const logScale = mode === 'pct' && Math.max(...all) > 4 * START;
+    const lo = logScale ? Math.max(100, Math.min(START, ...all) * 0.85) : Math.min(0.9 * START, ...all.map(v => v * 0.95));
+    const hi = Math.max(START, ...all) * 1.06;
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const x = k => m.l + k / n * iw;
+    const y = logScale ? v => m.t + ih - (Math.log(Math.max(v, lo)) - Math.log(lo)) / (Math.log(hi) - Math.log(lo)) * ih : v => m.t + ih - (v - lo) / (hi - lo) * ih;
+    for (const t of (logScale ? logTicks(lo, hi) : niceTicks(lo, hi, 5))) { el('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: 'gridline' }, svg); text(svg, m.l - 8, y(t) + 4, short(t), 'tick', 'end'); }
+    el('line', { x1: m.l, x2: W - m.r, y1: y(START), y2: y(START), class: 'startline' }, svg);
+    let lastMonth = '';
+    s.nights.forEach((d, k) => { const mo = d.slice(0, 7); if (mo !== lastMonth) { lastMonth = mo; if (x(k + 1) < W - m.r - 20) text(svg, x(k + 1), H - 10, new Date(d + 'T12:00:00Z').toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }), 'tick', 'middle'); } });
+    for (const q of series) el('path', { d: q.v.map((v, k) => `${k ? 'L' : 'M'}${x(k).toFixed(1)},${y(v).toFixed(1)}`).join(''), class: 'line c-' + q.p.cls }, svg).style.fill = 'none';
+    const cursor = el('line', { x1: 0, x2: 0, y1: m.t, y2: m.t + ih, class: 'cursor', opacity: 0 }, svg);
+    const dots = series.map(q => el('circle', { r: 4, class: 'c-' + q.p.cls + ' ring', opacity: 0 }, svg));
+    const hit = el('rect', { x: m.l, y: m.t, width: iw, height: ih, class: 'hit' }, svg);
+    hit.addEventListener('pointermove', e => {
+      const r = svg.getBoundingClientRect();
+      const k = Math.max(0, Math.min(n, Math.round(((e.clientX - r.left) * W / r.width - m.l) / iw * n)));
+      cursor.setAttribute('x1', x(k)); cursor.setAttribute('x2', x(k)); cursor.setAttribute('opacity', 1);
+      series.forEach((q, j) => { dots[j].setAttribute('cx', x(k)); dots[j].setAttribute('cy', y(q.v[k])); dots[j].setAttribute('opacity', 1); });
+      showTip(e, k === 0 ? `${s.s} · start` : `${s.s} · night ${k} of ${n} · ${fmtDate(s.nights[k - 1])}`, series.map(q => [q.p.color, q.p.name, money(q.v[k])]));
+    });
+    hit.addEventListener('pointerleave', () => { hideTip(); cursor.setAttribute('opacity', 0); dots.forEach(d => d.setAttribute('opacity', 0)); });
+    const c = s.plans.combo, pr = s.plans.parlay;
+    document.getElementById('path-note').textContent = `${s.s}: ${nf0.format(c.bets)} bets over ${n} nights (${nf0.format(s.plans.straight.bets)} straight bets, ${pr.bets} parlays). ` +
+      PLANS.map(p => `${p.name.toLowerCase()} ended ${money(V(s, p.key).end)}`).join('; ') + '.' + (logScale ? ' Ratio scale.' : '');
+  }
+
+  function table() {
+    const T = document.getElementById('seasons');
+    T.replaceChildren();
+    const head = T.createTHead().insertRow();
+    const th = (t, sw) => { const c = document.createElement('th'); if (sw) { const k = document.createElement('i'); k.className = 'sw'; k.style.background = sw; c.appendChild(k); } c.appendChild(document.createTextNode(t)); head.appendChild(c); };
+    th('Season'); th('Period'); th('Straight bets', 'var(--best)'); th('won'); th('Parlays', 'var(--par)'); th('won'); th('Best 5 only', 'var(--best)'); th('Parlay only', 'var(--par)'); th('Together', 'var(--tier)'); th('lowest');
+    const tb = T.createTBody();
+    for (const s of S) {
+      const tr = tb.insertRow(); if (s.era === 'test') tr.className = 'test';
+      const td = (t, cls) => { const c = tr.insertCell(); c.textContent = t; if (cls) c.className = cls; };
+      td(s.s);
+      const pc = tr.insertCell(); const chip = document.createElement('span'); chip.className = 'chip'; chip.textContent = s.era; pc.appendChild(chip); pc.style.textAlign = 'left';
+      const st = s.plans.straight, pa = s.plans.parlay;
+      td(nf0.format(st.bets)); td((100 * st.won / Math.max(1, st.won + st.lost)).toFixed(1) + '%');
+      td(nf0.format(pa.bets)); td(pa.bets ? `${pa.won} (${(100 * pa.won / Math.max(1, pa.won + pa.lost)).toFixed(0)}%)` : '—');
+      for (const k of ['straight', 'parlay', 'combo']) { const v = profit(s, k); td(signed(v), v < 0 ? 'neg' : 'pos'); }
+      td(money(V(s, 'combo').low), V(s, 'combo').low < START * 0.5 ? 'neg' : '');
+    }
+  }
+
+  // ---------- ledger: every straight bet and parlay
+  // row: [kind, day, res, pnl, stake$, bal$, stake%, bal%, ...]; straight: away, home, over, line, opener, price, book, p, final
+  // parlay: odds, joint p, [[away, home, over, line, price, p, final, legResult] x2]
+  const sSel = document.getElementById('f-season');
+  sSel.appendChild(new Option('All seasons', ''));
+  S.forEach(s => sSel.appendChild(new Option(`${s.s} (${s.era})`, s.s)));
+  sSel.value = '2024-25';
+  const seasonOf = d => { const y = Number(d.slice(0, 4)), mo = Number(d.slice(5, 7)); const a = mo >= 7 ? y : y - 1; return `${a}-${String(a + 1).slice(2)}`; };
+  const teamsL = D.teams.map(t => t.toLowerCase());
+  const LG = D.ledger;
+  function ledgerRows() {
+    const se = sSel.value, kind = document.getElementById('f-kind').value, res = document.getElementById('f-result').value;
+    const q = document.getElementById('f-team').value.trim().toLowerCase();
+    const out = [];
+    for (let i = 0; i < LG.length; i++) {
+      const r = LG[i];
+      if (se && seasonOf(r[1]) !== se) continue;
+      if (kind && r[0] !== kind) continue;
+      if (res !== '' && r[2] !== Number(res)) continue;
+      if (q) {
+        const ids = r[0] === 's' ? [r[8], r[9]] : [r[10][0][0], r[10][0][1], r[10][1][0], r[10][1][1]];
+        if (!ids.some(t => t >= 0 && teamsL[t].includes(q))) continue;
+      }
+      out.push(i);
+    }
+    if (document.getElementById('f-order').value === 'desc') out.reverse();
+    return out;
+  }
+  function ledger() {
+    const rows = ledgerRows(), T = document.getElementById('ledger');
+    T.replaceChildren();
+    const head = T.createTHead().insertRow();
+    for (const h of ['Date', 'Bet', 'Pick', 'Price', 'Engine', 'Final', 'Result', 'Stake', 'Profit', 'Balance']) { const th = document.createElement('th'); th.textContent = h; if (h === 'Pick') th.className = 'game'; head.appendChild(th); }
+    const pages = Math.max(1, Math.ceil(rows.length / PAGE)); page = Math.min(page, pages - 1);
+    const tb = T.createTBody();
+    let w = 0, l = 0, pr = 0, st = 0;
+    for (const i of rows) { const r = LG[i]; const s = mode === 'flat' ? r[4] : r[6]; st += s; pr += s * r[3]; if (r[2] === 0) w++; else if (r[2] === 1) l++; }
+    for (const i of rows.slice(page * PAGE, page * PAGE + PAGE)) {
+      const r = LG[i], stake = mode === 'flat' ? r[4] : r[6], bal = mode === 'flat' ? r[5] : r[7], p = stake * r[3];
+      const tr = tb.insertRow();
+      const td = (t, cls) => { const c = tr.insertCell(); c.textContent = t; if (cls) c.className = cls; return c; };
+      td(fmtDate(r[1]));
+      const kc = tr.insertCell(); const k = document.createElement('span'); k.className = 'kind ' + r[0]; k.textContent = r[0] === 's' ? 'Straight' : 'Parlay'; kc.appendChild(k);
+      const bc = tr.insertCell(); bc.className = 'bet';
+      if (r[0] === 's') {
+        const a = document.createElement('span'); a.className = 'leg';
+        a.append(document.createTextNode(`${r[10] ? 'Over' : 'Under'} ${r[11]} · `), Object.assign(document.createElement('span'), { className: 'meta', textContent: `${D.teams[r[8]]} at ${D.teams[r[9]]}${r[11] !== r[12] ? ' · opener ' + r[12] : ''}${r[14] ? ' · ' + D.books[r[14] - 1] : ''}` }));
+        bc.appendChild(a);
+        td(r[13].toFixed(2)); td((r[15] / 10).toFixed(1) + '%'); td(String(r[16]));
+      } else {
+        for (const g of r[10]) {
+          const a = document.createElement('span'); a.className = 'leg';
+          const lr = Object.assign(document.createElement('span'), { className: 'lr ' + g[7], textContent: { w: 'won', l: 'lost', p: 'push' }[g[7]] });
+          a.append(document.createTextNode(`${g[2] ? 'Over' : 'Under'} ${g[3]} @ ${g[4].toFixed(2)} · `),
+            Object.assign(document.createElement('span'), { className: 'meta', textContent: `${g[0] >= 0 ? D.teams[g[0]] : '?'} at ${g[1] >= 0 ? D.teams[g[1]] : '?'} · final ${g[6] ?? '—'}` }), lr);
+          bc.appendChild(a);
+        }
+        td(r[8].toFixed(2)); td((r[9] / 10).toFixed(1) + '%'); td('—');
+      }
+      const rc = tr.insertCell(); const chip = document.createElement('span'); chip.className = 'res ' + RES[r[2]]; chip.textContent = RES[r[2]]; rc.appendChild(chip);
+      td(money(stake)); td(signed(p), p > 0 ? 'pos' : p < 0 ? 'neg' : ''); td(money(bal), bal < START ? 'neg' : '');
+    }
+    for (const id of ['pager-top', 'pager-bottom']) {
+      const P = document.getElementById(id); P.replaceChildren();
+      const btn = (label, to, dis) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.disabled = dis; b.addEventListener('click', () => { page = to; ledger(); if (id === 'pager-bottom') document.getElementById('ledger').scrollIntoView({ block: 'start' }); }); P.appendChild(b); };
+      btn('« First', 0, page === 0); btn('‹ Previous', page - 1, page === 0);
+      const sp = document.createElement('span');
+      sp.textContent = rows.length ? `Bets ${nf0.format(page * PAGE + 1)}–${nf0.format(Math.min(rows.length, (page + 1) * PAGE))} of ${nf0.format(rows.length)} · page ${page + 1} of ${pages}` : 'No bets match these filters';
+      P.appendChild(sp);
+      btn('Next ›', page + 1, page >= pages - 1); btn('Last »', pages - 1, page >= pages - 1);
+    }
+    document.getElementById('ledger-note').textContent = `${nf0.format(rows.length)} bets shown: ${w} won, ${l} lost · staked ${money(st)} · profit ${signed(pr)} at ` +
+      (mode === 'flat' ? '$100 a bet.' : '2% of the account a bet.') + ' Balance is the account after the bet, with straight bets and parlays together, each season from $5,000. 100 bets a page.';
+  }
+
+  function drawAll() { legends(); kpis(); cum(); profitBars(); parlayBars(); chips(); path(); table(); ledger(); }
+  for (const b of document.querySelectorAll('.seg button[data-mode]')) b.addEventListener('click', () => {
+    mode = b.dataset.mode;
+    for (const o of document.querySelectorAll('.seg button[data-mode]')) o.setAttribute('aria-pressed', String(o === b));
+    kpis(); profitBars(); path(); table(); ledger();
+  });
+  for (const id of ['f-season', 'f-kind', 'f-result', 'f-order']) document.getElementById(id).addEventListener('change', () => { page = 0; ledger(); });
+  let qt; document.getElementById('f-team').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(() => { page = 0; ledger(); }, 200); });
+  drawAll();
+  let rt;
+  new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { cum(); profitBars(); parlayBars(); path(); }, 120); }).observe(document.querySelector('.wrap'));
+})();
+</script>
