@@ -139,7 +139,8 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
     <h1>Best 5 a day, plus the parlay when there is one</h1>
     <p class="lede">Each day the locked engine bets its five strongest picks at 53% or better as straight bets. On days it can
       build one, it also plays the 2.5+ parlay: two legs from different games, combined odds of 2.5 or more. Every season starts
-      from $5,000. The parlay counts as one bet with the same stake as a straight bet.</p>
+      from $5,000. The parlay counts as one bet with the same stake as a straight bet. Turn on doubling to see the same bets
+      with 1×, 2×, 4× stakes after a loss.</p>
   </header>
 
   <div class="switch">
@@ -148,7 +149,14 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
       <button type="button" data-mode="flat" aria-pressed="true">$100 a bet</button>
       <button type="button" data-mode="pct" aria-pressed="false">2% of the account a bet</button>
     </div>
+    <span class="label" id="dbl-label">Doubling</span>
+    <div class="seg" role="group" aria-labelledby="dbl-label">
+      <button type="button" data-dbl="none" aria-pressed="true">Off</button>
+      <button type="button" data-dbl="bet" aria-pressed="false">After each losing bet</button>
+      <button type="button" data-dbl="night" aria-pressed="false">After each losing night</button>
+    </div>
   </div>
+  <p class="foot" id="dbl-note"></p>
 
   <section class="kpis" aria-label="Summary, 2021-26">
     <div class="kpi"><span class="label"><i class="key-box" style="background:var(--tier)"></i>Best 5 + parlay</span><span class="value" id="k-combo"></span><span class="sub" id="k-combo-sub"></span></div>
@@ -159,8 +167,8 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
 
   <section class="panel">
     <h2>15 seasons, night by night</h2>
-    <p>Running profit at $100 a bet, without compounding, so the seasons add up. The shaded stretch is 2021-26, the seasons
-      scored once with the engine locked, at real opening prices for the straight bets.</p>
+    <p>Running profit at $100 a base bet, without compounding, so the seasons add up (each season starts again from $5,000).
+      The shaded stretch is 2021-26, the seasons scored once with the engine locked, at real opening prices for the straight bets.</p>
     <div class="legend" data-legend></div>
     <div class="chart" id="cum" role="img" aria-label="Running profit over 15 seasons, by plan"></div>
   </section>
@@ -216,6 +224,7 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
       <li>The parlay's legs are often moved lines (a few points better than the opener). Their prices are our estimate of the book's price, not a real quote, so check the price on the day; the engine needs combined odds of 2.5 or more.</li>
       <li>A parlay leg can be the same game as one of the day's straight bets. A pushed leg drops out and the parlay pays at the other leg's price.</li>
       <li>The bets of a night are placed together: in the 2% view each stake is 2% of the balance at the start of the night.</li>
+      <li>Doubling: after a loss the next stake doubles, at most twice (1×, 2×, 4× the base), then resets after a win or a third loss. Straight bets and the parlay share one run: a losing parlay doubles the next bet, and a win of either kind resets it. "After each losing bet" goes in tip-off order (a parlay settles with its later leg) and assumes each result is known before the next bet, which busy nights do not allow. "After each losing night" doubles every bet of the next night after a night that lost money overall; that is the version you could follow. A night never stakes more than the balance.</li>
       <li>The 2% view compounds within a season, so the best seasons end far above $5,000. Books cap stakes and limit winning accounts long before that.</li>
       <li>2021-26 was already used once to test the engine. This shows what following the plan would have looked like, not a promise about next season.</li>
     </ul>
@@ -239,7 +248,8 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
                  { key: 'straight', name: 'Best 5 straight bets only', cls: 'best', color: 'var(--best)' },
                  { key: 'parlay', name: 'Parlay only', cls: 'par', color: 'var(--par)' }];
   const RES = ['won', 'lost', 'push'];
-  let mode = 'flat', season = '2024-25', page = 0;
+  let mode = 'flat', dbl = 'none', season = '2024-25', page = 0;
+  const BROKE = 1;
 
   const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
   const text = (parent, x, y, s, cls, anchor) => { const t = el('text', { x, y, class: cls, 'text-anchor': anchor || 'start' }, parent); t.textContent = s; return t; };
@@ -277,7 +287,7 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
   const hideTip = () => { tip.hidden = true; };
   const seasonLabel = (s, W) => (W < 640 ? s.slice(2, 4) + '–' + s.slice(-2) : s);
   const fmtDate = d => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
-  const V = (s, key) => s.plans[key][mode];
+  const V = (s, key) => s.plans[key][`${mode}_${dbl}`];
   const profit = (s, key) => V(s, key).end - START;
 
   function legends() {
@@ -295,11 +305,18 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
       const worst = Math.min(...TEST.map(s => profit(s, p.key)));
       const low = Math.min(...S.map(s => V(s, p.key).low));
       document.getElementById('k-' + p.key).textContent = signed(avg) + ' a season';
+      const broke = S.filter(s => V(s, p.key).low <= BROKE).length, below = S.filter(s => profit(s, p.key) < -0.005).length;
       document.getElementById('k-' + p.key + '-sub').textContent =
-        `${nf0.format(bets / TEST.length)} bets a season · ${(100 * won / Math.max(1, won + lost)).toFixed(1)}% won · worst 2021-26 season ${signed(worst)} · lowest balance in 15 seasons ${money(low)}`;
+        `${nf0.format(bets / TEST.length)} bets a season · ${(100 * won / Math.max(1, won + lost)).toFixed(1)}% won · worst 2021-26 season ${signed(worst)}. ` +
+        `15 seasons: ${broke ? 'broke in ' + broke + ', ' : ''}${below} below $5,000, lowest balance ${money(low)}`;
+      document.getElementById('k-' + p.key).className = 'value' + (broke ? ' neg' : '');
     }
     document.getElementById('kpi-note').textContent = 'Profit a season: average over the five 2021-26 seasons, each from $5,000, at ' +
-      (mode === 'flat' ? '$100 a bet.' : '2% of the account a bet, compounding within the season.');
+      (mode === 'flat' ? '$100 a base bet' : '2% of the account a base bet, compounding within the season') +
+      (dbl === 'none' ? ', no doubling.' : dbl === 'bet' ? ', doubling after each losing bet.' : ', doubling after each losing night.');
+    document.getElementById('dbl-note').textContent = dbl === 'none' ? ''
+      : dbl === 'bet' ? 'After a losing bet (straight or parlay) the next stake doubles, then doubles again; it resets after a win or a third loss. Assumes each result is known before the next bet.'
+      : 'After a night that lost money overall, every bet the next night doubles, then doubles again; it resets after a winning night or a third losing night.';
   }
 
   function cum() {
@@ -308,7 +325,7 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
     host.replaceChildren();
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}` }, host);
     const C = D.cum, n = C.nights.length;
-    const series = PLANS.map(p => ({ p, v: C[p.key] }));
+    const series = PLANS.map(p => ({ p, v: C[p.key][dbl] }));
     const all = series.flatMap(q => q.v);
     const hi = Math.max(...all) * 1.05, lo = Math.min(0, ...all);
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
@@ -390,7 +407,7 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
       text(svg, m.l + i * gw + gw / 2, H - m.b + 18, seasonLabel(s.s, W), 'tick', 'middle');
       const hit = el('rect', { x: m.l + i * gw, y: m.t, width: gw, height: ih + 24, class: 'hit' }, svg);
       hit.addEventListener('pointermove', e => showTip(e, `${s.s} · parlays`, [[null, 'Played', nf0.format(r.bets)], [null, 'Won–lost', `${r.won}–${r.lost}`],
-        [null, 'Share won', (100 * share).toFixed(1) + '%'], [null, 'Average odds', s.parlay_odds ? s.parlay_odds.toFixed(2) : '—'], [null, 'Profit at $100', signed(s.plans.parlay.flat.end - START)]]));
+        [null, 'Share won', (100 * share).toFixed(1) + '%'], [null, 'Average odds', s.parlay_odds ? s.parlay_odds.toFixed(2) : '—'], [null, 'Profit at $100, no doubling', signed(s.plans.parlay.flat_none.end - START)]]));
       hit.addEventListener('pointerleave', hideTip);
     });
     const ln = el('path', { d: pts.map((p, k) => `${k ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(''), class: 'line' }, svg);
@@ -408,6 +425,7 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
     for (const s of S) {
       const b = document.createElement('button'); b.type = 'button'; b.textContent = s.s;
       b.setAttribute('aria-pressed', String(s.s === season));
+      if (PLANS.some(p => V(s, p.key).low <= BROKE)) b.classList.add('is-broke');
       b.addEventListener('click', () => { season = s.s; chips(); path(); });
       host.appendChild(b);
     }
@@ -444,7 +462,7 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
     hit.addEventListener('pointerleave', () => { hideTip(); cursor.setAttribute('opacity', 0); dots.forEach(d => d.setAttribute('opacity', 0)); });
     const c = s.plans.combo, pr = s.plans.parlay;
     document.getElementById('path-note').textContent = `${s.s}: ${nf0.format(c.bets)} bets over ${n} nights (${nf0.format(s.plans.straight.bets)} straight bets, ${pr.bets} parlays). ` +
-      PLANS.map(p => `${p.name.toLowerCase()} ended ${money(V(s, p.key).end)}`).join('; ') + '.' + (logScale ? ' Ratio scale.' : '');
+      PLANS.map(p => `${p.name.toLowerCase()} ended ${money(V(s, p.key).end)} (lowest ${money(V(s, p.key).low)})`).join('; ') + '.' + (logScale ? ' Ratio scale.' : '');
   }
 
   function table() {
@@ -463,13 +481,13 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
       td(nf0.format(st.bets)); td((100 * st.won / Math.max(1, st.won + st.lost)).toFixed(1) + '%');
       td(nf0.format(pa.bets)); td(pa.bets ? `${pa.won} (${(100 * pa.won / Math.max(1, pa.won + pa.lost)).toFixed(0)}%)` : '—');
       for (const k of ['straight', 'parlay', 'combo']) { const v = profit(s, k); td(signed(v), v < 0 ? 'neg' : 'pos'); }
-      td(money(V(s, 'combo').low), V(s, 'combo').low < START * 0.5 ? 'neg' : '');
+      td(V(s, 'combo').low <= BROKE ? 'broke ($0)' : money(V(s, 'combo').low), V(s, 'combo').low < START * 0.5 ? 'neg' : '');
     }
   }
 
   // ---------- ledger: every straight bet and parlay
-  // row: [kind, day, res, pnl, stake$, bal$, stake%, bal%, ...]; straight: away, home, over, line, opener, price, book, p, final
-  // parlay: odds, joint p, [[away, home, over, line, price, p, final, legResult] x2]
+  // row: [kind, day, res, pnl, ...]; straight: away, home, over, line, opener, price, book, p, final
+  // parlay: odds, joint p, [[away, home, over, line, price, p, final, legResult] x2]; stakes in D.lst[mode_dbl][i] = [stake, balance, level]
   const sSel = document.getElementById('f-season');
   sSel.appendChild(new Option('All seasons', ''));
   S.forEach(s => sSel.appendChild(new Option(`${s.s} (${s.era})`, s.s)));
@@ -487,7 +505,7 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
       if (kind && r[0] !== kind) continue;
       if (res !== '' && r[2] !== Number(res)) continue;
       if (q) {
-        const ids = r[0] === 's' ? [r[8], r[9]] : [r[10][0][0], r[10][0][1], r[10][1][0], r[10][1][1]];
+        const ids = r[0] === 's' ? [r[4], r[5]] : [r[6][0][0], r[6][0][1], r[6][1][0], r[6][1][1]];
         if (!ids.some(t => t >= 0 && teamsL[t].includes(q))) continue;
       }
       out.push(i);
@@ -502,10 +520,11 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
     for (const h of ['Date', 'Bet', 'Pick', 'Price', 'Engine', 'Final', 'Result', 'Stake', 'Profit', 'Balance']) { const th = document.createElement('th'); th.textContent = h; if (h === 'Pick') th.className = 'game'; head.appendChild(th); }
     const pages = Math.max(1, Math.ceil(rows.length / PAGE)); page = Math.min(page, pages - 1);
     const tb = T.createTBody();
-    let w = 0, l = 0, pr = 0, st = 0;
-    for (const i of rows) { const r = LG[i]; const s = mode === 'flat' ? r[4] : r[6]; st += s; pr += s * r[3]; if (r[2] === 0) w++; else if (r[2] === 1) l++; }
+    const SL = D.lst[`${mode}_${dbl}`];
+    let w = 0, l = 0, pr = 0, st = 0, up = 0;
+    for (const i of rows) { const r = LG[i]; const s = SL[i][0]; st += s; pr += s * r[3]; if (SL[i][2] > 0) up++; if (r[2] === 0) w++; else if (r[2] === 1) l++; }
     for (const i of rows.slice(page * PAGE, page * PAGE + PAGE)) {
-      const r = LG[i], stake = mode === 'flat' ? r[4] : r[6], bal = mode === 'flat' ? r[5] : r[7], p = stake * r[3];
+      const r = LG[i], stake = SL[i][0], bal = SL[i][1], lvl = SL[i][2], p = stake * r[3];
       const tr = tb.insertRow();
       const td = (t, cls) => { const c = tr.insertCell(); c.textContent = t; if (cls) c.className = cls; return c; };
       td(fmtDate(r[1]));
@@ -513,21 +532,21 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
       const bc = tr.insertCell(); bc.className = 'bet';
       if (r[0] === 's') {
         const a = document.createElement('span'); a.className = 'leg';
-        a.append(document.createTextNode(`${r[10] ? 'Over' : 'Under'} ${r[11]} · `), Object.assign(document.createElement('span'), { className: 'meta', textContent: `${D.teams[r[8]]} at ${D.teams[r[9]]}${r[11] !== r[12] ? ' · opener ' + r[12] : ''}${r[14] ? ' · ' + D.books[r[14] - 1] : ''}` }));
+        a.append(document.createTextNode(`${r[6] ? 'Over' : 'Under'} ${r[7]} · `), Object.assign(document.createElement('span'), { className: 'meta', textContent: `${D.teams[r[4]]} at ${D.teams[r[5]]}${r[7] !== r[8] ? ' · opener ' + r[8] : ''}${r[10] ? ' · ' + D.books[r[10] - 1] : ''}` }));
         bc.appendChild(a);
-        td(r[13].toFixed(2)); td((r[15] / 10).toFixed(1) + '%'); td(String(r[16]));
+        td(r[9].toFixed(2)); td((r[11] / 10).toFixed(1) + '%'); td(String(r[12]));
       } else {
-        for (const g of r[10]) {
+        for (const g of r[6]) {
           const a = document.createElement('span'); a.className = 'leg';
           const lr = Object.assign(document.createElement('span'), { className: 'lr ' + g[7], textContent: { w: 'won', l: 'lost', p: 'push' }[g[7]] });
           a.append(document.createTextNode(`${g[2] ? 'Over' : 'Under'} ${g[3]} @ ${g[4].toFixed(2)} · `),
             Object.assign(document.createElement('span'), { className: 'meta', textContent: `${g[0] >= 0 ? D.teams[g[0]] : '?'} at ${g[1] >= 0 ? D.teams[g[1]] : '?'} · final ${g[6] ?? '—'}` }), lr);
           bc.appendChild(a);
         }
-        td(r[8].toFixed(2)); td((r[9] / 10).toFixed(1) + '%'); td('—');
+        td(r[4].toFixed(2)); td((r[5] / 10).toFixed(1) + '%'); td('—');
       }
       const rc = tr.insertCell(); const chip = document.createElement('span'); chip.className = 'res ' + RES[r[2]]; chip.textContent = RES[r[2]]; rc.appendChild(chip);
-      td(money(stake)); td(signed(p), p > 0 ? 'pos' : p < 0 ? 'neg' : ''); td(money(bal), bal < START ? 'neg' : '');
+      td(money(stake) + (lvl ? ` (${2 ** lvl}×)` : ''), lvl ? 'up' : ''); td(signed(p), p > 0 ? 'pos' : p < 0 ? 'neg' : ''); td(money(bal), bal < START ? 'neg' : '');
     }
     for (const id of ['pager-top', 'pager-bottom']) {
       const P = document.getElementById(id); P.replaceChildren();
@@ -539,14 +558,20 @@ td.bet .lr.w { color: var(--good); } td.bet .lr.l { color: var(--bad); } td.bet 
       btn('Next ›', page + 1, page >= pages - 1); btn('Last »', pages - 1, page >= pages - 1);
     }
     document.getElementById('ledger-note').textContent = `${nf0.format(rows.length)} bets shown: ${w} won, ${l} lost · staked ${money(st)} · profit ${signed(pr)} at ` +
-      (mode === 'flat' ? '$100 a bet.' : '2% of the account a bet.') + ' Balance is the account after the bet, with straight bets and parlays together, each season from $5,000. 100 bets a page.';
+      (mode === 'flat' ? '$100 a base bet' : '2% of the account a base bet') + (dbl === 'none' ? '' : `, ${nf0.format(up)} of them doubled (stake in orange)`) +
+      '. Balance is the account after the bet, with straight bets and parlays together, each season from $5,000. 100 bets a page.';
   }
 
   function drawAll() { legends(); kpis(); cum(); profitBars(); parlayBars(); chips(); path(); table(); ledger(); }
   for (const b of document.querySelectorAll('.seg button[data-mode]')) b.addEventListener('click', () => {
     mode = b.dataset.mode;
     for (const o of document.querySelectorAll('.seg button[data-mode]')) o.setAttribute('aria-pressed', String(o === b));
-    kpis(); profitBars(); path(); table(); ledger();
+    kpis(); profitBars(); chips(); path(); table(); ledger();
+  });
+  for (const b of document.querySelectorAll('.seg button[data-dbl]')) b.addEventListener('click', () => {
+    dbl = b.dataset.dbl;
+    for (const o of document.querySelectorAll('.seg button[data-dbl]')) o.setAttribute('aria-pressed', String(o === b));
+    kpis(); cum(); profitBars(); chips(); path(); table(); ledger();
   });
   for (const id of ['f-season', 'f-kind', 'f-result', 'f-order']) document.getElementById(id).addEventListener('change', () => { page = 0; ledger(); });
   let qt; document.getElementById('f-team').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(() => { page = 0; ledger(); }, 200); });

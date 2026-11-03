@@ -6,7 +6,10 @@ line and price for 2021-26. Parlay: the locked 2.5+ card (scripts/stage3_common.
 product), at most one a day and only on days the engine finds one; its legs are often moved lines
 priced by our estimate of the book, as in reports/ledger_2023_24.*.
 Money: each season from $5,000; $100 a straight bet and $100 a parlay, or 2% of the balance at the
-start of the night for each (a night never stakes more than the balance).
+start of the night for each (a night never stakes more than the balance). Doubling (optional): 1x, 2x,
+4x the base stake after a loss, reset after a win or a third loss; straight bets and the parlay share
+one sequence (in tip-off order; the parlay settles with its later leg). "bet": after each losing bet;
+"night": every bet of the next night after a night that lost money overall.
 
 usage: python scripts/best5_parlay.py
 """
@@ -32,7 +35,8 @@ from every_bet_page import BOOK_NAME
 from backtest.odds_cards import best_main
 from volume_study import DEV, TEST, ODDS_110, frame, top_n
 
-START, UNIT, PCT = 5000.0, 100.0, 0.02
+START, UNIT, PCT, LEVELS = 5000.0, 100.0, 0.02, 3
+DBL = ("none", "bet", "night")
 ERA = {**{s: "build" for s in DEV[:7]}, **{s: "check" for s in DEV[7:]}, **{s: "test" for s in TEST}}
 PLANS = ("combo", "straight", "parlay")
 
@@ -72,24 +76,43 @@ def parlays(P, cals, calm) -> pd.DataFrame:
     return c
 
 
-def replay(rows: pd.DataFrame, nights: list, stake: str) -> tuple[list, np.ndarray, np.ndarray]:
-    """Night-end balances and each bet's stake and balance after it (bets of a night placed together)."""
-    acct, path = START, [START]
-    st_out, bal_out = np.zeros(len(rows)), np.zeros(len(rows))
+def replay(rows: pd.DataFrame, nights: list, stake: str, dbl: str = "none"):
+    """Night-end balances, and each bet's stake, balance after it and doubling level (bets of a night
+    placed together; with doubling after each losing bet, in tip-off order)."""
+    acct, lvl, base, path = START, 0, UNIT, [START]
+    st_out, bal_out, lv_out = np.zeros(len(rows)), np.zeros(len(rows)), np.zeros(len(rows), int)
+    pnl = rows.pnl.values
     by = {d: np.nonzero(rows.day.values == d)[0] for d in nights}
     for d in nights:
         idx = by[d]
-        if len(idx):
-            st = np.full(len(idx), UNIT if stake == "flat" else PCT * acct)
-            if st.sum() > max(acct, 0):
-                st *= max(acct, 0) / st.sum()
-            run = acct
-            for k, i in enumerate(idx):
-                run += st[k] * rows.pnl.values[i]
-                st_out[i], bal_out[i] = st[k], run
-            acct = run
-        path.append(round(acct, 1))
-    return path, st_out, bal_out
+        if len(idx) and acct > 0:
+            if dbl == "bet":
+                for i in idx:
+                    if lvl == 0:
+                        base = UNIT if stake == "flat" else PCT * acct
+                    st = min(base * 2 ** lvl, max(acct, 0.0))
+                    acct += st * pnl[i]
+                    st_out[i], bal_out[i], lv_out[i] = st, acct, lvl
+                    if pnl[i] != 0:
+                        lvl = 0 if pnl[i] > 0 or lvl == LEVELS - 1 else lvl + 1
+            else:
+                level = 2 ** lvl if dbl == "night" else 1
+                st = np.full(len(idx), (UNIT if stake == "flat" else PCT * acct) * level)
+                if st.sum() > max(acct, 0):
+                    st *= max(acct, 0) / st.sum()
+                run = acct
+                for k, i in enumerate(idx):
+                    run += st[k] * pnl[i]
+                    st_out[i], bal_out[i], lv_out[i] = st[k], run, lvl if dbl == "night" else 0
+                net = run - acct
+                acct = run
+                if dbl == "night":
+                    lvl = 0 if net >= 0 or lvl == LEVELS - 1 else lvl + 1
+        elif len(idx):
+            for i in idx:
+                bal_out[i] = max(acct, 0.0)
+        path.append(round(max(acct, 0.0), 1))
+    return path, st_out, bal_out, lv_out
 
 
 def main():
@@ -99,10 +122,11 @@ def main():
     C = parlays(P, cals, calm)
     rows = pd.concat([
         pd.DataFrame({"kind": "straight", "season": S.season, "day": S.day, "tip": S.tip, "pnl": S.pnl, "result": S.result,
-                      "ref": S.index}),
+                      "ref": S.index, "gk": S.game_key}),
         pd.DataFrame({"kind": "parlay", "season": C.season, "day": C.day, "tip": C[["tip_a", "tip_b"]].max(axis=1),
-                      "pnl": C.pnl, "result": C.result, "ref": C.index})], ignore_index=True)
-    rows = rows.sort_values(["day", "tip", "kind"]).reset_index(drop=True)
+                      "pnl": C.pnl, "result": C.result, "ref": C.index, "gk": "~"})], ignore_index=True)
+    # tip-off order; games tipping together in game order (as scripts/volume_page.py), a parlay after them
+    rows = rows.sort_values(["day", "tip", "gk"]).reset_index(drop=True)
 
     seasons, stakes = [], {}
     for s in DEV + TEST:
@@ -115,22 +139,27 @@ def main():
             row["plans"][plan] = {"bets": len(sub), "won": int((dec.result == "won").sum()),
                                   "lost": int((dec.result == "lost").sum()), "units": round(float(sub.pnl.sum()), 2)}
             for mode in ("flat", "pct"):
-                path, st, bal = replay(sub, nights, mode)
-                row["plans"][plan][mode] = {"end": path[-1], "low": min(path), "path": path}
-                if plan == "combo":
-                    stakes.setdefault(mode, {}).update({i: (a, b) for i, a, b in zip(sub.index, st, bal)})
+                for dbl in DBL:
+                    path, st, bal, lv = replay(sub, nights, mode, dbl)
+                    low = min(path + [float(b) for b in bal[st > 0]]) if (st > 0).any() else min(path)
+                    row["plans"][plan][f"{mode}_{dbl}"] = {"end": path[-1], "low": round(max(low, 0.0), 1), "path": path}
+                    if plan == "combo":
+                        stakes.setdefault(f"{mode}_{dbl}", {}).update(
+                            {i: (int(round(a)), int(round(max(b, 0))), int(l)) for i, a, b, l in zip(sub.index, st, bal, lv)})
         cs = C[C.season == s]
         row["parlay_odds"] = round(float(cs.combined_odds.mean()), 3) if len(cs) else None
         seasons.append(row)
 
-    # running profit across all seasons at $100 a bet (no compounding)
-    all_nights = sorted(rows.day.unique())
-    cum = {}
-    for plan in PLANS:
-        sub = rows if plan == "combo" else rows[rows.kind == ("straight" if plan == "straight" else "parlay")]
-        u = sub.groupby("day").pnl.sum() * UNIT
-        cum[plan] = [round(v, 1) for v in u.reindex(all_nights, fill_value=0).cumsum()]
-    season_of = rows.drop_duplicates("day").set_index("day").season
+    # running profit across all seasons at $100 a base bet (no compounding; each season from $5,000)
+    all_nights = [d for x in seasons for d in x["nights"]]
+    cum = {p: {dbl: [] for dbl in DBL} for p in PLANS}
+    for p in PLANS:
+        for dbl in DBL:
+            off = 0.0
+            for x in seasons:
+                path = x["plans"][p][f"flat_{dbl}"]["path"]
+                cum[p][dbl].extend(round(off + v - START, 1) for v in path[1:])
+                off += path[-1] - START
 
     # the ledger: every straight bet and every parlay, in order
     teams = sorted(set(S.away_name) | set(S.home_name) | set(C.away_a.dropna()) | set(C.home_a.dropna())
@@ -138,10 +167,12 @@ def main():
     tix = {t: i for i, t in enumerate(teams)}
     books = sorted({b for b in S.book if b})
     L = []
+    variants = [f"{m}_{d}" for m in ("flat", "pct") for d in DBL]
+    lst = {v: [] for v in variants}
     for i, r in rows.iterrows():
-        sf, bf = stakes["flat"][i]
-        sp, bp = stakes["pct"][i]
-        base = [r.day, "wlp".index(r.result[0]), round(float(r.pnl), 4), int(round(sf)), int(round(bf)), int(round(sp)), int(round(bp))]
+        for v in variants:
+            lst[v].append(stakes[v][i])
+        base = [r.day, "wlp".index(r.result[0]), round(float(r.pnl), 4)]
         if r.kind == "straight":
             b = S.loc[r.ref]
             L.append(["s", *base, tix[b.away_name], tix[b.home_name], int(b.best_side == 1), round(float(b.bet_line), 1),
@@ -159,27 +190,30 @@ def main():
             L.append(["p", *base, round(float(c.combined_odds), 3), int(round(c.joint_model * 1000)), legs])
 
     data = {"start": START, "unit": UNIT, "seasons": seasons, "teams": teams, "books": books,
-            "cum": {"nights": all_nights, "season": [season_of[d] for d in all_nights], **cum}, "ledger": L}
+            "cum": {"nights": all_nights, "season": [x["s"] for x in seasons for _ in x["nights"]], **cum}, "ledger": L,
+            "lst": lst}
     tpl = (ROOT / "scripts" / "templates" / "best5_parlay.html").read_text()
     page = tpl.replace("__DATA__", json.dumps(data, separators=(",", ":")))
     (ROOT / "reports" / "best5_parlay.html").write_text(page)
 
     # markdown summary
-    def era_sum(plan, ss):
+    def era_sum(plan, ss, dbl):
         r = [x["plans"][plan] for x in seasons if x["s"] in ss]
+        v = [x[f"flat_{dbl}"] for x in r]
         return {"bets a season": np.mean([x["bets"] for x in r]),
                 "won": sum(x["won"] for x in r) / max(1, sum(x["won"] + x["lost"] for x in r)),
-                "units a season": np.mean([x["units"] for x in r]),
-                "$ a season ($100 a bet)": np.mean([x["flat"]["end"] - START for x in r]),
-                "worst season ($)": min(x["flat"]["end"] - START for x in r),
-                "lowest balance ($)": min(x["flat"]["low"] for x in r)}
-    T = pd.DataFrame([{"plan": p, "seasons": lab, **era_sum(p, ss)} for p in PLANS
+                "$ a season ($100 base)": np.mean([x["end"] - START for x in v]),
+                "worst season ($)": min(x["end"] - START for x in v),
+                "lowest balance ($)": min(x["low"] for x in v),
+                "seasons broke": sum(x["low"] <= 1 for x in v)}
+    T = pd.DataFrame([{"plan": p, "doubling": dbl, "seasons": lab, **era_sum(p, ss, dbl)} for p in PLANS for dbl in DBL
                       for lab, ss in (("2011-21", DEV), ("2021-26", TEST))])
-    per = pd.DataFrame([{"season": x["s"], **{f"{p} $": x["plans"][p]["flat"]["end"] - START for p in PLANS},
+    per = pd.DataFrame([{"season": x["s"], **{f"{p} $": x["plans"][p]["flat_none"]["end"] - START for p in PLANS},
                          "parlays": x["plans"]["parlay"]["bets"], "parlays won": x["plans"]["parlay"]["won"],
                          "avg parlay odds": x["parlay_odds"]} for x in seasons])
     md = ["# Best 5 a day plus the daily 2.5+ parlay\n",
-          "combo = best 5 straight bets a day (P >= 53%) plus the parlay on days it exists; each season from $5,000 at $100 a bet.\n",
+          "combo = best 5 straight bets a day (P >= 53%) plus the parlay on days it exists; each season from $5,000 at $100 a "
+          "base bet. Doubling: none, after each losing bet, or after each losing night (1x, 2x, 4x; shared by straight bets and parlay).\n",
           df_to_md(T, "{:,.3f}"), "", "By season ($ profit at $100 a bet):\n", df_to_md(per, "{:,.2f}"), ""]
     (ROOT / "reports" / "best5_parlay.md").write_text("\n".join(md) + "\n")
     print("\n".join(md))
